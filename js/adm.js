@@ -384,15 +384,20 @@ async function carregarSugestoes() {
       return;
     }
 
-    lista.innerHTML = sugestoes.map(s => `
-      <div class="item-card">
-        <div class="item-info">
-          <span class="item-titulo">${s.autor?.nome || 'Aluno'}</span>
-          <span class="item-desc">${s.texto}</span>
-          <span class="item-meta">${new Date(s.criadaEm).toLocaleDateString('pt-BR')}</span>
+    lista.innerHTML = sugestoes.map(s => {
+      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      const status      = s.respondida ? 'color:#4ade80' : 'color:#94a3b8';
+      const labelStatus = s.respondida ? '✓ Respondida' : '⏳ Aguardando';
+      return `
+        <div class="item-card">
+          <div class="item-info">
+            <span class="item-titulo">${s.autor?.nome || 'Aluno'}</span>
+            <span class="item-desc">${s.texto}</span>
+            <span class="item-meta">${data} · <span style="${status}">${labelStatus}</span></span>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   } catch (err) {
     lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>';
   }

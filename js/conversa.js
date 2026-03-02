@@ -138,21 +138,44 @@ async function carregarMensagens() {
     const resposta = await fetch(`${API}/mensagens`);
     const dados = await resposta.json();
 
-    // só re-renderiza se tiver mensagens novas
     if (dados.length === mensagens.length) return;
 
-    mensagens = dados.map(m => ({
-      id: m._id,
-      autor: m.autor?.nome || 'Usuário',
-      foto: null,
-      tipo: 'texto',
-      conteudo: m.texto,
-      hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-      eu: m.autor?._id === meuId || m.autor === meuId
-    }));
+    // IDs já carregados localmente para não duplicar
+    const idsLocais = new Set(mensagens.map(m => String(m.id)));
 
-    renderTodas();
+    const novas = dados
+      .filter(m => !idsLocais.has(String(m._id)))
+      .map(m => ({
+        id: m._id,
+        autor: m.autor?.nome || 'Usuário',
+        foto: null,
+        tipo: 'texto',
+        conteudo: m.texto,
+        hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+        eu: String(m.autor?._id || m.autor) === String(meuId)
+      }));
+
+    if (!novas.length) return;
+
+    // se for a primeira carga (mensagens locais eram só otimistas), renderiza tudo
+    const temApenasOtimistas = mensagens.every(m => String(m.id).startsWith('temp-'));
+    if (temApenasOtimistas) {
+      mensagens = dados.map(m => ({
+        id: m._id,
+        autor: m.autor?.nome || 'Usuário',
+        foto: null,
+        tipo: 'texto',
+        conteudo: m.texto,
+        hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+        eu: String(m.autor?._id || m.autor) === String(meuId)
+      }));
+      renderTodas();
+    } else {
+      // só adiciona as mensagens realmente novas (de outros usuários)
+      novas.forEach(m => adicionarMensagemLocal(m));
+    }
   } catch (err) {
     console.error("Erro ao carregar mensagens:", err);
   }

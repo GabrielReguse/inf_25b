@@ -140,42 +140,32 @@ elForm.addEventListener('submit', async e => {
         const role = emailsAdm.has(email) ? 'admin' : 'aluno';
 
         // aqui: integrar com backend/Firebase para criar conta
-        // por enquanto salva no sessionStorage e redireciona
         try {
-    const resposta = await fetch("https://inf-25b-backend.onrender.com/cadastro", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        nome,
-        email,
-        senha,
-        role
-    })
-});
+            const resposta = await fetch("https://inf-25b-backend.onrender.com/cadastro", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nome, email, senha, role })
+            });
 
-    const dados = await resposta.json();
+            const dados = await resposta.json();
 
-    if (!resposta.ok) {
-        elAlerta.textContent = dados.erro || "Credenciais inválidas.";
-        elAlerta.className = "alerta erro";
-        return;
-    }
+            if (!resposta.ok) {
+                elAlerta.textContent = dados.erro || "Erro ao cadastrar.";
+                elAlerta.className = "alerta erro";
+                return;
+            }
 
-    sessionStorage.setItem("usuario", JSON.stringify(dados.usuario));
+            elAlerta.textContent = "Cadastro realizado com sucesso! Faça seu login.";
+            elAlerta.className = "alerta sucesso";
+            setTimeout(() => {
+                modo = 'login';
+                renderModo();
+            }, 1500);
 
-    elAlerta.textContent = "Login realizado! Redirecionando...";
-    elAlerta.className = "alerta sucesso";
-
-    setTimeout(() => {
-        window.location.href = "telaInicial.html";
-    }, 1200);
-
-} catch (erro) {
-    elAlerta.textContent = "Erro ao conectar com o servidor.";
-    elAlerta.className = "alerta erro";
-}
+        } catch (erro) {
+            elAlerta.textContent = "Erro ao conectar com o servidor.";
+            elAlerta.className = "alerta erro";
+        }
 
     } else {
         if (!valido) return;
