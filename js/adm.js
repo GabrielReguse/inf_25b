@@ -3,6 +3,9 @@ const API = "https://inf-25b-backend.onrender.com";
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
 
+const MATERIAS = ['Matemática','Português','História','Geografia','Ciências','Física','Química','Biologia','Inglês','Educação Física','Artes','Filosofia','Sociologia'];
+const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
+
 if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
@@ -116,9 +119,6 @@ async function deletarAviso(id) {
 }
 
 // ─── TAREFAS (formulário completo) ────────────────────────────
-const MATERIAS = ['Matemática','Português','História','Geografia','Ciências','Física','Química','Biologia','Inglês','Educação Física','Artes','Filosofia','Sociologia'];
-const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
-
 async function renderTarefas() {
   const painel = document.getElementById('painelTarefas');
   painel.innerHTML = `

@@ -16,11 +16,13 @@ window.addEventListener('pageshow', () => {
 const header = document.getElementById('header');
 const headerLinha = document.getElementById('headerLinha');
 
-window.addEventListener('scroll', () => {
-  const rolou = window.scrollY > 8;
-  header.classList.toggle('scrolled', rolou);
-  headerLinha.classList.toggle('fina', rolou);
-}, { passive: true });
+if (header && headerLinha) {
+  window.addEventListener('scroll', () => {
+    const rolou = window.scrollY > 8;
+    header.classList.toggle('scrolled', rolou);
+    headerLinha.classList.toggle('fina', rolou);
+  }, { passive: true });
+}
 
 // animação de saída
 document.querySelectorAll('a[href]').forEach(link => {
