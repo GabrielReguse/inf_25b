@@ -1,22 +1,22 @@
 // emails permitidos → adicionar todos os alunos aqui
 const emailsPermitidos = new Set([
     // alunos
-    "aluno1",
-    "aluno2",
+    "i0560008",
+    "amanda.zink09@gmail.com",
     "lohanystephany808@gmail.com",
+    "francagregori7@gmail.com",
 
     // SUPER ADM MASTER
     "viniciushoppe@outlook.com",
-
     // líder e vice
-    "lider",
+    "eduardo.gubler@gmail.com",
     "gabrielreguse1@gmail.com",
 ]);
 
 const emailsAdm = new Set([
     "viniciushoppe@outlook.com",
     "gabrielreguse1@gmail.com",
-    "lider",
+    "eduardo.gubler@gmail.com",
 ]);
 
 // modo atual: 'login' | 'cadastro'
