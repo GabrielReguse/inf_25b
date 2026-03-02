@@ -20,9 +20,9 @@ function carregarSugestoes() {
         const pendentes = JSON.parse(sessionStorage.getItem('lazer_pendentes') || '[]');
         pendentes.forEach(s => {
             if (s.tipo === 'encontro') {
-                encontros.push({ id: Date.now() + Math.random(), titulo: s.titulo, descricao: s.descricao, confirmados: [] });
+                encontros.push({ id: 'e' + Date.now(), titulo: s.titulo, descricao: s.descricao, confirmados: [] });
             } else if (s.tipo === 'instagram') {
-                posts.push({ id: Date.now() + Math.random(), titulo: s.titulo, descricao: s.descricao, link: '', votos: { legal: 0, nao: 0 } });
+                posts.push({ id: 'p' + Date.now(), titulo: s.titulo, descricao: s.descricao, link: '', votos: { legal: 0, nao: 0 } });
             }
         });
         // limpa após carregar
