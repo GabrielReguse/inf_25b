@@ -3,6 +3,7 @@ const emailsPermitidos = new Set([
     // alunos
     "aluno1",
     "aluno2",
+    "lohanystephany808@gmail.com",
 
     // SUPER ADM MASTER
     "viniciushoppe@outlook.com",
