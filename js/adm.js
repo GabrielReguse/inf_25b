@@ -3,21 +3,18 @@ const API = "https://inf-25b-backend.onrender.com";
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
 
-// ─── VERIFICAÇÃO DE ACESSO ────────────────────────────────────
 if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <h2>Acesso restrito</h2>
-      <p>Você precisa estar logado como ADM para acessar esta página.</p>
+      <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
-    </div>
-  `;
+    </div>`;
 } else {
   renderPainel();
 }
 
-// ─── ESTRUTURA DO PAINEL ──────────────────────────────────────
 function renderPainel() {
   el.innerHTML = `
     <div class="abas">
@@ -31,8 +28,7 @@ function renderPainel() {
       <div class="painel" id="painelTarefas"></div>
       <div class="painel" id="painelDestaques"></div>
       <div class="painel" id="painelSugestoes"></div>
-    </main>
-  `;
+    </main>`;
 
   document.getElementById('abaAvisos').addEventListener('click', () => trocarAba('Avisos'));
   document.getElementById('abaTarefas').addEventListener('click', () => trocarAba('Tarefas'));
@@ -67,13 +63,10 @@ async function renderAvisos() {
       <textarea class="campo-textarea" id="avisoDesc" placeholder="Descreva o aviso com detalhes..."></textarea>
     </div>
     <button class="btn-publicar" id="btnCriarAviso">Publicar aviso</button>
-
     <div class="secao-lista">
       <div class="secao-lista-titulo">Avisos publicados</div>
       <div id="listaAvisos"><p class="lista-vazia">Carregando...</p></div>
-    </div>
-  `;
-
+    </div>`;
   document.getElementById('btnCriarAviso').addEventListener('click', criarAviso);
   carregarAvisos();
 }
@@ -83,54 +76,27 @@ async function criarAviso() {
   const descricao = document.getElementById('avisoDesc').value.trim();
   const alerta = document.getElementById('alertaAviso');
   const btn = document.getElementById('btnCriarAviso');
-
   alerta.className = 'alerta';
-  if (!titulo || !descricao) {
-    alerta.textContent = 'Preencha todos os campos.';
-    alerta.className = 'alerta erro';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Publicando...';
-
+  if (!titulo || !descricao) { alerta.textContent = 'Preencha todos os campos.'; alerta.className = 'alerta erro'; return; }
+  btn.disabled = true; btn.textContent = 'Publicando...';
   try {
-    const res = await fetch(`${API}/avisos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id })
-    });
+    const res = await fetch(`${API}/avisos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id }) });
     const dados = await res.json();
-
     if (!res.ok) throw new Error(dados.erro || 'Erro ao publicar.');
-
-    alerta.textContent = 'Aviso publicado com sucesso!';
-    alerta.className = 'alerta sucesso';
+    alerta.textContent = 'Aviso publicado!'; alerta.className = 'alerta sucesso';
     document.getElementById('avisoTitulo').value = '';
     document.getElementById('avisoDesc').value = '';
     carregarAvisos();
-  } catch (err) {
-    alerta.textContent = err.message;
-    alerta.className = 'alerta erro';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Publicar aviso';
-  }
+  } catch (err) { alerta.textContent = err.message; alerta.className = 'alerta erro'; }
+  finally { btn.disabled = false; btn.textContent = 'Publicar aviso'; }
 }
 
 async function carregarAvisos() {
   const lista = document.getElementById('listaAvisos');
   if (!lista) return;
-
   try {
-    const res = await fetch(`${API}/avisos`);
-    const avisos = await res.json();
-
-    if (!avisos.length) {
-      lista.innerHTML = '<p class="lista-vazia">Nenhum aviso publicado ainda.</p>';
-      return;
-    }
-
+    const avisos = await (await fetch(`${API}/avisos`)).json();
+    if (!avisos.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum aviso publicado ainda.</p>'; return; }
     lista.innerHTML = avisos.map(a => `
       <div class="item-card">
         <div class="item-info">
@@ -139,11 +105,8 @@ async function carregarAvisos() {
           <span class="item-meta">${new Date(a.criadoEm).toLocaleDateString('pt-BR')}</span>
         </div>
         <button class="btn-deletar" onclick="deletarAviso('${a._id}')">Remover</button>
-      </div>
-    `).join('');
-  } catch (err) {
-    lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar avisos.</p>';
-  }
+      </div>`).join('');
+  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
 }
 
 async function deletarAviso(id) {
@@ -152,108 +115,168 @@ async function deletarAviso(id) {
   carregarAvisos();
 }
 
-// ─── TAREFAS ──────────────────────────────────────────────────
+// ─── TAREFAS (formulário completo) ────────────────────────────
+const MATERIAS = ['Matemática','Português','História','Geografia','Ciências','Física','Química','Biologia','Inglês','Educação Física','Artes','Filosofia','Sociologia'];
+const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
+
 async function renderTarefas() {
   const painel = document.getElementById('painelTarefas');
   painel.innerHTML = `
     <p class="form-titulo">Adicionar tarefa ou prova</p>
     <div id="alertaTarefa" class="alerta"></div>
+
     <div class="campo-grupo">
-      <label class="campo-label">Título (matéria + tipo)</label>
-      <input class="campo-input" id="tarefaTitulo" placeholder="Ex: Matemática — Prova de Trigonometria"/>
+      <label class="campo-label">Matéria</label>
+      <select class="campo-input" id="tarefaMateria">
+        <option value="">Selecione a matéria...</option>
+        ${MATERIAS.map(m => `<option value="${m}">${m}</option>`).join('')}
+      </select>
     </div>
+
     <div class="campo-grupo">
-      <label class="campo-label">Descrição</label>
-      <textarea class="campo-textarea" id="tarefaDesc" placeholder="Conteúdo, formato de entrega, detalhes..."></textarea>
+      <label class="campo-label">Tipo</label>
+      <select class="campo-input" id="tarefaTipo">
+        <option value="">Selecione o tipo...</option>
+        <option value="prova">Prova</option>
+        <option value="tarefa">Tarefa</option>
+      </select>
     </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label">Conteúdo</label>
+      <input class="campo-input" id="tarefaConteudo" placeholder="Ex: Trigonometria, Revolução Francesa..."/>
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label">Descrição / Resumo</label>
+      <textarea class="campo-textarea" id="tarefaDesc" placeholder="Detalhes extras..."></textarea>
+    </div>
+
+    <div id="camposProva" style="display:none">
+      <div class="campo-grupo">
+        <label class="campo-label">Consulta?</label>
+        <select class="campo-input" id="tarefaConsulta">
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="camposTarefa" style="display:none">
+      <div class="campo-grupo">
+        <label class="campo-label">Tipo de entrega</label>
+        <select class="campo-input" id="tarefaEntrega">
+          <option value="">Selecione...</option>
+          ${ENTREGAS.map(e => `<option value="${e.toLowerCase()}">${e}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label">Grupo?</label>
+      <select class="campo-input" id="tarefaGrupo">
+        <option value="nao">Não (individual)</option>
+        <option value="sim">Sim (em grupo)</option>
+      </select>
+    </div>
+
+    <div id="campoGrupoNum" style="display:none">
+      <div class="campo-grupo">
+        <label class="campo-label">Número de membros por grupo</label>
+        <input class="campo-input" type="number" id="tarefaNumMembros" min="2" max="10" placeholder="Ex: 4"/>
+      </div>
+    </div>
+
     <div class="campo-grupo">
       <label class="campo-label">Data de entrega / realização</label>
       <input class="campo-input" type="date" id="tarefaData"/>
     </div>
+
     <button class="btn-publicar" id="btnCriarTarefa">Adicionar ao calendário</button>
 
     <div class="secao-lista">
       <div class="secao-lista-titulo">Tarefas cadastradas</div>
       <div id="listaTarefas"><p class="lista-vazia">Carregando...</p></div>
-    </div>
-  `;
+    </div>`;
 
-  // define data mínima como hoje
   document.getElementById('tarefaData').min = new Date().toISOString().slice(0, 10);
+
+  // mostra/esconde campos conforme tipo
+  document.getElementById('tarefaTipo').addEventListener('change', e => {
+    document.getElementById('camposProva').style.display = e.target.value === 'prova' ? '' : 'none';
+    document.getElementById('camposTarefa').style.display = e.target.value === 'tarefa' ? '' : 'none';
+  });
+
+  // mostra campo de número de membros
+  document.getElementById('tarefaGrupo').addEventListener('change', e => {
+    document.getElementById('campoGrupoNum').style.display = e.target.value === 'sim' ? '' : 'none';
+  });
+
   document.getElementById('btnCriarTarefa').addEventListener('click', criarTarefa);
   carregarTarefas();
 }
 
 async function criarTarefa() {
-  const titulo = document.getElementById('tarefaTitulo').value.trim();
-  const descricao = document.getElementById('tarefaDesc').value.trim();
+  const materia    = document.getElementById('tarefaMateria').value;
+  const tipo       = document.getElementById('tarefaTipo').value;
+  const conteudo   = document.getElementById('tarefaConteudo').value.trim();
+  const descricao  = document.getElementById('tarefaDesc').value.trim();
+  const consulta   = document.getElementById('tarefaConsulta')?.value === 'sim';
+  const tipoEntrega = document.getElementById('tarefaEntrega')?.value || '';
+  const grupo      = document.getElementById('tarefaGrupo').value === 'sim';
+  const numMembros = parseInt(document.getElementById('tarefaNumMembros')?.value || '0');
   const dataEntrega = document.getElementById('tarefaData').value;
-  const alerta = document.getElementById('alertaTarefa');
-  const btn = document.getElementById('btnCriarTarefa');
+  const alerta     = document.getElementById('alertaTarefa');
+  const btn        = document.getElementById('btnCriarTarefa');
 
   alerta.className = 'alerta';
-  if (!titulo || !descricao || !dataEntrega) {
-    alerta.textContent = 'Preencha todos os campos.';
-    alerta.className = 'alerta erro';
-    return;
+  if (!materia || !tipo || !conteudo || !dataEntrega) {
+    alerta.textContent = 'Preencha matéria, tipo, conteúdo e data.';
+    alerta.className = 'alerta erro'; return;
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Adicionando...';
-
+  btn.disabled = true; btn.textContent = 'Adicionando...';
   try {
     const res = await fetch(`${API}/tarefas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, descricao, dataEntrega, criadoPor: usuario.id })
+      body: JSON.stringify({ materia, tipo, conteudo, descricao, consulta, tipoEntrega, grupo, numMembros, dataEntrega, criadoPor: usuario.id })
     });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
-
-    alerta.textContent = 'Tarefa adicionada! Vai aparecer no calendário.';
-    alerta.className = 'alerta sucesso';
-    document.getElementById('tarefaTitulo').value = '';
-    document.getElementById('tarefaDesc').value = '';
-    document.getElementById('tarefaData').value = '';
+    alerta.textContent = 'Adicionado ao calendário!'; alerta.className = 'alerta sucesso';
+    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('camposProva').style.display = 'none';
+    document.getElementById('camposTarefa').style.display = 'none';
+    document.getElementById('campoGrupoNum').style.display = 'none';
     carregarTarefas();
-  } catch (err) {
-    alerta.textContent = err.message;
-    alerta.className = 'alerta erro';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Adicionar ao calendário';
-  }
+  } catch (err) { alerta.textContent = err.message; alerta.className = 'alerta erro'; }
+  finally { btn.disabled = false; btn.textContent = 'Adicionar ao calendário'; }
 }
 
 async function carregarTarefas() {
   const lista = document.getElementById('listaTarefas');
   if (!lista) return;
-
   try {
-    const res = await fetch(`${API}/tarefas`);
-    const tarefas = await res.json();
-
-    if (!tarefas.length) {
-      lista.innerHTML = '<p class="lista-vazia">Nenhuma tarefa cadastrada ainda.</p>';
-      return;
-    }
-
+    const tarefas = await (await fetch(`${API}/tarefas`)).json();
+    if (!tarefas.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma tarefa cadastrada.</p>'; return; }
     lista.innerHTML = tarefas.map(t => {
-      const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      const tipo = t.tipo === 'prova' ? '📝 Prova' : '📋 Tarefa';
       return `
         <div class="item-card">
           <div class="item-info">
-            <span class="item-titulo">${t.titulo}</span>
-            <span class="item-desc">${t.descricao}</span>
+            <span class="item-titulo">${tipo}: ${t.materia || t.titulo}</span>
+            <span class="item-desc">${t.conteudo || t.descricao}</span>
             <span class="item-meta">📅 ${data}</span>
           </div>
           <button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button>
-        </div>
-      `;
+        </div>`;
     }).join('');
-  } catch (err) {
-    lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>';
-  }
+  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
 }
 
 async function deletarTarefa(id) {
@@ -277,13 +300,10 @@ async function renderDestaques() {
       <textarea class="campo-textarea" id="destaqueDesc" placeholder="Detalhes do destaque..."></textarea>
     </div>
     <button class="btn-publicar" id="btnCriarDestaque">Publicar destaque</button>
-
     <div class="secao-lista">
       <div class="secao-lista-titulo">Destaques publicados</div>
       <div id="listaDestaques"><p class="lista-vazia">Carregando...</p></div>
-    </div>
-  `;
-
+    </div>`;
   document.getElementById('btnCriarDestaque').addEventListener('click', criarDestaque);
   carregarDestaques();
 }
@@ -293,53 +313,27 @@ async function criarDestaque() {
   const descricao = document.getElementById('destaqueDesc').value.trim();
   const alerta = document.getElementById('alertaDestaque');
   const btn = document.getElementById('btnCriarDestaque');
-
   alerta.className = 'alerta';
-  if (!titulo || !descricao) {
-    alerta.textContent = 'Preencha todos os campos.';
-    alerta.className = 'alerta erro';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Publicando...';
-
+  if (!titulo || !descricao) { alerta.textContent = 'Preencha todos os campos.'; alerta.className = 'alerta erro'; return; }
+  btn.disabled = true; btn.textContent = 'Publicando...';
   try {
-    const res = await fetch(`${API}/destaques`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id })
-    });
+    const res = await fetch(`${API}/destaques`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id }) });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao publicar.');
-
-    alerta.textContent = 'Destaque publicado!';
-    alerta.className = 'alerta sucesso';
+    alerta.textContent = 'Destaque publicado!'; alerta.className = 'alerta sucesso';
     document.getElementById('destaqueTitulo').value = '';
     document.getElementById('destaqueDesc').value = '';
     carregarDestaques();
-  } catch (err) {
-    alerta.textContent = err.message;
-    alerta.className = 'alerta erro';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Publicar destaque';
-  }
+  } catch (err) { alerta.textContent = err.message; alerta.className = 'alerta erro'; }
+  finally { btn.disabled = false; btn.textContent = 'Publicar destaque'; }
 }
 
 async function carregarDestaques() {
   const lista = document.getElementById('listaDestaques');
   if (!lista) return;
-
   try {
-    const res = await fetch(`${API}/destaques`);
-    const destaques = await res.json();
-
-    if (!destaques.length) {
-      lista.innerHTML = '<p class="lista-vazia">Nenhum destaque publicado ainda.</p>';
-      return;
-    }
-
+    const destaques = await (await fetch(`${API}/destaques`)).json();
+    if (!destaques.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum destaque publicado.</p>'; return; }
     lista.innerHTML = destaques.map(d => `
       <div class="item-card">
         <div class="item-info">
@@ -348,11 +342,8 @@ async function carregarDestaques() {
           <span class="item-meta">${new Date(d.criadoEm).toLocaleDateString('pt-BR')}</span>
         </div>
         <button class="btn-deletar" onclick="deletarDestaque('${d._id}')">Remover</button>
-      </div>
-    `).join('');
-  } catch (err) {
-    lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>';
-  }
+      </div>`).join('');
+  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
 }
 
 async function deletarDestaque(id) {
@@ -361,44 +352,48 @@ async function deletarDestaque(id) {
   carregarDestaques();
 }
 
-// ─── SUGESTÕES (só leitura) ───────────────────────────────────
+// ─── SUGESTÕES (aceitar / recusar) ────────────────────────────
 async function renderSugestoes() {
   const painel = document.getElementById('painelSugestoes');
   painel.innerHTML = `
-    <p class="form-titulo">Sugestões recebidas dos alunos</p>
-    <div id="listaSugestoes"><p class="lista-vazia">Carregando...</p></div>
-  `;
+    <p class="form-titulo">Sugestões dos alunos</p>
+    <div id="listaSugestoes"><p class="lista-vazia">Carregando...</p></div>`;
   carregarSugestoes();
 }
 
 async function carregarSugestoes() {
   const lista = document.getElementById('listaSugestoes');
   if (!lista) return;
-
   try {
-    const res = await fetch(`${API}/sugestoes`);
-    const sugestoes = await res.json();
-
-    if (!sugestoes.length) {
-      lista.innerHTML = '<p class="lista-vazia">Nenhuma sugestão recebida ainda.</p>';
-      return;
-    }
-
+    const sugestoes = await (await fetch(`${API}/sugestoes`)).json();
+    if (!sugestoes.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma sugestão ainda.</p>'; return; }
     lista.innerHTML = sugestoes.map(s => {
-      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-      const status      = s.respondida ? 'color:#4ade80' : 'color:#94a3b8';
-      const labelStatus = s.respondida ? '✓ Respondida' : '⏳ Aguardando';
+      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+      const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
+      const corStatus = status === 'aceita' ? '#4ade80' : status === 'recusada' ? '#f87171' : '#94a3b8';
+      const labelStatus = status === 'aceita' ? '✓ Aceita' : status === 'recusada' ? '✗ Recusada' : '⏳ Aguardando';
+      const btnAceitar = status === 'aguardando' ? `<button class="btn-aceitar" onclick="responderSugestao('${s._id}','aceita')">Aceitar</button>` : '';
+      const btnRecusar = status === 'aguardando' ? `<button class="btn-recusar" onclick="responderSugestao('${s._id}','recusada')">Recusar</button>` : '';
       return `
-        <div class="item-card">
+        <div class="item-card" id="sug-${s._id}">
           <div class="item-info">
             <span class="item-titulo">${s.autor?.nome || 'Aluno'}</span>
             <span class="item-desc">${s.texto}</span>
-            <span class="item-meta">${data} · <span style="${status}">${labelStatus}</span></span>
+            <span class="item-meta">${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
           </div>
-        </div>
-      `;
+          <div style="display:flex;gap:.4rem;flex-shrink:0">${btnAceitar}${btnRecusar}</div>
+        </div>`;
     }).join('');
-  } catch (err) {
-    lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>';
-  }
+  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
+}
+
+async function responderSugestao(id, status) {
+  try {
+    await fetch(`${API}/sugestoes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    carregarSugestoes();
+  } catch (err) { console.error(err); }
 }

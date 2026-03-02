@@ -2,17 +2,8 @@
    sugestoes.js publica aqui via sessionStorage['lazer_pendentes']
    ADMs aprovam e movem para os arrays abaixo                        */
 
-// encontros vindos de sugestões aprovadas (tipo: 'encontro')
-let encontros = [
-    // modelo:
-    { id: 1, titulo: 'Jogo de Futsal', descricao: 'Sábado 15h no ginásio', confirmados: ['Ana', 'João'] }
-];
-
-// posts vindos de sugestões aprovadas (tipo: 'instagram')
-let posts = [
-    // modelo:
-    { id: 1, titulo: 'Foto da turma', descricao: 'Ideia para post de fim de semestre', link: 'https://...', votos: { legal: 0, nao: 0 } }
-];
+let encontros = [];
+let posts = [];
 
 // carrega sugestões aprovadas do sessionStorage (integração com sugestoes.js)
 function carregarSugestoes() {
@@ -136,11 +127,7 @@ function togglePresenca(id) {
 
 function avatarMini(nome) {
     const iniciais = nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
-    return `
-    <div class="avatar-mini" title="${nome}">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </div>
-  `;
+    return `<div class="avatar-mini" title="${nome}" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">${iniciais}</div>`;
 }
 
 // INSTAGRAM

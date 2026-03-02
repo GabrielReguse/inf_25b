@@ -27,20 +27,25 @@ async function carregarTarefas() {
     eventos = {}; // limpa antes de preencher
 
     tarefas.forEach(t => {
-      // dataEntrega vem como "2026-03-10T00:00:00.000Z", pega só YYYY-MM-DD
       const chave = new Date(t.dataEntrega).toISOString().slice(0, 10);
-
       if (!eventos[chave]) eventos[chave] = [];
 
+      // suporte a modelo antigo (titulo) e novo (materia+conteudo)
+      const materia  = t.materia  || t.titulo   || 'Tarefa';
+      const conteudo = t.conteudo || t.descricao || '';
+      const tipo     = t.tipo     || 'tarefa';
+
       eventos[chave].push({
-        tipo: 'tarefa',
-        materia: t.titulo,
-        sigla: t.titulo.slice(0, 4).toUpperCase(),
-        conteudo: t.descricao,
-        entrega: 'digital',
-        resumo: t.descricao,
+        tipo,
+        materia,
+        sigla: materia.slice(0, 3).toUpperCase(),
+        conteudo,
+        entrega: t.tipoEntrega || 'digital',
+        grupo: t.grupo || false,
+        numMembros: t.numMembros || 0,
+        consulta: t.consulta || false,
+        resumo: conteudo,
         links: [],
-        // guarda o id para eventual exclusão futura
         _id: t._id
       });
     });
