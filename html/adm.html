@@ -61,18 +61,21 @@
 
     .campo-grupo { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
     .campo-label { font-size: .8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
-    .campo-input, .campo-textarea, .campo-select {
-      background: rgba(139,92,246,.08);
+    .campo-input, .campo-textarea, select.campo-input {
+      background: rgba(15,10,30,.8);
       border: 1px solid rgba(139,92,246,.25);
       border-radius: 10px; padding: .65rem .9rem;
       color: #e2e8f0; font-size: .9rem; font-family: inherit;
       transition: border-color .2s; outline: none; width: 100%;
+      -webkit-appearance: none; appearance: none;
     }
-    .campo-input:focus, .campo-textarea:focus, .campo-select:focus {
+    .campo-input:focus, .campo-textarea:focus, select.campo-input:focus {
       border-color: rgba(139,92,246,.6);
     }
     .campo-textarea { resize: vertical; min-height: 90px; }
-    .campo-select option { background: #1a0a3a; }
+    select.campo-input option { background: #0f0a1e; color: #e2e8f0; }
+    /* datas */
+    input[type="date"].campo-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.5); }
 
     .btn-publicar {
       width: 100%; padding: .75rem;
@@ -122,6 +125,22 @@
       flex-shrink: 0; transition: background .2s;
     }
     .btn-deletar:hover { background: rgba(239,68,68,.25); }
+
+    .btn-aceitar {
+      background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3);
+      border-radius: 8px; color: #4ade80; cursor: pointer;
+      padding: .35rem .6rem; font-size: .75rem; font-weight: 600;
+      flex-shrink: 0; transition: background .2s;
+    }
+    .btn-aceitar:hover { background: rgba(34,197,94,.25); }
+
+    .btn-recusar {
+      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
+      border-radius: 8px; color: #f87171; cursor: pointer;
+      padding: .35rem .6rem; font-size: .75rem; font-weight: 600;
+      flex-shrink: 0; transition: background .2s;
+    }
+    .btn-recusar:hover { background: rgba(239,68,68,.25); }
 
     /* ACESSO NEGADO */
     .acesso-negado {
