@@ -1,8 +1,8 @@
 // emails permitidos → adicionar todos os alunos aqui
 const emailsPermitidos = new Set([
     // alunos
-    "aluno1",
-    "aluno2",
+    "i0560008",
+    "amanda.zink09@gmail.com",
     "lohanystephany808@gmail.com",
 
     // SUPER ADM MASTER
