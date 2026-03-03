@@ -1,7 +1,6 @@
 // emails permitidos → adicionar todos os alunos aqui
 const emailsPermitidos = new Set([
     // alunos
-    "i0560008",
     "amanda.zink09@gmail.com",
     "lohanystephany808@gmail.com",
     "francagregori7@gmail.com",
