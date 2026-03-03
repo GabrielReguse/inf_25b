@@ -88,7 +88,7 @@ function renderMensagem(msg) {
       ${avatarHTML(msg.foto, msg.autor)}
     </div>
     <div class="msg-col">
-      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer;${msg.role==='admin'?'color:#f5c518;font-weight:800;text-shadow:0 0 8px rgba(245,197,24,.4)':''}">${escapeHTML(msg.autor)}${msg.role==='admin'?' 👑':''}</span>
+      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>
       ${conteudoHTML}
     </div>
   `;
