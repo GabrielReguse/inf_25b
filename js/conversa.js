@@ -88,7 +88,7 @@ function renderMensagem(msg) {
       ${avatarHTML(msg.foto, msg.autor)}
     </div>
     <div class="msg-col">
-      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>
+      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer;${msg.role==='admin'?'color:#f5c518;font-weight:800;text-shadow:0 0 8px rgba(245,197,24,.4)':''}">${escapeHTML(msg.autor)}${msg.role==='admin'?' 👑':''}</span>
       ${conteudoHTML}
     </div>
   `;
@@ -153,6 +153,7 @@ async function carregarMensagens() {
         id: m._id,
         autor: m.autor?.nome || 'Usuário',
         foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+        role: m.autor?.role || 'aluno',
         tipo: 'texto',
         conteudo: m.texto,
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -169,6 +170,7 @@ async function carregarMensagens() {
         id: m._id,
         autor: m.autor?.nome || 'Usuário',
         foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+        role: m.autor?.role || 'aluno',
         tipo: 'texto',
         conteudo: m.texto,
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -196,6 +198,7 @@ async function enviarTexto() {
       id: proximoId++,
       autor: meuNome,
       foto: minhaFoto,
+      role: usuario.role || 'aluno',
       tipo: 'imagem',
       src: imagemPendente.src,
       hora: hora(),
@@ -214,6 +217,7 @@ async function enviarTexto() {
       id: `temp-${Date.now()}`,
       autor: meuNome,
       foto: minhaFoto,
+      role: usuario.role || 'aluno',
       tipo: 'texto',
       conteudo: texto,
       hora: hora(),
