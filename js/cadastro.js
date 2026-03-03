@@ -16,7 +16,7 @@ const emailsPermitidos = new Set([
 const emailsAdm = new Set([
     "viniciushoppe@outlook.com",
     "gabrielreguse1@gmail.com",
-    "eduardo.gubler@gmail.com",
+    
 ]);
 
 // modo atual: 'login' | 'cadastro'
