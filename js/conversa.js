@@ -6,7 +6,7 @@ const usuario = (() => {
 })();
 const meuNome = usuario.nome || 'Você';
 const meuId = usuario.id || null;
-const minhaFoto = usuario.foto || null;
+const minhaFoto = usuario.fotoPerfil || null;
 
 let mensagens = [];
 let proximoId = 1;
@@ -81,10 +81,14 @@ function renderMensagem(msg) {
     `;
   }
 
+  const fotoEsc = (msg.foto || '').replace(/'/g, "\'");
+  const nomeEsc = escapeHTML(msg.autor).replace(/'/g, "\'");
   grupo.innerHTML = `
-    <div class="msg-avatar">${avatarHTML(msg.foto, msg.autor)}</div>
+    <div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
+      ${avatarHTML(msg.foto, msg.autor)}
+    </div>
     <div class="msg-col">
-      <span class="msg-nome">${escapeHTML(msg.autor)}</span>
+      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>
       ${conteudoHTML}
     </div>
   `;
@@ -148,7 +152,7 @@ async function carregarMensagens() {
       .map(m => ({
         id: m._id,
         autor: m.autor?.nome || 'Usuário',
-        foto: null,
+        foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
         tipo: 'texto',
         conteudo: m.texto,
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -164,7 +168,7 @@ async function carregarMensagens() {
       mensagens = dados.map(m => ({
         id: m._id,
         autor: m.autor?.nome || 'Usuário',
-        foto: null,
+        foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
         tipo: 'texto',
         conteudo: m.texto,
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -374,3 +378,37 @@ window.addEventListener('beforeunload', () => {
 
 // init
 iniciarPolling();
+// ─── MINI PERFIL (clique no nome) ────────────────────────────
+function verMiniPerfil(autorId, nome, foto) {
+  // remove modal anterior se existir
+  document.getElementById('miniPerfilModal')?.remove();
+
+  const inicial = nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  const modal = document.createElement('div');
+  modal.id = 'miniPerfilModal';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;
+  `;
+  modal.innerHTML = `
+    <div style="background:#1a0a3a;border:1px solid rgba(139,92,246,.3);border-radius:20px;
+                padding:2rem;text-align:center;min-width:220px;position:relative">
+      <button onclick="document.getElementById('miniPerfilModal').remove()"
+        style="position:absolute;top:.75rem;right:.75rem;background:none;border:none;
+               color:#94a3b8;font-size:1.2rem;cursor:pointer">✕</button>
+      <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 1rem;
+                  background:linear-gradient(135deg,#7c3aed,#a855f7);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:1.4rem;font-weight:700;color:#fff;overflow:hidden;
+                  border:2px solid rgba(139,92,246,.4)">
+        ${foto
+          ? `<img src="${foto}" style="width:100%;height:100%;object-fit:cover"/>`
+          : inicial}
+      </div>
+      <div style="font-weight:700;color:#e2e8f0;font-size:1rem">${nome}</div>
+    </div>
+  `;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}

@@ -127,8 +127,21 @@ function mostrarBotaoAdm() {
   document.body.appendChild(btn);
 }
 
+// ─── FOTO NO HEADER ──────────────────────────────────────────
+function carregarFotoHeader() {
+  const foto = usuario.fotoPerfil;
+  if (!foto) return;
+  const img = document.getElementById('headerAvatarImg');
+  const svg = document.getElementById('headerAvatarSvg');
+  if (!img || !svg) return;
+  img.src = foto;
+  img.style.display = 'block';
+  svg.style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   carregarAvisos();
   carregarDestaques();
   mostrarBotaoAdm();
+  carregarFotoHeader();
 });
