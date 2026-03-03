@@ -1,5 +1,5 @@
 const API = "https://inf-25b-backend.onrender.com";
-const correcao = 2;
+const correcao = 1;
 
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
