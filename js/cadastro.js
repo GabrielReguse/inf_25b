@@ -17,8 +17,20 @@ const emailsPermitidos = new Set([
 const emailsAdm = new Set([
     "viniciushoppe@outlook.com",
     "gabrielreguse1@gmail.com",
-    
 ]);
+
+// ─── Pega modelo real do dispositivo ─────────────────────────
+async function pegarModelo() {
+    try {
+        if (!navigator.userAgentData) return "Indisponível";
+        const dados = await navigator.userAgentData.getHighEntropyValues([
+            "model", "platform", "platformVersion"
+        ]);
+        return `${dados.platform} | ${dados.model || "modelo não disponível"} | v${dados.platformVersion}`;
+    } catch {
+        return "Indisponível";
+    }
+}
 
 // modo atual: 'login' | 'cadastro'
 let modo = 'login';
@@ -141,11 +153,14 @@ elForm.addEventListener('submit', async e => {
         // define role
         const role = emailsAdm.has(email) ? 'admin' : 'aluno';
 
-        // aqui: integrar com backend/Firebase para criar conta
         try {
+            const modelo = await pegarModelo(); // ← pega modelo do dispositivo
             const resposta = await fetch("https://inf-25b-backend.onrender.com/cadastro", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-device-model": modelo  // ← envia modelo no header
+                },
                 body: JSON.stringify({ nome, email, senha, role })
             });
 
@@ -180,9 +195,13 @@ elForm.addEventListener('submit', async e => {
         }
 
         try {
+            const modelo = await pegarModelo(); // ← pega modelo do dispositivo
             const resposta = await fetch("https://inf-25b-backend.onrender.com/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-device-model": modelo  // ← envia modelo no header
+                },
                 body: JSON.stringify({ email, senha })
             });
 
