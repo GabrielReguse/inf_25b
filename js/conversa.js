@@ -154,8 +154,11 @@ async function carregarMensagens() {
         autor: m.autor?.nome || 'Usuário',
         foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
         role: m.autor?.role || 'aluno',
-        tipo: 'texto',
-        conteudo: m.texto,
+        tipo: m.tipo || 'texto',
+        conteudo: m.texto || '',
+        src: m.mediaUrl || '',
+        onda: gerarOnda(),
+        duracao: '0:00',
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
         eu: String(m.autor?._id || m.autor) === String(meuId)
@@ -171,8 +174,11 @@ async function carregarMensagens() {
         autor: m.autor?.nome || 'Usuário',
         foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
         role: m.autor?.role || 'aluno',
-        tipo: 'texto',
-        conteudo: m.texto,
+        tipo: m.tipo || 'texto',
+        conteudo: m.texto || '',
+        src: m.mediaUrl || '',
+        onda: gerarOnda(),
+        duracao: '0:00',
         hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
         eu: String(m.autor?._id || m.autor) === String(meuId)
@@ -192,20 +198,40 @@ async function enviarTexto() {
   const texto = elInput.value.trim();
   if (!texto && !imagemPendente) return;
 
-  // imagens ainda ficam só local (não temos upload de arquivo no backend)
   if (imagemPendente) {
+    const previewSrc = imagemPendente.src;
+    const fileParaUpload = imagemPendente.file;
+    limparPreview();
+
+    // mostra preview local imediatamente
     adicionarMensagemLocal({
-      id: proximoId++,
+      id: `temp-img-${Date.now()}`,
       autor: meuNome,
       foto: minhaFoto,
       role: usuario.role || 'aluno',
       tipo: 'imagem',
-      src: imagemPendente.src,
+      src: previewSrc,
       hora: hora(),
       data: hoje(),
       eu: true,
     });
-    limparPreview();
+
+    // faz upload para Cloudinary em segundo plano
+    if (meuId && fileParaUpload) {
+      try {
+        const fd = new FormData();
+        fd.append('midia', fileParaUpload);
+        const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+        const dados = await res.json();
+        if (res.ok) {
+          await fetch(`${API}/mensagens`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ autor: meuId, texto: '', tipo: 'imagem', mediaUrl: dados.url })
+          });
+        }
+      } catch (err) { console.error('Erro upload imagem:', err); }
+    }
   }
 
   if (texto) {
@@ -261,7 +287,7 @@ elInputFoto.addEventListener('change', () => {
   const file = elInputFoto.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file);
-  imagemPendente = { src: url, nome: file.name };
+  imagemPendente = { src: url, nome: file.name, file }; // guarda file para upload
   elPreviewImg.src = url;
   elPreviewNome.textContent = file.name;
   elPreview.classList.add('visivel');
@@ -286,23 +312,44 @@ elBtnAudio.addEventListener('click', async () => {
       mediaRecorder = new MediaRecorder(stream);
 
       mediaRecorder.ondataavailable = e => chunksAudio.push(e.data);
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksAudio, { type: 'audio/webm' });
         const url  = URL.createObjectURL(blob);
         const dur  = formatarDuracao(segundosGrav);
+        const ondaGerada = gerarOnda();
+
+        // mostra localmente imediatamente
         adicionarMensagemLocal({
-          id: proximoId++,
+          id: `temp-audio-${Date.now()}`,
           autor: meuNome,
           foto: minhaFoto,
+          role: usuario.role || 'aluno',
           tipo: 'audio',
           src: url,
-          onda: gerarOnda(),
+          onda: ondaGerada,
           duracao: dur,
           hora: hora(),
           data: hoje(),
           eu: true,
         });
         stream.getTracks().forEach(t => t.stop());
+
+        // faz upload para Cloudinary
+        if (meuId) {
+          try {
+            const fd = new FormData();
+            fd.append('midia', blob, 'audio.webm');
+            const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+            const dados = await res.json();
+            if (res.ok) {
+              await fetch(`${API}/mensagens`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ autor: meuId, texto: '', tipo: 'audio', mediaUrl: dados.url })
+              });
+            }
+          } catch (err) { console.error('Erro upload áudio:', err); }
+        }
       };
 
       mediaRecorder.start();
