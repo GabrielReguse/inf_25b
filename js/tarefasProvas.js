@@ -44,7 +44,7 @@ async function carregarTarefas() {
         grupo: t.grupo || false,
         numMembros: t.numMembros || 0,
         consulta: t.consulta || false,
-        resumo: conteudo,
+        resumo: t.descricao || '',
         links: [],
         _id: t._id
       });
@@ -198,7 +198,7 @@ function buildEventoHTML(ev, idx) {
     `;
   }
 
-  if (ev.resumo) {
+  if (ev.resumo && ev.resumo !== ev.conteudo) {
     corpoHTML += `<div class="evento-resumo">${ev.resumo}</div>`;
   }
 

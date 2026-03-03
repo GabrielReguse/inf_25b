@@ -81,7 +81,7 @@ function renderEncontros() {
     }
 
     encontros.forEach(ev => {
-        const euConfirmei = ev.confirmados.includes(meuNome);
+        const euConfirmei = ev.confirmados.some(p => (p.nome||p) === meuNome);
         const ultimos3 = ev.confirmados.slice(-3);
 
         const card = document.createElement('div');
@@ -92,7 +92,7 @@ function renderEncontros() {
       <span class="item-titulo">${ev.titulo}</span>
       <span class="item-desc">${ev.descricao}</span>
       <div class="presenca-avatares" id="avatares-${ev.id}">
-        ${ultimos3.map(nome => avatarMini(nome)).join('')}
+        ${ultimos3.map(p => avatarMini(p.nome||p, p.foto||null)).join('')}
         ${ev.confirmados.length > 0
                 ? `<span class="presenca-count">${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}</span>`
                 : ''}
@@ -116,18 +116,19 @@ function togglePresenca(id) {
     const ev = encontros.find(e => e.id === id);
     if (!ev) return;
 
-    const idx = ev.confirmados.indexOf(meuNome);
+    const idx = ev.confirmados.findIndex(p => (p.nome||p) === meuNome);
     if (idx >= 0) {
         ev.confirmados.splice(idx, 1);
     } else {
-        ev.confirmados.push(meuNome);
+        ev.confirmados.push({ nome: meuNome, foto: usuario.fotoPerfil||null });
     }
     renderEncontros();
 }
 
-function avatarMini(nome) {
-    const iniciais = nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
-    return `<div class="avatar-mini" title="${nome}" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">${iniciais}</div>`;
+function avatarMini(nome, foto) {
+    const iniciais = (nome||'?').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    if (foto) return '<div class="avatar-mini" title="'+nome+'" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid rgba(139,92,246,.4)"><img src="'+foto+'" style="width:100%;height:100%;object-fit:cover"/></div>';
+    return '<div class="avatar-mini" title="'+nome+'" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">'+iniciais+'</div>';
 }
 
 // INSTAGRAM
