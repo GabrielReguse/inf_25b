@@ -1,5 +1,5 @@
 const API = "https://inf-25b-backend.onrender.com";
-
+const u = 3;
 // estado
 let anoAtual = new Date().getFullYear();
 let mesAtual = new Date().getMonth();

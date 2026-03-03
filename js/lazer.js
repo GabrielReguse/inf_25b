@@ -1,7 +1,7 @@
 /* dados - em produção viriam do backend
    sugestoes.js publica aqui via sessionStorage['lazer_pendentes']
    ADMs aprovam e movem para os arrays abaixo                        */
-
+const sss = 3;
 let encontros = [];
 let posts = [];
 
