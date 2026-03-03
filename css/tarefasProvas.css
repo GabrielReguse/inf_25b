@@ -18,7 +18,7 @@
   --purple-neon: #C084FC;
   --gradient: linear-gradient(135deg, #7C3AED, #A78BFA);
   --cor-prova: #EF4444;
-  --cor-tarefa: #F97316;
+  --cor-tarefa: #4aef44;
   --radius: 12px;
 }
 
@@ -561,9 +561,9 @@ body {
 }
 
 .tag-tarefa {
-  background: rgba(249, 115, 22, .14);
-  color: #fb923c;
-  border: 1px solid rgba(249, 115, 22, .22);
+  background: rgba(41, 249, 22, 0.14);
+  color: #80ff7c;
+  border: 1px solid rgba(41, 249, 22, 0.22);
 }
 
 .evento-seta svg {

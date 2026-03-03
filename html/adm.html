@@ -4,159 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inf 25B — Painel ADM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../css/backGround.css"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body { font-family: system-ui, sans-serif; min-height: 100vh; color: #e2e8f0; background: #0a0518; }
-
-    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* HEADER */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 1.25rem;
-      background: rgba(15,10,30,.7);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(139,92,246,.2);
-    }
-    .header-esquerda { display: flex; align-items: center; gap: .75rem; }
-    .logo img { height: 36px; }
-    .header-titulo { font-size: 1.1rem; font-weight: 700; color: #a78bfa; }
-    .badge-adm {
-      background: rgba(139,92,246,.2); border: 1px solid rgba(139,92,246,.4);
-      color: #a78bfa; font-size: .7rem; font-weight: 700;
-      padding: .2rem .5rem; border-radius: 99px; letter-spacing: .05em;
-    }
-    .btn-fechar {
-      display: flex; align-items: center; justify-content: center;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(139,92,246,.1); border: 1px solid rgba(139,92,246,.25);
-      color: #a78bfa; text-decoration: none; transition: background .2s;
-    }
-    .btn-fechar:hover { background: rgba(139,92,246,.25); }
-    .btn-fechar svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
-
-    /* ABAS */
-    .abas {
-      display: flex; gap: .5rem; padding: 1rem 1.25rem .5rem;
-    }
-    .aba-btn {
-      padding: .5rem 1.25rem; border-radius: 99px;
-      background: rgba(139,92,246,.08); border: 1px solid rgba(139,92,246,.2);
-      color: #94a3b8; font-size: .875rem; font-weight: 600; cursor: pointer;
-      transition: all .2s;
-    }
-    .aba-btn.ativa { background: rgba(139,92,246,.25); border-color: rgba(139,92,246,.5); color: #a78bfa; }
-
-    /* MAIN */
-    .main { flex: 1; padding: 1rem 1.25rem 2rem; max-width: 640px; margin: 0 auto; width: 100%; }
-
-    /* PAINEL */
-    .painel { display: none; }
-    .painel.ativo { display: block; }
-
-    /* FORMULÁRIO */
-    .form-titulo { font-size: 1rem; font-weight: 700; color: #a78bfa; margin-bottom: 1rem; }
-
-    .campo-grupo { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
-    .campo-label { font-size: .8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
-    .campo-input, .campo-textarea, select.campo-input {
-      background: rgba(15,10,30,.8);
-      border: 1px solid rgba(139,92,246,.25);
-      border-radius: 10px; padding: .65rem .9rem;
-      color: #e2e8f0; font-size: .9rem; font-family: inherit;
-      transition: border-color .2s; outline: none; width: 100%;
-      -webkit-appearance: none; appearance: none;
-    }
-    .campo-input:focus, .campo-textarea:focus, select.campo-input:focus {
-      border-color: rgba(139,92,246,.6);
-    }
-    .campo-textarea { resize: vertical; min-height: 90px; }
-    select.campo-input option { background: #0f0a1e; color: #e2e8f0; }
-    /* datas */
-    input[type="date"].campo-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.5); }
-
-    .btn-publicar {
-      width: 100%; padding: .75rem;
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      border: none; border-radius: 10px;
-      color: #fff; font-size: .95rem; font-weight: 700;
-      cursor: pointer; transition: opacity .2s;
-      margin-top: .5rem;
-    }
-    .btn-publicar:hover { opacity: .88; }
-    .btn-publicar:disabled { opacity: .45; cursor: not-allowed; }
-
-    .alerta {
-      padding: .65rem .9rem; border-radius: 8px; font-size: .875rem;
-      margin-bottom: .75rem; display: none;
-    }
-    .alerta.sucesso { display: block; background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3); color: #4ade80; }
-    .alerta.erro    { display: block; background: rgba(239,68,68,.15);  border: 1px solid rgba(239,68,68,.3);  color: #f87171; }
-
-    /* LISTA DE ITENS EXISTENTES */
-    .secao-lista { margin-top: 2rem; }
-    .secao-lista-titulo {
-      font-size: .8rem; font-weight: 700; color: #64748b;
-      text-transform: uppercase; letter-spacing: .07em;
-      margin-bottom: .75rem; padding-bottom: .4rem;
-      border-bottom: 1px solid rgba(139,92,246,.15);
-    }
-    .lista-vazia { color: #64748b; font-size: .875rem; text-align: center; padding: 1rem; }
-
-    .item-card {
-      background: rgba(139,92,246,.07);
-      border: 1px solid rgba(139,92,246,.18);
-      border-radius: 12px; padding: .85rem 1rem;
-      margin-bottom: .6rem;
-      display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem;
-    }
-    .item-info { flex: 1; min-width: 0; }
-    .item-titulo { font-weight: 700; font-size: .9rem; color: #e2e8f0; display: block; }
-    .item-desc { font-size: .8rem; color: #94a3b8; margin-top: .2rem; display: block;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .item-meta { font-size: .75rem; color: #64748b; margin-top: .3rem; display: block; }
-
-    .btn-deletar {
-      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
-      border-radius: 8px; color: #f87171; cursor: pointer;
-      padding: .35rem .6rem; font-size: .75rem; font-weight: 600;
-      flex-shrink: 0; transition: background .2s;
-    }
-    .btn-deletar:hover { background: rgba(239,68,68,.25); }
-
-    .btn-aceitar {
-      background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3);
-      border-radius: 8px; color: #4ade80; cursor: pointer;
-      padding: .35rem .6rem; font-size: .75rem; font-weight: 600;
-      flex-shrink: 0; transition: background .2s;
-    }
-    .btn-aceitar:hover { background: rgba(34,197,94,.25); }
-
-    .btn-recusar {
-      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
-      border-radius: 8px; color: #f87171; cursor: pointer;
-      padding: .35rem .6rem; font-size: .75rem; font-weight: 600;
-      flex-shrink: 0; transition: background .2s;
-    }
-    .btn-recusar:hover { background: rgba(239,68,68,.25); }
-
-    /* ACESSO NEGADO */
-    .acesso-negado {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 60vh; gap: 1rem; text-align: center; padding: 2rem;
-    }
-    .acesso-negado svg { width: 48px; height: 48px; stroke: #f87171; stroke-width: 1.5; fill: none; }
-    .acesso-negado h2 { color: #f87171; font-size: 1.2rem; }
-    .acesso-negado p { color: #94a3b8; font-size: .9rem; }
-    .btn-voltar-home {
-      margin-top: .5rem; padding: .6rem 1.5rem;
-      background: rgba(139,92,246,.2); border: 1px solid rgba(139,92,246,.35);
-      border-radius: 99px; color: #a78bfa; font-weight: 600;
-      text-decoration: none; font-size: .875rem;
-    }
-  </style>
+  <link rel="stylesheet" href="../css/adm.css"/>
   <link rel="manifest" href="../manifest.json"/>
   <meta name="theme-color" content="#7c3aed"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -166,25 +18,33 @@
 </head>
 <body>
 
-<div class="page" id="page">
+  <div class="page" id="page">
 
-  <header class="header">
-    <div class="header-esquerda">
-      <div class="logo"><img src="../assets/logo.png" alt="Logo"/></div>
-      <span class="header-titulo">Painel ADM</span>
-      <span class="badge-adm">RESTRITO</span>
+    <header class="header" id="header">
+      <div class="header-esquerda">
+        <div class="logo"><img src="../assets/logo.png" alt="Logo Inf 25B"/></div>
+        <span class="header-titulo">Painel ADM</span>
+        <span class="badge-adm">RESTRITO</span>
+      </div>
+      <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="18" y1="6"  x2="6"  y2="18"/>
+          <line x1="6"  y1="6"  x2="18" y2="18"/>
+        </svg>
+      </a>
+    </header>
+
+    <div class="header-linha-wrap" aria-hidden="true">
+      <div class="header-linha" id="headerLinha"></div>
     </div>
-    <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </a>
-  </header>
 
-  <div id="conteudoPrincipal"></div>
+    <div id="conteudoPrincipal"></div>
 
-</div>
+  </div>
 
-<script src="../js/background.js"></script>
-<script src="../js/global.js"></script>
-<script src="../js/adm.js"></script>
+  <script src="../js/background.js"></script>
+  <script src="../js/global.js"></script>
+  <script src="../js/adm.js"></script>
+
 </body>
 </html>
