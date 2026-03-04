@@ -177,11 +177,30 @@ body {
   gap: 0;
 }
 
-/* SELETORES — grid 4 colunas */
+/* SELETORES */
 .seletores {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+}
+
+/* ── 5 abas: flex com scroll horizontal no mobile ── */
+.seletores-5 {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.seletores-5::-webkit-scrollbar { display: none; }
+
+.seletores-5 .seletor-btn {
+  flex: 0 0 calc(20% - 8px);   /* 5 colunas em desktop */
+  scroll-snap-align: start;
+  min-width: 72px;
 }
 
 .seletor-btn {
@@ -481,8 +500,12 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
 .btn-voltar-home:hover { background: rgba(124,58,237,.24); }
 
 @media (max-width: 540px) {
-  .seletores { grid-template-columns: repeat(2, 1fr); }
-  .seta-flutuante { width: calc(50% - 5px); }
+  /* grid de 4 abas vira 2 colunas */
+  .seletores:not(.seletores-5) { grid-template-columns: repeat(2, 1fr); }
+  .seletores:not(.seletores-5) ~ .seta-wrap .seta-flutuante { width: calc(50% - 5px); }
+
+  /* 5 abas: botões menores no mobile */
+  .seletores-5 .seletor-btn { flex: 0 0 calc(33% - 7px); }
 }
 
 @media (max-width: 480px) {
@@ -491,6 +514,8 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   .badge-adm     { display: none; }
   .main          { padding: 14px 13px 60px; }
 }
+
+/* STATS BAR */
 .stats-bar {
   display: flex;
   gap: 1.5rem;

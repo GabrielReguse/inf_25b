@@ -42,9 +42,9 @@ function iniciarHeartbeat() {
 async function carregarStats() {
   try {
     const dados = await (await fetch(`${API}/admin/stats`)).json();
-    const el = document.getElementById('statsBar');
-    if (!el) return;
-    el.innerHTML = `
+    const bar = document.getElementById('statsBar');
+    if (!bar) return;
+    bar.innerHTML = `
       <div class="stat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span><strong>${dados.totalUsuarios}</strong> usuários</span>
@@ -57,13 +57,13 @@ async function carregarStats() {
 }
 
 function renderPainel() {
-  // grid de 5 colunas para as abas
   el.innerHTML = `
     <main class="main">
       <div class="stats-bar" id="statsBar">
         <span style="opacity:.5;font-size:.8rem">Carregando...</span>
       </div>
-      <div class="seletores" style="grid-template-columns:repeat(5,1fr)">
+
+      <div class="seletores seletores-5">
         ${ABAS.map((a, i) => `
           <button class="seletor-btn${i === 0 ? ' ativo' : ''}" data-idx="${i}" type="button">
             <div class="seletor-icone">${a.icone}</div>
@@ -71,11 +71,13 @@ function renderPainel() {
           </button>
         `).join('')}
       </div>
+
       <div class="seta-wrap">
-        <div class="seta-flutuante" id="setaFlutuante" style="width:calc(20% - 8px)">
+        <div class="seta-flutuante" id="setaFlutuante">
           <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
+
       <div class="conteudo">
         ${ABAS.map((a, i) => `<div class="painel${i === 0 ? ' ativo' : ''}" id="painel${a.id}"></div>`).join('')}
       </div>
@@ -352,7 +354,7 @@ async function criarFeriado() {
     const res = await fetch(`${API}/feriados`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, data, criadoPor: usuario.id }) });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
-    alerta.textContent = 'Feriado adicionado ao calendário!'; alerta.className = 'alerta sucesso';
+    alerta.textContent = 'Feriado adicionado!'; alerta.className = 'alerta sucesso';
     document.getElementById('feriadoTitulo').value = '';
     document.getElementById('feriadoDesc').value = '';
     document.getElementById('feriadoData').value = '';
