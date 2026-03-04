@@ -1,3 +1,17 @@
+// ─── Device ID — gerado na primeira visita ────────────────────
+const deviceId = localStorage.getItem('deviceId') || (() => {
+  const id = crypto.randomUUID();
+  localStorage.setItem('deviceId', id);
+  return id;
+})();
+
+// Registra visita imediatamente (antes de qualquer login)
+fetch("https://inf-25b-backend.onrender.com/visita", {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ deviceId })
+}).catch(() => {});
+
 // emails permitidos → adicionar todos os alunos aqui
 const emailsPermitidos = new Set([
     // alunos
@@ -154,12 +168,13 @@ elForm.addEventListener('submit', async e => {
         const role = emailsAdm.has(email) ? 'admin' : 'aluno';
 
         try {
-            const modelo = await pegarModelo(); // ← pega modelo do dispositivo
+            const modelo = await pegarModelo();
             const resposta = await fetch("https://inf-25b-backend.onrender.com/cadastro", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-device-model": modelo  // ← envia modelo no header
+                    "x-device-model": modelo,
+                    "x-device-id": deviceId  // ← envia deviceId
                 },
                 body: JSON.stringify({ nome, email, senha, role })
             });
@@ -195,12 +210,13 @@ elForm.addEventListener('submit', async e => {
         }
 
         try {
-            const modelo = await pegarModelo(); // ← pega modelo do dispositivo
+            const modelo = await pegarModelo();
             const resposta = await fetch("https://inf-25b-backend.onrender.com/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-device-model": modelo  // ← envia modelo no header
+                    "x-device-model": modelo,
+                    "x-device-id": deviceId  // ← envia deviceId
                 },
                 body: JSON.stringify({ email, senha })
             });
