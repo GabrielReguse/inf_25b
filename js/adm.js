@@ -405,7 +405,7 @@ async function carregarSugestoes() {
         <div class="item-card" id="sug-${s._id}">
           <div class="item-info">
             <span class="item-titulo">${s.autor?.nome || 'Aluno'}</span>
-            <span class="item-desc">${s.texto}</span>
+            <span class="item-desc" style="white-space:normal;overflow:visible;text-overflow:unset">${s.texto}</span>
             <span class="item-meta">${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
           </div>
           <div style="display:flex;gap:.4rem;flex-shrink:0">${btnAceitar}${btnRecusar}</div>

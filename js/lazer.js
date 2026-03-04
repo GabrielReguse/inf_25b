@@ -1,25 +1,4 @@
-/* dados - em produção viriam do backend
-   sugestoes.js publica aqui via sessionStorage['lazer_pendentes']
-   ADMs aprovam e movem para os arrays abaixo                        */
-const sss = 0;
-let encontros = [];
-let posts = [];
-
-// carrega sugestões aprovadas do sessionStorage (integração com sugestoes.js)
-function carregarSugestoes() {
-    try {
-        const pendentes = JSON.parse(sessionStorage.getItem('lazer_pendentes') || '[]');
-        pendentes.forEach(s => {
-            if (s.tipo === 'encontro') {
-                encontros.push({ id: 'e' + Date.now(), titulo: s.titulo, descricao: s.descricao, confirmados: [] });
-            } else if (s.tipo === 'instagram') {
-                posts.push({ id: 'p' + Date.now(), titulo: s.titulo, descricao: s.descricao, link: '', votos: { legal: 0, nao: 0 } });
-            }
-        });
-        // limpa após carregar
-        sessionStorage.removeItem('lazer_pendentes');
-    } catch (_) { }
-}
+const API = "https://inf-25b-backend.onrender.com";
 
 const usuario = (() => {
   try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); }
@@ -27,12 +6,15 @@ const usuario = (() => {
 })();
 const meuNome = usuario.nome || usuario.email || 'Você';
 
+let encontros = [];
+let posts = [];
+
 // votos do instagram persistidos por sessão
 let meusVotos = {};
 try { meusVotos = JSON.parse(sessionStorage.getItem('meusVotos') || '{}'); } catch (_) { }
 
 function salvarVotos() {
-    sessionStorage.setItem('meusVotos', JSON.stringify(meusVotos));
+  sessionStorage.setItem('meusVotos', JSON.stringify(meusVotos));
 }
 
 let abaAtiva = 'encontros';
@@ -44,121 +26,140 @@ const elPainelEnc = document.getElementById('painelEncontros');
 const elPainelInst = document.getElementById('painelInstagram');
 
 function posicionarSeta(aba) {
-    const btn = aba === 'encontros' ? elAbaEncontros : elAbaInstagram;
-    const wrap = document.getElementById('abaSetaWrap');
-    const rect = btn.getBoundingClientRect();
-    const wrapRect = wrap.getBoundingClientRect();
-    elSeta.style.left = (rect.left - wrapRect.left + rect.width / 2) + 'px';
+  const btn = aba === 'encontros' ? elAbaEncontros : elAbaInstagram;
+  const wrap = document.getElementById('abaSetaWrap');
+  const rect = btn.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  elSeta.style.left = (rect.left - wrapRect.left + rect.width / 2) + 'px';
 }
 
 function trocarAba(aba) {
-    abaAtiva = aba;
-
-    elAbaEncontros.classList.toggle('ativa', aba === 'encontros');
-    elAbaInstagram.classList.toggle('ativa', aba === 'instagram');
-    elPainelEnc.classList.toggle('ativo', aba === 'encontros');
-    elPainelInst.classList.toggle('ativo', aba === 'instagram');
-
-    posicionarSeta(aba);
-
-    if (aba === 'encontros') renderEncontros();
-    else renderInstagram();
+  abaAtiva = aba;
+  elAbaEncontros.classList.toggle('ativa', aba === 'encontros');
+  elAbaInstagram.classList.toggle('ativa', aba === 'instagram');
+  elPainelEnc.classList.toggle('ativo', aba === 'encontros');
+  elPainelInst.classList.toggle('ativo', aba === 'instagram');
+  posicionarSeta(aba);
+  if (aba === 'encontros') renderEncontros();
+  else renderInstagram();
 }
 
 elAbaEncontros.addEventListener('click', () => trocarAba('encontros'));
 elAbaInstagram.addEventListener('click', () => trocarAba('instagram'));
 window.addEventListener('resize', () => posicionarSeta(abaAtiva));
 
+// ─── CARREGA SUGESTÕES ACEITAS DO BACKEND ────────────────────
+async function carregarSugestoes() {
+  try {
+    elPainelEnc.innerHTML = '<div class="vazio-msg">Carregando...</div>';
+    const todas = await (await fetch(`${API}/sugestoes`)).json();
+    const aceitas = todas.filter(s => s.status === 'aceita');
+
+    encontros = [];
+    posts = [];
+
+    aceitas.forEach(s => {
+      const texto = s.texto || '';
+      // tenta identificar o tipo pela palavra-chave no texto
+      if (texto.toLowerCase().includes('instagram') || texto.toLowerCase().includes('post')) {
+        posts.push({
+          id: s._id,
+          titulo: s.autor?.nome || 'Sugestão',
+          descricao: texto,
+          link: '',
+          votos: { legal: 0, nao: 0 }
+        });
+      } else {
+        encontros.push({
+          id: s._id,
+          titulo: s.autor?.nome || 'Encontro',
+          descricao: texto,
+          confirmados: []
+        });
+      }
+    });
+
+    trocarAba('encontros');
+  } catch (err) {
+    console.error(err);
+    elPainelEnc.innerHTML = '<div class="vazio-msg">Erro ao carregar sugestões.</div>';
+  }
+}
+
 // ENCONTROS
 function renderEncontros() {
-    const el = elPainelEnc;
-    el.innerHTML = '';
+  const el = elPainelEnc;
+  el.innerHTML = '';
 
-    if (!encontros.length) {
-        el.innerHTML = '<div class="vazio-msg">Nenhum encontro por enquanto.<br>Use a aba de Sugestões para propor um!</div>';
-        renderDots(el, 0, 0);
-        return;
-    }
+  if (!encontros.length) {
+    el.innerHTML = '<div class="vazio-msg">Nenhum encontro por enquanto.<br>Use a aba de Sugestões para propor um!</div>';
+    return;
+  }
 
-    encontros.forEach(ev => {
-        const euConfirmei = ev.confirmados.some(p => (p.nome||p) === meuNome);
-        const ultimos3 = ev.confirmados.slice(-3);
+  encontros.forEach(ev => {
+    const euConfirmei = ev.confirmados.some(p => (p.nome || p) === meuNome);
+    const ultimos3 = ev.confirmados.slice(-3);
 
-        const card = document.createElement('div');
-        card.className = 'item-card';
-        card.id = `enc-${ev.id}`;
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.id = `enc-${ev.id}`;
 
-        card.innerHTML = `
+    card.innerHTML = `
       <span class="item-titulo">${ev.titulo}</span>
       <span class="item-desc">${ev.descricao}</span>
       <div class="presenca-avatares" id="avatares-${ev.id}">
-        ${ultimos3.map(p => avatarMini(p.nome||p, p.foto||null)).join('')}
+        ${ultimos3.map(p => avatarMini(p.nome || p, p.foto || null)).join('')}
         ${ev.confirmados.length > 0
-                ? `<span class="presenca-count">${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}</span>`
-                : ''}
+          ? `<span class="presenca-count">${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}</span>`
+          : ''}
       </div>
       <button class="btn-participar${euConfirmei ? ' saindo' : ''}" id="btn-enc-${ev.id}">
         ${euConfirmei ? 'Quero Sair' : 'Irei Participar'}
-      </button>
-    `;
+      </button>`;
 
-        card.querySelector(`#btn-enc-${ev.id}`).addEventListener('click', () => {
-            togglePresenca(ev.id);
-        });
-
-        el.appendChild(card);
-    });
-
-    renderDots(el, encontros.length, 0);
+    card.querySelector(`#btn-enc-${ev.id}`).addEventListener('click', () => togglePresenca(ev.id));
+    el.appendChild(card);
+  });
 }
 
 function togglePresenca(id) {
-    const ev = encontros.find(e => e.id === id);
-    if (!ev) return;
-
-    const idx = ev.confirmados.findIndex(p => (p.nome||p) === meuNome);
-    if (idx >= 0) {
-        ev.confirmados.splice(idx, 1);
-    } else {
-        ev.confirmados.push({ nome: meuNome, foto: usuario.fotoPerfil||null });
-    }
-    renderEncontros();
+  const ev = encontros.find(e => e.id === id);
+  if (!ev) return;
+  const idx = ev.confirmados.findIndex(p => (p.nome || p) === meuNome);
+  if (idx >= 0) ev.confirmados.splice(idx, 1);
+  else ev.confirmados.push({ nome: meuNome, foto: usuario.fotoPerfil || null });
+  renderEncontros();
 }
 
 function avatarMini(nome, foto) {
-    const iniciais = (nome||'?').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
-    if (foto) return '<div class="avatar-mini" title="'+nome+'" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid rgba(139,92,246,.4)"><img src="'+foto+'" style="width:100%;height:100%;object-fit:cover"/></div>';
-    return '<div class="avatar-mini" title="'+nome+'" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">'+iniciais+'</div>';
+  const iniciais = (nome || '?').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  if (foto) return `<div class="avatar-mini" title="${nome}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid rgba(139,92,246,.4)"><img src="${foto}" style="width:100%;height:100%;object-fit:cover"/></div>`;
+  return `<div class="avatar-mini" title="${nome}" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff">${iniciais}</div>`;
 }
 
 // INSTAGRAM
 function renderInstagram() {
-    const el = elPainelInst;
-    el.innerHTML = '';
+  const el = elPainelInst;
+  el.innerHTML = '';
 
-    if (!posts.length) {
-        el.innerHTML = '<div class="vazio-msg">Nenhuma ideia de post ainda.<br>Sugira uma na aba de Sugestões!</div>';
-        renderDots(el, 0, 0);
-        return;
-    }
+  if (!posts.length) {
+    el.innerHTML = '<div class="vazio-msg">Nenhuma ideia de post ainda.<br>Sugira uma na aba de Sugestões!</div>';
+    return;
+  }
 
-    posts.forEach(post => {
-        const meuVoto = meusVotos[post.id] || null;
-        const totalVotos = post.votos.legal + post.votos.nao;
-        const pctLegal = totalVotos ? Math.round(post.votos.legal / totalVotos * 100) : 50;
-        const pctNao = totalVotos ? 100 - pctLegal : 50;
+  posts.forEach(post => {
+    const meuVoto = meusVotos[post.id] || null;
+    const totalVotos = post.votos.legal + post.votos.nao;
+    const pctLegal = totalVotos ? Math.round(post.votos.legal / totalVotos * 100) : 50;
+    const pctNao = totalVotos ? 100 - pctLegal : 50;
 
-        const card = document.createElement('div');
-        card.className = 'item-card';
+    const card = document.createElement('div');
+    card.className = 'item-card';
 
-        card.innerHTML = `
+    card.innerHTML = `
       <span class="item-titulo">${post.titulo}</span>
       <span class="item-desc">${post.descricao}</span>
-      ${post.link ? `
-        <a class="item-link" href="${post.link}" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Ver publicação
-        </a>` : ''}
+      ${post.link ? `<a class="item-link" href="${post.link}" target="_blank" rel="noopener">Ver publicação</a>` : ''}
       <div class="votos-wrap">
         <div class="votos-barra-wrap">
           <div class="votos-barra-legal" id="barra-legal-${post.id}" style="width:${pctLegal}%"></div>
@@ -172,56 +173,33 @@ function renderInstagram() {
       <div class="votos-btns">
         <button class="btn-voto${meuVoto === 'legal' ? ' ativo-legal' : ''}" id="btn-legal-${post.id}">👍 Acho Legal</button>
         <button class="btn-voto${meuVoto === 'nao' ? ' ativo-nao' : ''}" id="btn-nao-${post.id}">🤷 Não Sei Não</button>
-      </div>
-    `;
+      </div>`;
 
-        card.querySelector(`#btn-legal-${post.id}`).addEventListener('click', () => votar(post.id, 'legal'));
-        card.querySelector(`#btn-nao-${post.id}`).addEventListener('click', () => votar(post.id, 'nao'));
-
-        el.appendChild(card);
-    });
-
-    renderDots(el, posts.length, 0);
+    card.querySelector(`#btn-legal-${post.id}`).addEventListener('click', () => votar(post.id, 'legal'));
+    card.querySelector(`#btn-nao-${post.id}`).addEventListener('click', () => votar(post.id, 'nao'));
+    el.appendChild(card);
+  });
 }
 
 function votar(id, tipo) {
-    const post = posts.find(p => p.id === id);
-    if (!post) return;
+  const post = posts.find(p => p.id === id);
+  if (!post) return;
+  const anterior = meusVotos[id];
+  if (anterior === tipo) return;
+  if (anterior) post.votos[anterior]--;
+  post.votos[tipo]++;
+  meusVotos[id] = tipo;
+  salvarVotos();
 
-    const anterior = meusVotos[id];
-    if (anterior === tipo) return; // já votou igual, ignora
-
-    if (anterior) post.votos[anterior]--;
-    post.votos[tipo]++;
-    meusVotos[id] = tipo;
-    salvarVotos();
-
-    const total = post.votos.legal + post.votos.nao;
-    const pctLegal = total ? Math.round(post.votos.legal / total * 100) : 50;
-    const pctNao = 100 - pctLegal;
-
-    document.getElementById(`barra-legal-${id}`).style.width = pctLegal + '%';
-    document.getElementById(`barra-nao-${id}`).style.width = pctNao + '%';
-    document.getElementById(`label-legal-${id}`).textContent = `${post.votos.legal} acharam legal`;
-    document.getElementById(`label-nao-${id}`).textContent = `${post.votos.nao} não sei não`;
-
-    document.getElementById(`btn-legal-${id}`).className = 'btn-voto' + (tipo === 'legal' ? ' ativo-legal' : '');
-    document.getElementById(`btn-nao-${id}`).className = 'btn-voto' + (tipo === 'nao' ? ' ativo-nao' : '');
-}
-
-// dots decorativos
-function renderDots(container, total, ativo) {
-    if (total <= 1) return;
-    const wrap = document.createElement('div');
-    wrap.className = 'dots-wrap';
-    for (let i = 0; i < total; i++) {
-        const d = document.createElement('div');
-        d.className = 'dot' + (i === ativo ? ' ativo' : '');
-        wrap.appendChild(d);
-    }
-    container.appendChild(wrap);
+  const total = post.votos.legal + post.votos.nao;
+  const pctLegal = total ? Math.round(post.votos.legal / total * 100) : 50;
+  document.getElementById(`barra-legal-${id}`).style.width = pctLegal + '%';
+  document.getElementById(`barra-nao-${id}`).style.width = (100 - pctLegal) + '%';
+  document.getElementById(`label-legal-${id}`).textContent = `${post.votos.legal} acharam legal`;
+  document.getElementById(`label-nao-${id}`).textContent = `${post.votos.nao} não sei não`;
+  document.getElementById(`btn-legal-${id}`).className = 'btn-voto' + (tipo === 'legal' ? ' ativo-legal' : '');
+  document.getElementById(`btn-nao-${id}`).className = 'btn-voto' + (tipo === 'nao' ? ' ativo-nao' : '');
 }
 
 // init
 carregarSugestoes();
-trocarAba('encontros');
