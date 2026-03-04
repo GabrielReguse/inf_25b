@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inf 25B — Tarefas / Provas</title>
-  <link rel="stylesheet" href="../css/backGround.css"/>
-  <link rel="stylesheet" href="../css/tarefasProvas.css"/>
-  <link rel="manifest" href="../manifest.json"/>
-  <meta name="theme-color" content="#7c3aed"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Inf 25B"/>
-  <link rel="apple-touch-icon" href="../assets/logo.png"/>
+  <link rel="stylesheet" href="../css/backGround.css" />
+  <link rel="stylesheet" href="../css/tarefasProvas.css" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Inf 25B" />
+  <link rel="apple-touch-icon" href="../assets/logo.png" />
+  <link rel="icon" type="image/png" href="../assets/icon.png" />
 </head>
+
 <body>
 
   <div class="page" id="page">
@@ -21,12 +24,12 @@
     <header class="header" id="header">
       <div class="header-esquerda">
         <div class="logo"><img src="../assets/logo.png" alt="Logo da Inf 25B"></div>
-        <span class="header-titulo">Tarefas / Provas</span>
+        <span class="header-titulo">Calendário Anual</span>
       </div>
       <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="18" y1="6"  x2="6"  y2="18"/>
-          <line x1="6"  y1="6"  x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </a>
     </header>
@@ -44,7 +47,7 @@
         <div class="cal-nav">
           <button class="cal-nav-btn" id="btnMesAnterior" aria-label="Mês anterior">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6"/>
+              <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
 
@@ -52,7 +55,7 @@
 
           <button class="cal-nav-btn" id="btnMesProximo" aria-label="Próximo mês">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6"/>
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
         </div>
@@ -81,6 +84,10 @@
             <div class="legenda-dot" style="background:var(--cor-tarefa)"></div>
             <span>Tarefa</span>
           </div>
+          <div class="legenda-item">
+            <div class="legenda-dot" style="background:var(--cor-feriado)"></div>
+            <span>Feriado</span>
+          </div>
         </div>
 
       </div>
@@ -92,8 +99,8 @@
           <span class="painel-dia-titulo" id="painelDiaTitulo"></span>
           <button class="btn-fechar-painel" id="btnFecharPainel" aria-label="Fechar">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <line x1="18" y1="6"  x2="6"  y2="18"/>
-              <line x1="6"  y1="6"  x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -110,4 +117,5 @@
   <script src="../js/tarefasProvas.js"></script>
 
 </body>
+
 </html>

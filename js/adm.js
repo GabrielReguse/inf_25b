@@ -1,5 +1,4 @@
 const API = "https://inf-25b-backend.onrender.com";
-const correcao = 1;
 
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
@@ -8,8 +7,9 @@ const MATERIAS = ['Artes','Banco de Dados','Biologia','Educação Física','Enge
 const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
 
 const ABAS = [
-  { id: 'Avisos', label: 'Avisos', icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
-  { id: 'Tarefas', label: 'Tarefas', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
+  { id: 'Avisos',    label: 'Avisos',    icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
+  { id: 'Tarefas',   label: 'Tarefas',   icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
+  { id: 'Feriados',  label: 'Feriados',  icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>` },
   { id: 'Destaques', label: 'Destaques', icone: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
   { id: 'Sugestoes', label: 'Sugestões', icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
 ];
@@ -24,12 +24,11 @@ if (!usuario.id || usuario.role !== 'admin') {
       <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
     </div>`;
-} else {
+} else { 
   renderPainel();
   iniciarHeartbeat();
-}
+ }
 
-// ─── HEARTBEAT: avisa o servidor que o admin está online ──────
 function iniciarHeartbeat() {
   const enviar = () => fetch(`${API}/admin/heartbeat`, {
     method: 'POST',
@@ -37,16 +36,15 @@ function iniciarHeartbeat() {
     body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
   }).catch(() => {});
   enviar();
-  setInterval(enviar, 60 * 1000); // a cada 1 minuto
+  setInterval(enviar, 60 * 1000);
 }
 
-// ─── STATS ────────────────────────────────────────────────────
 async function carregarStats() {
   try {
     const dados = await (await fetch(`${API}/admin/stats`)).json();
-    const el = document.getElementById('statsBar');
-    if (!el) return;
-    el.innerHTML = `
+    const bar = document.getElementById('statsBar');
+    if (!bar) return;
+    bar.innerHTML = `
       <div class="stat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span><strong>${dados.totalUsuarios}</strong> usuários</span>
@@ -64,7 +62,8 @@ function renderPainel() {
       <div class="stats-bar" id="statsBar">
         <span style="opacity:.5;font-size:.8rem">Carregando...</span>
       </div>
-      <div class="seletores">
+
+      <div class="seletores seletores-5">
         ${ABAS.map((a, i) => `
           <button class="seletor-btn${i === 0 ? ' ativo' : ''}" data-idx="${i}" type="button">
             <div class="seletor-icone">${a.icone}</div>
@@ -72,11 +71,13 @@ function renderPainel() {
           </button>
         `).join('')}
       </div>
+
       <div class="seta-wrap">
         <div class="seta-flutuante" id="setaFlutuante">
           <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
+
       <div class="conteudo">
         ${ABAS.map((a, i) => `<div class="painel${i === 0 ? ' ativo' : ''}" id="painel${a.id}"></div>`).join('')}
       </div>
@@ -88,9 +89,10 @@ function renderPainel() {
 
   posicionarSeta(0);
   carregarStats();
-  setInterval(carregarStats, 30 * 1000); // atualiza a cada 30s
+  setInterval(carregarStats, 30 * 1000);
   renderAvisos();
   renderTarefas();
+  renderFeriados();
   renderDestaques();
   renderSugestoes();
 }
@@ -283,7 +285,7 @@ async function criarTarefa() {
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
     alerta.textContent = 'Adicionado ao calendário!'; alerta.className = 'alerta sucesso';
-    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
     document.getElementById('camposProva').style.display = 'none';
     document.getElementById('camposTarefa').style.display = 'none';
     document.getElementById('campoGrupoNum').style.display = 'none';
@@ -310,6 +312,82 @@ async function deletarTarefa(id) {
   if (!confirm('Remover esta tarefa?')) return;
   await fetch(`${API}/tarefas/${id}`, { method: 'DELETE' });
   carregarTarefas();
+}
+
+// ─── FERIADOS ────────────────────────────────────────────────
+async function renderFeriados() {
+  const painel = document.getElementById('painelFeriados');
+  painel.innerHTML = `
+    <p class="form-titulo">Adicionar feriado ou dia especial</p>
+    <div id="alertaFeriado" class="alerta"></div>
+    <div class="campo-grupo">
+      <label class="campo-label">Título do feriado</label>
+      <input class="campo-input" id="feriadoTitulo" placeholder="Ex: Feriado de Tiradentes"/>
+    </div>
+    <div class="campo-grupo">
+      <label class="campo-label">Descrição</label>
+      <textarea class="campo-textarea" id="feriadoDesc" placeholder="Informações sobre o dia..."></textarea>
+    </div>
+    <div class="campo-grupo">
+      <label class="campo-label">Data</label>
+      <input class="campo-input" type="date" id="feriadoData"/>
+    </div>
+    <button class="btn-publicar" id="btnCriarFeriado">Adicionar ao calendário</button>
+    <div class="secao-lista">
+      <div class="secao-lista-titulo">Feriados cadastrados</div>
+      <div id="listaFeriados"><p class="lista-vazia">Carregando...</p></div>
+    </div>`;
+  document.getElementById('btnCriarFeriado').addEventListener('click', criarFeriado);
+  carregarFeriados();
+}
+
+async function criarFeriado() {
+  const titulo = document.getElementById('feriadoTitulo').value.trim();
+  const descricao = document.getElementById('feriadoDesc').value.trim();
+  const data = document.getElementById('feriadoData').value;
+  const alerta = document.getElementById('alertaFeriado');
+  const btn = document.getElementById('btnCriarFeriado');
+  alerta.className = 'alerta';
+  if (!titulo || !data) { alerta.textContent = 'Preencha título e data.'; alerta.className = 'alerta erro'; return; }
+  btn.disabled = true; btn.textContent = 'Adicionando...';
+  try {
+    const res = await fetch(`${API}/feriados`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, data, criadoPor: usuario.id }) });
+    const dados = await res.json();
+    if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
+    alerta.textContent = 'Feriado adicionado!'; alerta.className = 'alerta sucesso';
+    document.getElementById('feriadoTitulo').value = '';
+    document.getElementById('feriadoDesc').value = '';
+    document.getElementById('feriadoData').value = '';
+    carregarFeriados();
+  } catch (err) { alerta.textContent = err.message; alerta.className = 'alerta erro'; }
+  finally { btn.disabled = false; btn.textContent = 'Adicionar ao calendário'; }
+}
+
+async function carregarFeriados() {
+  const lista = document.getElementById('listaFeriados');
+  if (!lista) return;
+  try {
+    const feriados = await (await fetch(`${API}/feriados`)).json();
+    if (!feriados.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum feriado cadastrado.</p>'; return; }
+    lista.innerHTML = feriados.map(f => {
+      const data = new Date(f.data).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      return `
+        <div class="item-card">
+          <div class="item-info">
+            <span class="item-titulo">🟢 ${f.titulo}</span>
+            <span class="item-desc">${f.descricao || 'Sem descrição.'}</span>
+            <span class="item-meta">📅 ${data}</span>
+          </div>
+          <button class="btn-deletar" onclick="deletarFeriado('${f._id}')">Remover</button>
+        </div>`;
+    }).join('');
+  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
+}
+
+async function deletarFeriado(id) {
+  if (!confirm('Remover este feriado?')) return;
+  await fetch(`${API}/feriados/${id}`, { method: 'DELETE' });
+  carregarFeriados();
 }
 
 // ─── DESTAQUES ────────────────────────────────────────────────

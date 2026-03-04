@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inf 25B — Perfil</title>
-  <link rel="stylesheet" href="../css/backGround.css"/>
-  <link rel="stylesheet" href="../css/perfil.css"/>
-  <link rel="manifest" href="../manifest.json"/>
-  <meta name="theme-color" content="#7c3aed"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Inf 25B"/>
-  <link rel="apple-touch-icon" href="../assets/logo.png"/>
+  <link rel="stylesheet" href="../css/backGround.css" />
+  <link rel="stylesheet" href="../css/perfil.css" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Inf 25B" />
+  <link rel="apple-touch-icon" href="../assets/logo.png" />
+  <link rel="icon" type="image/png" href="../assets/icon.png" />
 </head>
+
 <body>
 
   <div class="page" id="page">
@@ -25,8 +28,8 @@
       </div>
       <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6"  y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </a>
     </header>
@@ -43,8 +46,8 @@
         <!-- botão lápis -->
         <button class="btn-editar" id="btnEditar" aria-label="Editar perfil">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
         </button>
 
@@ -52,46 +55,35 @@
         <div class="foto-wrap">
           <div class="foto-avatar">
             <!-- trocar src e remover display:none quando tiver foto -->
-            <img id="fotoImg" src="" alt="Foto de perfil" style="display:none"/>
+            <img id="fotoImg" src="" alt="Foto de perfil" style="display:none" />
             <svg id="fotoIcone" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
           <!-- visível apenas em modo edição -->
           <div class="foto-trocar" role="button" aria-label="Trocar foto">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-              <circle cx="12" cy="13" r="4"/>
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
             </svg>
           </div>
         </div>
 
-        <input type="file" id="inputFoto" accept="image/*" aria-hidden="true"/>
+        <input type="file" id="inputFoto" accept="image/*" aria-hidden="true" />
 
         <!-- nome -->
-        <div
-          class="perfil-nome"
-          id="perfilNome"
-          contenteditable="false"
-          role="textbox"
-          aria-label="Nome completo"
-        >Nome Completo</div>
+        <div class="perfil-nome" id="perfilNome" contenteditable="false" role="textbox" aria-label="Nome completo">Nome
+          Completo</div>
 
         <!-- descrição -->
-        <textarea
-          class="perfil-desc"
-          id="perfilDesc"
-          readonly
-          placeholder="Escreva algo sobre você..."
-          aria-label="Descrição"
-          rows="4"
-        ></textarea>
+        <textarea class="perfil-desc" id="perfilDesc" readonly placeholder="Escreva algo sobre você..."
+          aria-label="Descrição" rows="4"></textarea>
 
         <!-- ações salvar/cancelar (visíveis só em edição) -->
         <div class="editar-acoes">
           <button class="btn-cancelar" id="btnCancelar">Cancelar</button>
-          <button class="btn-salvar"   id="btnSalvar">Salvar</button>
+          <button class="btn-salvar" id="btnSalvar">Salvar</button>
         </div>
 
       </div>
@@ -103,10 +95,9 @@
             <span class="bloco-dot" aria-hidden="true"></span>
             Status das Sugestões
           </div>
-          <button class="btn-expandir" id="btnSugestoes"
-            aria-expanded="false" aria-controls="listaSugestoes">
+          <button class="btn-expandir" id="btnSugestoes" aria-expanded="false" aria-controls="listaSugestoes">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"/>
+              <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
         </div>
@@ -114,21 +105,10 @@
         <div class="sugestoes-lista" id="listaSugestoes">
           <div class="bloco-vazio">
             <svg viewBox="0 0 24 24">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             <span>Você ainda não fez nenhuma sugestão.</span>
           </div>
-          <!--
-            modelo item:
-            <div class="sugestao-item">
-              <div class="sugestao-texto">
-                <div class="sugestao-titulo">Título</div>
-                <div class="sugestao-desc">Descrição breve da sugestão.</div>
-              </div>
-              <span class="status-badge status-aprovado">Aprovado ✓</span>
-              status-aprovado / status-aguardo / status-recusado
-            </div>
-          -->
         </div>
       </section>
 
@@ -140,4 +120,5 @@
   <script src="../js/perfil.js"></script>
 
 </body>
+
 </html>
