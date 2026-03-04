@@ -491,3 +491,41 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   .badge-adm     { display: none; }
   .main          { padding: 14px 13px 60px; }
 }
+.stats-bar {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding: .75rem 1rem;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: .75rem;
+  margin-bottom: 1rem;
+  font-size: .9rem;
+  color: #e2e8f0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.stat-item svg {
+  width: 1rem;
+  height: 1rem;
+  stroke: #a78bfa;
+}
+
+.dot-online {
+  width: .6rem;
+  height: .6rem;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  animation: pulsar 1.5s infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}

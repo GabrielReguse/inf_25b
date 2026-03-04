@@ -7,33 +7,16 @@ const el = document.getElementById('conteudoPrincipal');
 const MATERIAS = ['Artes','Banco de Dados','Biologia','Educação Física','Engenharia de Software','Filosofia','Física','Geografia','História','Língua Inglesa','Língua Portuguesa','Matemática','Programação 1','Projeto Integrador 2','Química','Redação','Redes','Sociologia'];
 const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
 
-// VISUAL DAS ABAS
 const ABAS = [
-  {
-    id: 'Avisos',
-    label: 'Avisos',
-    icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
-  },
-  {
-    id: 'Tarefas',
-    label: 'Tarefas',
-    icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>`,
-  },
-  {
-    id: 'Destaques',
-    label: 'Destaques',
-    icone: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-  },
-  {
-    id: 'Sugestoes',
-    label: 'Sugestões',
-    icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  },
+  { id: 'Avisos', label: 'Avisos', icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
+  { id: 'Tarefas', label: 'Tarefas', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
+  { id: 'Destaques', label: 'Destaques', icone: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+  { id: 'Sugestoes', label: 'Sugestões', icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
 ];
 
 let abaAtiva = 0;
 
- if (!usuario.id || usuario.role !== 'admin') {
+if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -43,11 +26,44 @@ let abaAtiva = 0;
     </div>`;
 } else {
   renderPainel();
+  iniciarHeartbeat();
+}
+
+// ─── HEARTBEAT: avisa o servidor que o admin está online ──────
+function iniciarHeartbeat() {
+  const enviar = () => fetch(`${API}/admin/heartbeat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
+  }).catch(() => {});
+  enviar();
+  setInterval(enviar, 60 * 1000); // a cada 1 minuto
+}
+
+// ─── STATS ────────────────────────────────────────────────────
+async function carregarStats() {
+  try {
+    const dados = await (await fetch(`${API}/admin/stats`)).json();
+    const el = document.getElementById('statsBar');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="stat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span><strong>${dados.totalUsuarios}</strong> usuários</span>
+      </div>
+      <div class="stat-item">
+        <span class="dot-online"></span>
+        <span><strong>${dados.online}</strong> online agora</span>
+      </div>`;
+  } catch {}
 }
 
 function renderPainel() {
   el.innerHTML = `
     <main class="main">
+      <div class="stats-bar" id="statsBar">
+        <span style="opacity:.5;font-size:.8rem">Carregando...</span>
+      </div>
       <div class="seletores">
         ${ABAS.map((a, i) => `
           <button class="seletor-btn${i === 0 ? ' ativo' : ''}" data-idx="${i}" type="button">
@@ -71,6 +87,8 @@ function renderPainel() {
   });
 
   posicionarSeta(0);
+  carregarStats();
+  setInterval(carregarStats, 30 * 1000); // atualiza a cada 30s
   renderAvisos();
   renderTarefas();
   renderDestaques();
@@ -90,7 +108,7 @@ function posicionarSeta(idx) {
   const btns = document.querySelectorAll('.seletor-btn');
   if (!btns[idx]) return;
   const gradeRect = btns[0].closest('.seletores').getBoundingClientRect();
-  const btnRect   = btns[idx].getBoundingClientRect();
+  const btnRect = btns[idx].getBoundingClientRect();
   seta.style.left = (btnRect.left - gradeRect.left + btnRect.width / 2 - seta.offsetWidth / 2) + 'px';
 }
 
@@ -163,13 +181,12 @@ async function deletarAviso(id) {
   carregarAvisos();
 }
 
-// ─── TAREFAS (formulário completo) ────────────────────────────
+// ─── TAREFAS ─────────────────────────────────────────────────
 async function renderTarefas() {
   const painel = document.getElementById('painelTarefas');
   painel.innerHTML = `
     <p class="form-titulo">Adicionar tarefa ou prova</p>
     <div id="alertaTarefa" class="alerta"></div>
-
     <div class="campo-grupo">
       <label class="campo-label">Matéria</label>
       <select class="campo-input" id="tarefaMateria">
@@ -177,7 +194,6 @@ async function renderTarefas() {
         ${MATERIAS.map(m => `<option value="${m}">${m}</option>`).join('')}
       </select>
     </div>
-
     <div class="campo-grupo">
       <label class="campo-label">Tipo</label>
       <select class="campo-input" id="tarefaTipo">
@@ -186,17 +202,14 @@ async function renderTarefas() {
         <option value="tarefa">Tarefa</option>
       </select>
     </div>
-
     <div class="campo-grupo">
       <label class="campo-label">Conteúdo</label>
       <input class="campo-input" id="tarefaConteudo" placeholder="Ex: Trigonometria, Revolução Francesa..."/>
     </div>
-
     <div class="campo-grupo">
       <label class="campo-label">Descrição / Resumo</label>
       <textarea class="campo-textarea" id="tarefaDesc" placeholder="Detalhes extras..."></textarea>
     </div>
-
     <div id="camposProva" style="display:none">
       <div class="campo-grupo">
         <label class="campo-label">Consulta?</label>
@@ -206,7 +219,6 @@ async function renderTarefas() {
         </select>
       </div>
     </div>
-
     <div id="camposTarefa" style="display:none">
       <div class="campo-grupo">
         <label class="campo-label">Tipo de entrega</label>
@@ -216,7 +228,6 @@ async function renderTarefas() {
         </select>
       </div>
     </div>
-
     <div class="campo-grupo">
       <label class="campo-label">Grupo?</label>
       <select class="campo-input" id="tarefaGrupo">
@@ -224,76 +235,55 @@ async function renderTarefas() {
         <option value="sim">Sim (em grupo)</option>
       </select>
     </div>
-
     <div id="campoGrupoNum" style="display:none">
       <div class="campo-grupo">
         <label class="campo-label">Número de membros por grupo</label>
         <input class="campo-input" type="number" id="tarefaNumMembros" min="2" max="10" placeholder="Ex: 4"/>
       </div>
     </div>
-
     <div class="campo-grupo">
       <label class="campo-label">Data de entrega / realização</label>
       <input class="campo-input" type="date" id="tarefaData"/>
     </div>
-
     <button class="btn-publicar" id="btnCriarTarefa">Adicionar ao calendário</button>
-
     <div class="secao-lista">
       <div class="secao-lista-titulo">Tarefas cadastradas</div>
       <div id="listaTarefas"><p class="lista-vazia">Carregando...</p></div>
     </div>`;
 
   document.getElementById('tarefaData').min = new Date().toISOString().slice(0, 10);
-
-  // mostra/esconde campos conforme tipo
   document.getElementById('tarefaTipo').addEventListener('change', e => {
     document.getElementById('camposProva').style.display = e.target.value === 'prova' ? '' : 'none';
     document.getElementById('camposTarefa').style.display = e.target.value === 'tarefa' ? '' : 'none';
   });
-
-  // mostra campo de número de membros
   document.getElementById('tarefaGrupo').addEventListener('change', e => {
     document.getElementById('campoGrupoNum').style.display = e.target.value === 'sim' ? '' : 'none';
   });
-
   document.getElementById('btnCriarTarefa').addEventListener('click', criarTarefa);
   carregarTarefas();
 }
 
 async function criarTarefa() {
-  const materia    = document.getElementById('tarefaMateria').value;
-  const tipo       = document.getElementById('tarefaTipo').value;
-  const conteudo   = document.getElementById('tarefaConteudo').value.trim();
-  const descricao  = document.getElementById('tarefaDesc').value.trim();
-  const consulta   = document.getElementById('tarefaConsulta')?.value === 'sim';
+  const materia = document.getElementById('tarefaMateria').value;
+  const tipo = document.getElementById('tarefaTipo').value;
+  const conteudo = document.getElementById('tarefaConteudo').value.trim();
+  const descricao = document.getElementById('tarefaDesc').value.trim();
+  const consulta = document.getElementById('tarefaConsulta')?.value === 'sim';
   const tipoEntrega = document.getElementById('tarefaEntrega')?.value || '';
-  const grupo      = document.getElementById('tarefaGrupo').value === 'sim';
+  const grupo = document.getElementById('tarefaGrupo').value === 'sim';
   const numMembros = parseInt(document.getElementById('tarefaNumMembros')?.value || '0');
   const dataEntrega = document.getElementById('tarefaData').value;
-  const alerta     = document.getElementById('alertaTarefa');
-  const btn        = document.getElementById('btnCriarTarefa');
-
+  const alerta = document.getElementById('alertaTarefa');
+  const btn = document.getElementById('btnCriarTarefa');
   alerta.className = 'alerta';
-  if (!materia || !tipo || !conteudo || !dataEntrega) {
-    alerta.textContent = 'Preencha matéria, tipo, conteúdo e data.';
-    alerta.className = 'alerta erro'; return;
-  }
-
+  if (!materia || !tipo || !conteudo || !dataEntrega) { alerta.textContent = 'Preencha matéria, tipo, conteúdo e data.'; alerta.className = 'alerta erro'; return; }
   btn.disabled = true; btn.textContent = 'Adicionando...';
   try {
-    const res = await fetch(`${API}/tarefas`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ materia, tipo, conteudo, descricao, consulta, tipoEntrega, grupo, numMembros, dataEntrega, criadoPor: usuario.id })
-    });
+    const res = await fetch(`${API}/tarefas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ materia, tipo, conteudo, descricao, consulta, tipoEntrega, grupo, numMembros, dataEntrega, criadoPor: usuario.id }) });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
     alerta.textContent = 'Adicionado ao calendário!'; alerta.className = 'alerta sucesso';
-    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
+    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('camposProva').style.display = 'none';
     document.getElementById('camposTarefa').style.display = 'none';
     document.getElementById('campoGrupoNum').style.display = 'none';
@@ -311,15 +301,7 @@ async function carregarTarefas() {
     lista.innerHTML = tarefas.map(t => {
       const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
       const tipo = t.tipo === 'prova' ? '📝 Prova' : '📋 Tarefa';
-      return `
-        <div class="item-card">
-          <div class="item-info">
-            <span class="item-titulo">${tipo}: ${t.materia || t.titulo}</span>
-            <span class="item-desc">${t.conteudo || t.descricao}</span>
-            <span class="item-meta">📅 ${data}</span>
-          </div>
-          <button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button>
-        </div>`;
+      return `<div class="item-card"><div class="item-info"><span class="item-titulo">${tipo}: ${t.materia || t.titulo}</span><span class="item-desc">${t.conteudo || t.descricao}</span><span class="item-meta">📅 ${data}</span></div><button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button></div>`;
     }).join('');
   } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
 }
@@ -397,7 +379,7 @@ async function deletarDestaque(id) {
   carregarDestaques();
 }
 
-// ─── SUGESTÕES (aceitar / recusar) ────────────────────────────
+// ─── SUGESTÕES ────────────────────────────────────────────────
 async function renderSugestoes() {
   const painel = document.getElementById('painelSugestoes');
   painel.innerHTML = `
@@ -434,11 +416,7 @@ async function carregarSugestoes() {
 
 async function responderSugestao(id, status) {
   try {
-    await fetch(`${API}/sugestoes/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
+    await fetch(`${API}/sugestoes/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
     carregarSugestoes();
   } catch (err) { console.error(err); }
 }
