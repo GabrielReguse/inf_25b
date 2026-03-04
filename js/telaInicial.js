@@ -81,15 +81,15 @@ function criarItemDestaque(t) {
 
   const data = entrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   const isProva = t.tipo === 'prova';
-  const cor = isProva ? '#ef4444' : '#3b82f6'; // vermelho=prova, azul=tarefa
+  const indClass = isProva ? 'ind-red' : 'ind-blue';
   const tipoLabel = isProva ? 'Prova' : 'Tarefa';
   const materia = t.materia || t.titulo || '';
   const conteudo = t.conteudo || t.descricao || '';
 
-  // aviso de urgência
   let aviso = '';
   if ([1, 3, 5, 7].includes(diasRestantes)) {
-    aviso = `<span style="color:${cor};font-size:.7rem;font-weight:600">${diasRestantes} dia${diasRestantes > 1 ? 's' : ''} restante${diasRestantes > 1 ? 's' : ''}!</span>`;
+    const corAviso = isProva ? '#EF4444' : '#7C3AED';
+    aviso = `<span style="color:${corAviso};font-size:.7rem;font-weight:600">${diasRestantes} dia${diasRestantes > 1 ? 's' : ''} restante${diasRestantes > 1 ? 's' : ''}!</span>`;
   }
 
   const div = document.createElement('div');
@@ -97,7 +97,7 @@ function criarItemDestaque(t) {
   div.style.cursor = 'pointer';
   div.onclick = () => window.location.href = 'tarefasProvas.html';
   div.innerHTML = `
-    <div class="item-indicador" style="background:${cor};width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px"></div>
+    <span class="ind ${indClass}"></span>
     <div class="item-texto">
       <div class="item-titulo" style="font-weight:700">${tipoLabel}: ${materia}${conteudo ? ` - ${conteudo}` : ''} <span style="font-weight:400;color:#94a3b8">(${diasRestantes} dia${diasRestantes !== 1 ? 's' : ''})</span></div>
       <div class="item-detalhe" style="font-size:.72rem">Acesse a aba de tarefas / provas para mais informações! ${aviso}</div>

@@ -358,9 +358,17 @@ body {
 }
 
 /* cores dos indicadores - use via classe */
-.ind-roxo {
-    background: var(--purple-main);
-    box-shadow: 0 0 5px rgba(124, 58, 237, .55);
+.ind {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.ind-blue {
+    background: #4b75ff;
+    box-shadow: 0 0 5px rgba(58, 100, 237, 0.55);
 }
 
 .ind-red {
