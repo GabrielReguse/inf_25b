@@ -97,7 +97,7 @@
         </div>
         <div class="campo-grupo">
           <label class="campo-label" for="inputConvite">Código de convite</label>
-          <input class="campo-input" type="text" id="inputConvite" placeholder="Ex: INF25B2025"
+          <input class="campo-input" type="text" id="inputConvite" placeholder="••••••••"
             autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
           <span class="campo-erro" id="erroConvite"></span>
         </div>`;
