@@ -605,6 +605,43 @@ body {
     border: 1px solid rgba(239, 68, 68, .22);
 }
 
+/* ─── TOAST FEEDBACK ─────────────────────────────────────── */
+.perfil-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(14px);
+    background: #1A1A2E;
+    border: 1px solid rgba(124, 58, 237, .35);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 22px;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.45);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    transition: opacity .35s ease, transform .35s ease;
+}
+
+.perfil-toast--visivel {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.perfil-toast--sucesso {
+    border-color: rgba(16, 185, 129, .40);
+    box-shadow: 0 8px 32px rgba(16, 185, 129, .12);
+}
+
+.perfil-toast--erro {
+    border-color: rgba(239, 68, 68, .40);
+    box-shadow: 0 8px 32px rgba(239, 68, 68, .12);
+}
+
 /* RESPONSIVO */
 @media (max-width: 480px) {
     .main {
