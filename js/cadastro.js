@@ -88,7 +88,7 @@ function renderModo() {
       </div>
       <div class="campo-grupo">
         <label class="campo-label" for="inputConvite">Código de convite</label>
-        <input class="campo-input" type="password" id="inputConvite" placeholder="••••••••" autocomplete="off"/>
+        <input class="campo-input" type="text" id="inputConvite" placeholder="Ex: INF25B2025" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <span class="campo-erro" id="erroConvite"></span>
       </div>`;
     }
@@ -116,7 +116,7 @@ elForm.addEventListener('submit', async e => {
     if (modo === 'cadastro') {
         const nome     = document.getElementById('inputNome')?.value.trim() || '';
         const confirma = document.getElementById('inputConfirma')?.value || '';
-        const convite  = document.getElementById('inputConvite')?.value || '';
+        const convite  = document.getElementById('inputConvite')?.value.trim().toUpperCase() || '';
 
         if (!nome)    { document.getElementById('erroNome').textContent    = 'Informe seu nome.';          valido = false; }
         if (senha && confirma && senha !== confirma) {
