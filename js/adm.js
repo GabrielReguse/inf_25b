@@ -3,7 +3,7 @@ const API = "https://inf-25b-backend.onrender.com";
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
 
-const MATERIAS = ['Artes','Banco de Dados','Biologia','Educação Física','Engenharia de Software','Filosofia','Física','Geografia','História','Língua Inglesa','Língua Portuguesa','Matemática','Programação 1','Projeto Integrador 2','Química','Redação','Redes','Sociologia'];
+const MATERIAS = ['Artes','Banco de Dados / Engenharia de Software','Biologia','Educação Física','Filosofia','Física','Geografia','História','Língua Inglesa','Língua Portuguesa','Programação 1','Projeto Integrador 2','Química','Redes','Sociologia'];
 const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
 
 const ABAS = [
@@ -470,7 +470,7 @@ async function carregarSugestoes() {
   const lista = document.getElementById('listaSugestoes');
   if (!lista) return;
   try {
-    const sugestoes = await (await fetch(`${API}/sugestoes`)).json();
+    const sugestoes = await (await fetch(`${API}/sugestoes?t=${Date.now()}`, { cache: 'no-store' })).json();
     if (!sugestoes.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma sugestão ainda.</p>'; return; }
     lista.innerHTML = sugestoes.map(s => {
       const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });

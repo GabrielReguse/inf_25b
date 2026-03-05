@@ -41,7 +41,7 @@ async function carregarSugestoes() {
   if (!lista || !usuario.id) return;
 
   try {
-    const todas = await (await fetch(`${API}/sugestoes`)).json();
+    const todas = await (await fetch(`${API}/sugestoes?t=${Date.now()}`, { cache: 'no-store' })).json();
     const minhas = todas.filter(s => String(s.autor?._id || s.autor) === String(usuario.id));
 
     if (!minhas.length) return;
