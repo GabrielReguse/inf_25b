@@ -88,10 +88,10 @@ async function carregarSugestoes() {
 
     lista.innerHTML = minhas.map(s => {
       const texto = s.texto || '';
-      const data  = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-      const status      = s.status || (s.respondida ? 'aceita' : 'aguardando');
+      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
       const labelStatus = status === 'aceita' ? 'Aceita ✓' : status === 'recusada' ? 'Recusada ✗' : 'Aguardando';
-      const cssStatus   = status === 'aceita' ? 'status-aprovado' : status === 'recusada' ? 'status-recusado' : 'status-aguardo';
+      const cssStatus = status === 'aceita' ? 'status-aprovado' : status === 'recusada' ? 'status-recusado' : 'status-aguardo';
       return `
         <div class="sugestao-item">
           <div class="sugestao-texto">
@@ -110,7 +110,7 @@ async function carregarSugestoes() {
 async function uploadFoto(file) {
   if (!file || !usuario.id) return;
 
-  const img   = document.getElementById('fotoImg');
+  const img = document.getElementById('fotoImg');
   const icone = document.getElementById('fotoIcone');
 
   // preview imediato
@@ -180,13 +180,13 @@ async function salvarNome(novoNome) {
 }
 
 // ─── EDIÇÃO DE PERFIL ─────────────────────────────────────────
-const card      = document.querySelector('.perfil-card');
+const card = document.querySelector('.perfil-card');
 const btnEditar = document.getElementById('btnEditar');
 const btnSalvar = document.getElementById('btnSalvar');
 const btnCancel = document.getElementById('btnCancelar');
-const nome      = document.getElementById('perfilNome');
-const desc      = document.getElementById('perfilDesc');
-const fotoWrap  = document.querySelector('.foto-trocar');
+const nome = document.getElementById('perfilNome');
+const desc = document.getElementById('perfilDesc');
+const fotoWrap = document.querySelector('.foto-trocar');
 const inputFoto = document.getElementById('inputFoto');
 
 let nomeOriginal, descOriginal;
@@ -201,7 +201,7 @@ function entrarEdicao() {
 
   // coloca cursor no fim do texto
   const range = document.createRange();
-  const sel   = window.getSelection();
+  const sel = window.getSelection();
   range.selectNodeContents(nome);
   range.collapse(false);
   sel.removeAllRanges();
@@ -221,8 +221,8 @@ async function sairEdicao(salvar) {
     if (novoNome !== nomeOriginal) {
       // estado de carregando
       btnSalvar.textContent = 'Salvando...';
-      btnSalvar.disabled    = true;
-      btnCancel.disabled    = true;
+      btnSalvar.disabled = true;
+      btnCancel.disabled = true;
 
       try {
         await salvarNome(novoNome);
@@ -233,18 +233,18 @@ async function sairEdicao(salvar) {
         showToast(err.message || 'Erro ao salvar nome. Tente novamente.', 'erro');
         // mantém em modo edição para o usuário tentar de novo
         btnSalvar.textContent = 'Salvar';
-        btnSalvar.disabled    = false;
-        btnCancel.disabled    = false;
+        btnSalvar.disabled = false;
+        btnCancel.disabled = false;
         return;
       }
 
       btnSalvar.textContent = 'Salvar';
-      btnSalvar.disabled    = false;
-      btnCancel.disabled    = false;
+      btnSalvar.disabled = false;
+      btnCancel.disabled = false;
     }
   } else {
     nome.textContent = nomeOriginal;
-    desc.value       = descOriginal;
+    desc.value = descOriginal;
   }
 
   card.classList.remove('editando');
@@ -267,7 +267,7 @@ inputFoto.addEventListener('change', () => {
 });
 
 // ─── TOGGLE SUGESTÕES ─────────────────────────────────────────
-const btnSugestoes   = document.getElementById('btnSugestoes');
+const btnSugestoes = document.getElementById('btnSugestoes');
 const listaSugestoes = document.getElementById('listaSugestoes');
 
 btnSugestoes.addEventListener('click', () => {

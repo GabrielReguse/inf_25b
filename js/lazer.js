@@ -4,27 +4,27 @@ const usuario = (() => {
   try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); }
   catch { return {}; }
 })();
-const meuNome  = usuario.nome  || usuario.email || 'Você';
-const ehAdmin  = usuario.role  === 'admin';
+const meuNome = usuario.nome || usuario.email || 'Você';
+const ehAdmin = usuario.role === 'admin';
 
-let encontros  = [];
-let posts      = [];
-let melhorias  = [];
+let encontros = [];
+let posts = [];
+let melhorias = [];
 
 // votos do instagram persistidos por sessão
 let meusVotos = {};
-try { meusVotos = JSON.parse(sessionStorage.getItem('meusVotos') || '{}'); } catch (_) {}
+try { meusVotos = JSON.parse(sessionStorage.getItem('meusVotos') || '{}'); } catch (_) { }
 function salvarVotos() { sessionStorage.setItem('meusVotos', JSON.stringify(meusVotos)); }
 
 let abaAtiva = 'encontros';
 
-const elAbaEncontros  = document.getElementById('abaEncontros');
-const elAbaInstagram  = document.getElementById('abaInstagram');
-const elAbaMelhorias  = document.getElementById('abaMelhorias');
-const elSeta          = document.getElementById('abaSeta');
-const elPainelEnc     = document.getElementById('painelEncontros');
-const elPainelInst    = document.getElementById('painelInstagram');
-const elPainelMel     = document.getElementById('painelMelhorias');
+const elAbaEncontros = document.getElementById('abaEncontros');
+const elAbaInstagram = document.getElementById('abaInstagram');
+const elAbaMelhorias = document.getElementById('abaMelhorias');
+const elSeta = document.getElementById('abaSeta');
+const elPainelEnc = document.getElementById('painelEncontros');
+const elPainelInst = document.getElementById('painelInstagram');
+const elPainelMel = document.getElementById('painelMelhorias');
 
 // Exibe aba melhorias só para admin
 if (ehAdmin) elAbaMelhorias.style.display = '';
@@ -34,8 +34,8 @@ function posicionarSeta(aba) {
   const map = { encontros: elAbaEncontros, instagram: elAbaInstagram, melhorias: elAbaMelhorias };
   const btn = map[aba];
   if (!btn || btn.style.display === 'none') return;
-  const wrap    = document.getElementById('abaSetaWrap');
-  const rect    = btn.getBoundingClientRect();
+  const wrap = document.getElementById('abaSetaWrap');
+  const rect = btn.getBoundingClientRect();
   const wrapRect = wrap.getBoundingClientRect();
   elSeta.style.left = (rect.left - wrapRect.left + rect.width / 2) + 'px';
 }
@@ -67,37 +67,37 @@ async function carregarSugestoes() {
     const todas = await (await fetch(`${API}/sugestoes`)).json();
 
     encontros = [];
-    posts     = [];
+    posts = [];
     melhorias = [];
 
     todas.forEach(s => {
       const texto = s.texto || '';
-      const tipo  = texto.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() || '';
+      const tipo = texto.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() || '';
 
       if (tipo === 'melhoria') {
         // melhorias: aparece para admin se aceita, em_andamento ou finalizado
         if (ehAdmin && ['aceita', 'em_andamento', 'finalizado'].includes(s.status)) {
           melhorias.push({
-            id:        s._id,
-            titulo:    extrairTitulo(texto),
+            id: s._id,
+            titulo: extrairTitulo(texto),
             descricao: extrairDesc(texto),
-            autor:     s.autor?.nome || 'Anônimo',
-            status:    s.status
+            autor: s.autor?.nome || 'Anônimo',
+            status: s.status
           });
         }
       } else if (tipo === 'instagram' && s.status === 'aceita') {
         posts.push({
-          id:       s._id,
-          titulo:   s.autor?.nome || 'Sugestão',
+          id: s._id,
+          titulo: s.autor?.nome || 'Sugestão',
           descricao: texto,
-          link:     '',
-          votos:    { legal: 0, nao: 0 }
+          link: '',
+          votos: { legal: 0, nao: 0 }
         });
       } else if (s.status === 'aceita') {
         encontros.push({
-          id:          s._id,
-          titulo:      s.autor?.nome || 'Encontro',
-          descricao:   texto,
+          id: s._id,
+          titulo: s.autor?.nome || 'Encontro',
+          descricao: texto,
           confirmados: []
         });
       }
@@ -118,7 +118,7 @@ function extrairTitulo(texto) {
 
 function extrairDesc(texto) {
   const semTipo = texto.replace(/^\[\w+\]\s*/, '');
-  const partes  = semTipo.split(' — ');
+  const partes = semTipo.split(' — ');
   return partes.slice(1).join(' — ') || '';
 }
 
@@ -134,7 +134,7 @@ function renderEncontros() {
 
   encontros.forEach(ev => {
     const euConfirmei = ev.confirmados.some(p => (p.nome || p) === meuNome);
-    const ultimos3    = ev.confirmados.slice(-3);
+    const ultimos3 = ev.confirmados.slice(-3);
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -145,8 +145,8 @@ function renderEncontros() {
       <div class="presenca-avatares" id="avatares-${ev.id}">
         ${ultimos3.map(p => avatarMini(p.nome || p, p.foto || null)).join('')}
         ${ev.confirmados.length > 0
-          ? `<span class="presenca-count">${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}</span>`
-          : ''}
+        ? `<span class="presenca-count">${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}</span>`
+        : ''}
       </div>
       <button class="btn-participar${euConfirmei ? ' saindo' : ''}" id="btn-enc-${ev.id}">
         ${euConfirmei ? 'Quero Sair' : 'Irei Participar'}
@@ -157,7 +157,7 @@ function renderEncontros() {
 }
 
 function togglePresenca(id) {
-  const ev  = encontros.find(e => e.id === id);
+  const ev = encontros.find(e => e.id === id);
   if (!ev) return;
   const idx = ev.confirmados.findIndex(p => (p.nome || p) === meuNome);
   if (idx >= 0) ev.confirmados.splice(idx, 1);
@@ -182,10 +182,10 @@ function renderInstagram() {
   }
 
   posts.forEach(post => {
-    const meuVoto   = meusVotos[post.id] || null;
+    const meuVoto = meusVotos[post.id] || null;
     const totalVotos = post.votos.legal + post.votos.nao;
-    const pctLegal  = totalVotos ? Math.round(post.votos.legal / totalVotos * 100) : 50;
-    const pctNao    = totalVotos ? 100 - pctLegal : 50;
+    const pctLegal = totalVotos ? Math.round(post.votos.legal / totalVotos * 100) : 50;
+    const pctNao = totalVotos ? 100 - pctLegal : 50;
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -205,16 +205,16 @@ function renderInstagram() {
       </div>
       <div class="votos-btns">
         <button class="btn-voto${meuVoto === 'legal' ? ' ativo-legal' : ''}" id="btn-legal-${post.id}">👍 Acho Legal</button>
-        <button class="btn-voto${meuVoto === 'nao'   ? ' ativo-nao'   : ''}" id="btn-nao-${post.id}">🤷 Não Sei Não</button>
+        <button class="btn-voto${meuVoto === 'nao' ? ' ativo-nao' : ''}" id="btn-nao-${post.id}">🤷 Não Sei Não</button>
       </div>`;
     card.querySelector(`#btn-legal-${post.id}`).addEventListener('click', () => votar(post.id, 'legal'));
-    card.querySelector(`#btn-nao-${post.id}`).addEventListener('click',   () => votar(post.id, 'nao'));
+    card.querySelector(`#btn-nao-${post.id}`).addEventListener('click', () => votar(post.id, 'nao'));
     el.appendChild(card);
   });
 }
 
 function votar(id, tipo) {
-  const post     = posts.find(p => p.id === id);
+  const post = posts.find(p => p.id === id);
   if (!post) return;
   const anterior = meusVotos[id];
   if (anterior === tipo) return;
@@ -223,14 +223,14 @@ function votar(id, tipo) {
   meusVotos[id] = tipo;
   salvarVotos();
 
-  const total    = post.votos.legal + post.votos.nao;
+  const total = post.votos.legal + post.votos.nao;
   const pctLegal = total ? Math.round(post.votos.legal / total * 100) : 50;
   document.getElementById(`barra-legal-${id}`).style.width = pctLegal + '%';
-  document.getElementById(`barra-nao-${id}`).style.width   = (100 - pctLegal) + '%';
+  document.getElementById(`barra-nao-${id}`).style.width = (100 - pctLegal) + '%';
   document.getElementById(`label-legal-${id}`).textContent = `${post.votos.legal} acharam legal`;
-  document.getElementById(`label-nao-${id}`).textContent   = `${post.votos.nao} não sei não`;
+  document.getElementById(`label-nao-${id}`).textContent = `${post.votos.nao} não sei não`;
   document.getElementById(`btn-legal-${id}`).className = 'btn-voto' + (tipo === 'legal' ? ' ativo-legal' : '');
-  document.getElementById(`btn-nao-${id}`).className   = 'btn-voto' + (tipo === 'nao'   ? ' ativo-nao'   : '');
+  document.getElementById(`btn-nao-${id}`).className = 'btn-voto' + (tipo === 'nao' ? ' ativo-nao' : '');
 }
 
 // ─── MELHORIAS (admin only) ───────────────────────────────────
@@ -248,9 +248,9 @@ function renderMelhorias() {
 
 function renderCardMelhoria(m, container) {
   const statusInfo = {
-    aceita:       { label: 'Aguardando',   cls: 'status-aguardando' },
-    em_andamento: { label: 'Em andamento', cls: 'status-andamento'  },
-    finalizado:   { label: 'Finalizado',   cls: 'status-finalizado' }
+    aceita: { label: 'Aguardando', cls: 'status-aguardando' },
+    em_andamento: { label: 'Em andamento', cls: 'status-andamento' },
+    finalizado: { label: 'Finalizado', cls: 'status-finalizado' }
   };
   const info = statusInfo[m.status] || statusInfo.aceita;
 

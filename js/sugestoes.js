@@ -30,12 +30,12 @@ const TIPOS = [
 let tipoSelecionado = null;
 let etapa = 1;
 
-const elBarra    = document.getElementById('etapaBarraFill');
-const elCorpo    = document.getElementById('cardCorpo');
+const elBarra = document.getElementById('etapaBarraFill');
+const elCorpo = document.getElementById('cardCorpo');
 const elContador = document.getElementById('etapaContador');
 
 function atualizarBarra() {
-  if (elBarra)    elBarra.style.width = etapa === 1 ? '50%' : '100%';
+  if (elBarra) elBarra.style.width = etapa === 1 ? '50%' : '100%';
   if (elContador) elContador.textContent = `Etapa ${etapa}/2`;
 }
 
@@ -114,18 +114,18 @@ function trocarEtapa(nova) {
 }
 
 async function publicar() {
-  const titulo      = document.getElementById('inputTitulo').value.trim();
-  const desc        = document.getElementById('inputDesc').value.trim();
-  const elAlerta    = document.getElementById('alerta');
+  const titulo = document.getElementById('inputTitulo').value.trim();
+  const desc = document.getElementById('inputDesc').value.trim();
+  const elAlerta = document.getElementById('alerta');
   const btnPublicar = document.getElementById('btnPublicar');
 
   document.getElementById('erroTitulo').textContent = '';
-  document.getElementById('erroDesc').textContent   = '';
+  document.getElementById('erroDesc').textContent = '';
   elAlerta.className = 'alerta';
 
   let valido = true;
-  if (!titulo) { document.getElementById('erroTitulo').textContent = 'Informe um título.';     valido = false; }
-  if (!desc)   { document.getElementById('erroDesc').textContent   = 'Escreva uma descrição.'; valido = false; }
+  if (!titulo) { document.getElementById('erroTitulo').textContent = 'Informe um título.'; valido = false; }
+  if (!desc) { document.getElementById('erroDesc').textContent = 'Escreva uma descrição.'; valido = false; }
   if (!valido) return;
 
   const usuario = (() => {
