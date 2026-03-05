@@ -1,3 +1,10 @@
+// ─── Device ID ────────────────────────────────────────────────
+const deviceId = localStorage.getItem('deviceId') || (() => {
+  const id = crypto.randomUUID();
+  localStorage.setItem('deviceId', id);
+  return id;
+})();
+
 // restaura página ao voltar pelo navegador/celular
 window.addEventListener('pageshow', () => {
   const page = document.getElementById('page');
@@ -41,50 +48,38 @@ document.querySelectorAll('a[href]').forEach(link => {
 document.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', e => {
     const href = link.getAttribute('href');
-
-    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
-      return;
-    }
-
+    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
     e.preventDefault();
   });
 });
+
 // ─── NOTIFICAÇÕES PUSH ────────────────────────────────────────
 const API_PUSH = "https://inf-25b-backend.onrender.com";
 
 async function iniciarPush() {
-  // só roda se o usuário estiver logado
   const usuario = (() => {
     try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
   })();
   if (!usuario.id) return;
 
-  // verifica suporte
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
   try {
-    // registra o service worker
     const registro = await navigator.serviceWorker.register('/sw.js');
-
-    // verifica se já tem inscrição ativa
     const inscricaoExistente = await registro.pushManager.getSubscription();
-    if (inscricaoExistente) return; // já inscrito, nada a fazer
+    if (inscricaoExistente) return;
 
-    // pede permissão ao usuário
     const permissao = await Notification.requestPermission();
     if (permissao !== 'granted') return;
 
-    // busca chave pública VAPID do backend
     const res = await fetch(`${API_PUSH}/push/chave-publica`);
     const { chave } = await res.json();
 
-    // cria inscrição
     const subscription = await registro.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(chave)
     });
 
-    // salva inscrição no backend
     await fetch(`${API_PUSH}/push/inscrever`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -103,5 +98,36 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
-// inicia push após o DOM carregar
-window.addEventListener('DOMContentLoaded', iniciarPush);
+// ─── HEARTBEAT ────────────────────────────────────────────────
+async function enviarHeartbeat() {
+  const usuario = (() => {
+    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
+  })();
+  if (!usuario.id) return;
+
+  try {
+    let modelo = "Indisponível";
+    if (navigator.userAgentData) {
+      try {
+        const d = await navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]);
+        modelo = `${d.platform} | ${d.model || "modelo não disponível"} | v${d.platformVersion}`;
+      } catch {}
+    }
+
+    await fetch(`${API_PUSH}/admin/heartbeat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-device-model': modelo,
+        'x-device-id': deviceId
+      },
+      body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
+    });
+  } catch {}
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  iniciarPush();
+  enviarHeartbeat();
+  setInterval(enviarHeartbeat, 5 * 60 * 1000); // a cada 5 minutos
+});
