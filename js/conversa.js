@@ -14,36 +14,37 @@ const usuario = (() => {
   catch { return {}; }
 })();
 
-const meuNome  = usuario.nome      || 'Você';
-const meuId    = usuario.id        || null;
+const meuNome = usuario.nome || 'Você';
+const meuId = usuario.id || null;
 const minhaFoto = usuario.fotoPerfil || null;
-const isAdmin  = usuario.role === 'admin';
+const isAdmin = usuario.role === 'admin';
 
-let mensagens     = [];
+let mensagens = [];
 let imagemPendente = null;
 let mediaRecorder = null;
-let gravando      = false;
-let chunksAudio   = [];
-let timerGrav     = null;
-let segundosGrav  = 0;
+let gravando = false;
+let chunksAudio = [];
+let timerGrav = null;
+let segundosGrav = 0;
 let poolingInterval = null;
-let replyAlvo     = null;   // { id, autor, texto }
+let replyAlvo = null;   // { id, autor, texto }
 let todosUsuarios = [];
-let mentionAtivo  = false;
-let mentionIndex  = 0;
+let mentionAtivo = false;
+let mentionIndex = 0;
+let mencoesAtivas = new Set();
 
-const elChat      = document.getElementById('chatArea');
-const elInput     = document.getElementById('inputTexto');
+const elChat = document.getElementById('chatArea');
+const elInput = document.getElementById('inputTexto');
 const elBtnEnviar = document.getElementById('btnEnviar');
-const elBtnFoto   = document.getElementById('btnFoto');
+const elBtnFoto = document.getElementById('btnFoto');
 const elInputFoto = document.getElementById('inputFoto');
-const elBtnAudio  = document.getElementById('btnAudio');
-const elPreview   = document.getElementById('previewImgWrap');
-const elPreviewImg  = document.getElementById('previewImgThumb');
+const elBtnAudio = document.getElementById('btnAudio');
+const elPreview = document.getElementById('previewImgWrap');
+const elPreviewImg = document.getElementById('previewImgThumb');
 const elPreviewNome = document.getElementById('previewImgNome');
-const elPreviewRem  = document.getElementById('previewImgRemove');
-const elReplyBar    = document.getElementById('replyBar');
-const elReplyTexto  = document.getElementById('replyBarTexto');
+const elPreviewRem = document.getElementById('previewImgRemove');
+const elReplyBar = document.getElementById('replyBar');
+const elReplyTexto = document.getElementById('replyBarTexto');
 const elReplyFechar = document.getElementById('replyBarFechar');
 
 // ─── UTILITÁRIOS ──────────────────────────────────────────────
@@ -76,14 +77,7 @@ function scrollBaixo() {
   requestAnimationFrame(() => { elChat.scrollTop = elChat.scrollHeight; });
 }
 
-// ─── EXTRAI @MENÇÕES do texto para enviar ao backend ─────────
-// Retorna array de nomes (ex: ["Gabriel Reguse da Silva", "Expetinho"])
-function extrairMencoes(texto) {
-  if (!texto) return [];
-  // captura @Nome ou @Nome Sobrenome (até 3 palavras)
-  const matches = [...texto.matchAll(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]+(?:\s[\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]+){0,2})/g)];
-  return [...new Set(matches.map(m => m[1].trim()))];
-}
+// ─── mencoesAtivas (Set) é populado em inserirMention() ──────
 
 // ─── RENDER ───────────────────────────────────────────────────
 function renderMensagem(msg) {
@@ -209,7 +203,7 @@ function anexarLongPress(el, msg) {
 function abrirCtxMenu(x, y, msg) {
   fecharCtxMenu();
 
-  const ehMeu  = msg.eu || msg.autor === meuNome;
+  const ehMeu = msg.eu || msg.autor === meuNome;
   const podeDel = ehMeu || isAdmin;
 
   const menu = document.createElement('div');
@@ -241,9 +235,9 @@ function abrirCtxMenu(x, y, msg) {
 
   document.body.appendChild(menu);
   const mw = menu.offsetWidth, mh = menu.offsetHeight;
-  const vw = window.innerWidth,  vh = window.innerHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
   menu.style.left = `${Math.min(x, vw - mw - 10)}px`;
-  menu.style.top  = `${Math.min(y, vh - mh - 10)}px`;
+  menu.style.top = `${Math.min(y, vh - mh - 10)}px`;
 
   setTimeout(() => document.addEventListener('click', fecharCtxMenu, { once: true }), 10);
 }
@@ -299,10 +293,10 @@ async function carregarUsuarios() {
 }
 
 function getMentionQuery() {
-  const val    = elInput.value;
+  const val = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes  = val.slice(0, cursor);
-  const match  = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
+  const antes = val.slice(0, cursor);
+  const match = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
   return match ? match[1] : null;
 }
 
@@ -333,7 +327,7 @@ function abrirMentionLista(filtro) {
 
   const rect = elInput.getBoundingClientRect();
   lista.style.bottom = `${window.innerHeight - rect.top + 6}px`;
-  lista.style.left   = `${rect.left}px`;
+  lista.style.left = `${rect.left}px`;
   document.body.appendChild(lista);
   mentionAtivo = true;
   mentionIndex = 0;
@@ -345,13 +339,14 @@ function fecharMentionLista() {
 }
 
 function inserirMention(nome) {
-  const val    = elInput.value;
+  const val = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes  = val.slice(0, cursor);
+  const antes = val.slice(0, cursor);
   const depois = val.slice(cursor);
   const novoAntes = antes.replace(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/, `@${nome} `);
   elInput.value = novoAntes + depois;
   elInput.selectionStart = elInput.selectionEnd = novoAntes.length;
+  mencoesAtivas.add(nome);
   fecharMentionLista();
   elInput.focus();
 }
@@ -399,25 +394,25 @@ elInput.addEventListener('keydown', e => {
 async function carregarMensagens() {
   try {
     const resposta = await fetch(`${API}/mensagens`);
-    const dados    = await resposta.json();
+    const dados = await resposta.json();
 
     const mapear = m => ({
-      id:      m._id,
-      autor:   m.autor?.nome || 'Usuário',
-      foto:    String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-      role:    m.autor?.role || 'aluno',
-      tipo:    m.tipo || 'texto',
+      id: m._id,
+      autor: m.autor?.nome || 'Usuário',
+      foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+      role: m.autor?.role || 'aluno',
+      tipo: m.tipo || 'texto',
       conteudo: m.texto || '',
-      src:     m.mediaUrl || '',
+      src: m.mediaUrl || '',
       replyTo: m.replyTo || null,
-      onda:    gerarOnda(),
+      onda: gerarOnda(),
       duracao: '0:00',
-      hora:    new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      data:    new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-      eu:      String(m.autor?._id || m.autor) === String(meuId)
+      hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+      eu: String(m.autor?._id || m.autor) === String(meuId)
     });
 
-    const idsLocais   = new Set(mensagens.map(m => String(m.id)));
+    const idsLocais = new Set(mensagens.map(m => String(m.id)));
     const idsServidor = new Set(dados.map(m => String(m._id)));
 
     const algumApagado = mensagens.some(
@@ -438,11 +433,11 @@ async function enviarTexto() {
   const texto = elInput.value.trim();
   if (!texto && !imagemPendente) return;
 
-  const replyId  = replyAlvo?.id || null;
+  const replyId = replyAlvo?.id || null;
   cancelarReply();
 
   if (imagemPendente) {
-    const previewSrc    = imagemPendente.src;
+    const previewSrc = imagemPendente.src;
     const fileParaUpload = imagemPendente.file;
     limparPreview();
 
@@ -459,7 +454,7 @@ async function enviarTexto() {
       try {
         const fd = new FormData();
         fd.append('midia', fileParaUpload);
-        const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+        const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
         const dados = await res.json();
         if (res.ok) {
           await fetch(`${API}/mensagens`, {
@@ -476,8 +471,9 @@ async function enviarTexto() {
     elInput.value = '';
     elInput.style.height = 'auto';
 
-    // extrai menções para o backend filtrar as notificações
-    const mencoes = extrairMencoes(texto);
+    // usa o Set rastreado em inserirMention (mais confiável que regex em nomes com espaços)
+    const mencoes = [...mencoesAtivas];
+    mencoesAtivas.clear(); // limpa para a próxima mensagem
 
     adicionarMensagemLocal({
       id: `temp-${Date.now()}`,
@@ -509,7 +505,7 @@ elInputFoto.addEventListener('change', () => {
   if (!file) return;
   const url = URL.createObjectURL(file);
   imagemPendente = { src: url, nome: file.name, file };
-  elPreviewImg.src  = url;
+  elPreviewImg.src = url;
   elPreviewNome.textContent = file.name;
   elPreview.classList.add('visivel');
   elInputFoto.value = '';
@@ -529,13 +525,13 @@ elBtnAudio.addEventListener('click', async () => {
   if (!gravando) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunksAudio  = [];
+      chunksAudio = [];
       mediaRecorder = new MediaRecorder(stream);
       mediaRecorder.ondataavailable = e => chunksAudio.push(e.data);
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksAudio, { type: 'audio/webm' });
-        const url  = URL.createObjectURL(blob);
-        const dur  = formatarDuracao(segundosGrav);
+        const url = URL.createObjectURL(blob);
+        const dur = formatarDuracao(segundosGrav);
         adicionarMensagemLocal({
           id: `temp-audio-${Date.now()}`,
           autor: meuNome, foto: minhaFoto,
@@ -549,7 +545,7 @@ elBtnAudio.addEventListener('click', async () => {
           try {
             const fd = new FormData();
             fd.append('midia', blob, 'audio.webm');
-            const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+            const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
             const dados = await res.json();
             if (res.ok) {
               await fetch(`${API}/mensagens`, {

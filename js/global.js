@@ -5,7 +5,23 @@ const deviceId = localStorage.getItem('deviceId') || (() => {
   return id;
 })();
 
-// restaura página ao voltar pelo navegador/celular
+// ─── MOBILE ──────────
+
+(function () {
+  const page = document.getElementById('page');
+  if (!page) return;
+
+  const tornarVisivel = () => {
+    if (!page.classList.contains('saindo')) {
+      page.style.opacity = '1';
+      page.style.transform = 'translateX(0)';
+    }
+  };
+  page.addEventListener('animationend', tornarVisivel, { once: true });
+  setTimeout(tornarVisivel, 500);
+})();
+
+// ─── RESTAURA PÁGINA AO VOLTAR (navegador / celular) ─────────
 window.addEventListener('pageshow', () => {
   const page = document.getElementById('page');
   if (!page) return;
@@ -13,13 +29,13 @@ window.addEventListener('pageshow', () => {
   page.style.animation = 'none';
   page.style.opacity = '1';
   page.style.transform = 'translateX(0)';
-  page.offsetHeight;
+  page.offsetHeight; // força reflow
   page.style.animation = '';
   page.style.opacity = '';
   page.style.transform = '';
 });
 
-// header scroll
+// ─── HEADER SCROLL ───────────────────────────────────────────
 const header = document.getElementById('header');
 const headerLinha = document.getElementById('headerLinha');
 
@@ -31,7 +47,7 @@ if (header && headerLinha) {
   }, { passive: true });
 }
 
-// animação de saída
+// ─── ANIMAÇÃO DE SAÍDA ────────────────────────────────────────
 document.querySelectorAll('a[href]').forEach(link => {
   if (link.hostname !== location.hostname && link.hostname !== '') return;
   if (link.getAttribute('href').startsWith('#')) return;
@@ -44,7 +60,7 @@ document.querySelectorAll('a[href]').forEach(link => {
   });
 });
 
-// enviar email
+// previne que links mailto/tel/http disparem navegação interna
 document.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', e => {
     const href = link.getAttribute('href');
@@ -58,7 +74,13 @@ const API_PUSH = "https://inf-25b-backend.onrender.com";
 
 async function iniciarPush() {
   const usuario = (() => {
-    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
+    try {
+      return JSON.parse(
+        sessionStorage.getItem('usuario') ||
+        localStorage.getItem('usuario') ||
+        '{}'
+      );
+    } catch { return {}; }
   })();
   if (!usuario.id) return;
 
@@ -101,7 +123,13 @@ function urlBase64ToUint8Array(base64String) {
 // ─── HEARTBEAT ────────────────────────────────────────────────
 async function enviarHeartbeat() {
   const usuario = (() => {
-    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
+    try {
+      return JSON.parse(
+        sessionStorage.getItem('usuario') ||
+        localStorage.getItem('usuario') ||
+        '{}'
+      );
+    } catch { return {}; }
   })();
   if (!usuario.id) return;
 
@@ -109,9 +137,9 @@ async function enviarHeartbeat() {
     let modelo = "Indisponível";
     if (navigator.userAgentData) {
       try {
-        const d = await navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]);
+        const d = await navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]);
         modelo = `${d.platform} | ${d.model || "modelo não disponível"} | v${d.platformVersion}`;
-      } catch {}
+      } catch { }
     }
 
     await fetch(`${API_PUSH}/admin/heartbeat`, {
@@ -123,11 +151,11 @@ async function enviarHeartbeat() {
       },
       body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
     });
-  } catch {}
+  } catch { }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   iniciarPush();
   enviarHeartbeat();
-  setInterval(enviarHeartbeat, 5 * 60 * 1000); // a cada 5 minutos
+  setInterval(enviarHeartbeat, 5 * 60 * 1000);
 });
