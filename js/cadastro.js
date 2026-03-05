@@ -13,23 +13,23 @@ fetch(`${API}/visita`, {
   body: JSON.stringify({ deviceId })
 }).catch(() => {});
 
-// ─── ADMINS (role definida por email) ─────────────────────────
+// ─── ADMINS ───────────────────────────────────────────────────
 const emailsAdm = new Set([
     "viniciushoppe@outlook.com",
     "gabrielreguse1@gmail.com",
 ]);
 
+// ─── MODELO DO DISPOSITIVO ────────────────────────────────────
 async function pegarModelo() {
     try {
         if (!navigator.userAgentData) return "Indisponível";
         const d = await navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]);
-        return `${d.platform} | ${d.model||"modelo não disponível"} | v${d.platformVersion}`;
+        return `${d.platform} | ${d.model || "modelo não disponível"} | v${d.platformVersion}`;
     } catch { return "Indisponível"; }
 }
 
-// ─── STATE ───────────────────────────────────────────────────
+// ─── STATE ────────────────────────────────────────────────────
 let modo = 'login'; // 'login' | 'cadastro'
-let dadosCadastro = null;
 
 const elTitulo    = document.getElementById('formTitulo');
 const elCampos    = document.getElementById('campos');
@@ -60,7 +60,7 @@ function renderModo() {
         <span class="campo-erro" id="erroSenha"></span>
       </div>`;
 
-    } else if (modo === 'cadastro') {
+    } else {
         elTitulo.textContent = 'Realize seu cadastro!';
         elBtnLabel.textContent = 'Cadastrar';
         elLinkTexto.textContent = 'Já possui conta? ';
@@ -88,17 +88,20 @@ function renderModo() {
       </div>
       <div class="campo-grupo">
         <label class="campo-label" for="inputConvite">Código de convite</label>
-        <input class="campo-input" type="text" id="inputConvite" placeholder="Ex: INF25B2025" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+        <input class="campo-input" type="text" id="inputConvite" placeholder="Ex: INF25B2025"
+          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <span class="campo-erro" id="erroConvite"></span>
       </div>`;
     }
 }
 
+// ─── TROCA DE MODO ────────────────────────────────────────────
 elLinkAcao.addEventListener('click', () => {
     modo = modo === 'login' ? 'cadastro' : 'login';
     renderModo();
 });
 
+// ─── SUBMIT ───────────────────────────────────────────────────
 elForm.addEventListener('submit', async e => {
     e.preventDefault();
     elAlerta.className = 'alerta';
@@ -110,7 +113,7 @@ elForm.addEventListener('submit', async e => {
     let valido = true;
 
     if (!email) { document.getElementById('erroEmail').textContent = 'Informe seu e-mail.'; valido = false; }
-    if (!senha)  { document.getElementById('erroSenha').textContent  = 'Informe sua senha.';  valido = false; }
+    if (!senha)  { document.getElementById('erroSenha').textContent = 'Informe sua senha.';  valido = false; }
 
     // ── CADASTRO ──────────────────────────────────────────────
     if (modo === 'cadastro') {
@@ -118,13 +121,13 @@ elForm.addEventListener('submit', async e => {
         const confirma = document.getElementById('inputConfirma')?.value || '';
         const convite  = document.getElementById('inputConvite')?.value.trim().toUpperCase() || '';
 
-        if (!nome)    { document.getElementById('erroNome').textContent    = 'Informe seu nome.';          valido = false; }
-        if (senha && confirma && senha !== confirma) {
-            document.getElementById('erroConfirma').textContent = 'As senhas não coincidem.';              valido = false; }
+        if (!nome)    { document.getElementById('erroNome').textContent    = 'Informe seu nome.';            valido = false; }
         if (!convite) { document.getElementById('erroConvite').textContent = 'Informe o código de convite.'; valido = false; }
+        if (senha && confirma && senha !== confirma) {
+            document.getElementById('erroConfirma').textContent = 'As senhas não coincidem.'; valido = false;
+        }
         if (!valido) return;
 
-        // valida código de convite no frontend
         if (convite !== 'INF25B2025') {
             document.getElementById('erroConvite').textContent = 'Código de convite incorreto.';
             return;
@@ -153,7 +156,7 @@ elForm.addEventListener('submit', async e => {
                 elAlerta.className = 'alerta erro'; return;
             }
 
-            elAlerta.textContent = '✓ Cadastro realizado! Faça seu login.';
+            elAlerta.textContent = '✓ Cadastro realizado com sucesso! Faça seu login.';
             elAlerta.className = 'alerta sucesso';
             setTimeout(() => { modo = 'login'; renderModo(); }, 1800);
 
@@ -197,4 +200,5 @@ elForm.addEventListener('submit', async e => {
     }
 });
 
+// init
 renderModo();
