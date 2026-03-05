@@ -6,6 +6,7 @@ const emailsPermitidos = new Set([
     "francagregori7@gmail.com",
     "carlosereblin@gmail.com",
     "gabrielabuenomiranda9@gmail.com",
+    "pedroalex.schmitz@gmail.com",
 
     // SUPER ADM MASTER
     "viniciushoppe@outlook.com",
