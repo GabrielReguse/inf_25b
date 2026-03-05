@@ -809,6 +809,17 @@ body {
   object-fit: cover;
 }
 
+/* ─── AGRUPAMENTO DE MENSAGENS ─── */
+.msg-grupo.msg-agrupada {
+  margin-bottom: 2px;
+}
+
+.msg-avatar-espaco {
+  width: 30px;
+  height: 1px;
+  flex-shrink: 0;
+}
+
 /* ─── ANIMAÇÕES ─── */
 @keyframes msgEntra {
   from {

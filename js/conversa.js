@@ -1,8 +1,6 @@
 const API = "https://inf-25b-backend.onrender.com";
 
-// ─── FIX MOBILE: lê de sessionStorage com fallback para localStorage ──────
-// sessionStorage é apagado quando o app vai para background no iOS/Android.
-// localStorage persiste entre sessões, então serve como backup seguro.
+// ─── MOBILE  ──────
 const usuario = (() => {
   try {
     return JSON.parse(
@@ -27,10 +25,11 @@ let chunksAudio = [];
 let timerGrav = null;
 let segundosGrav = 0;
 let poolingInterval = null;
-let replyAlvo = null;   // { id, autor, texto }
+let replyAlvo = null;
 let todosUsuarios = [];
 let mentionAtivo = false;
 let mentionIndex = 0;
+// ─── SET de menções ativas ─────────────────────────────────────
 let mencoesAtivas = new Set();
 
 const elChat = document.getElementById('chatArea');
@@ -77,13 +76,19 @@ function scrollBaixo() {
   requestAnimationFrame(() => { elChat.scrollTop = elChat.scrollHeight; });
 }
 
+// ─── AGRUPAMENTO: mesmo autor + mesmo minuto + mesmo dia ──────
+function mesmoBlocoTempo(a, b) {
+  return a && b && a.autor === b.autor && a.hora === b.hora && a.data === b.data;
+}
+
 // ─── mencoesAtivas (Set) é populado em inserirMention() ──────
 
 // ─── RENDER ───────────────────────────────────────────────────
-function renderMensagem(msg) {
+function renderMensagem(msg, agrupado = false) {
   const eu = msg.eu || msg.autor === meuNome;
   const grupo = document.createElement('div');
-  grupo.className = `msg-grupo ${eu ? 'eu' : 'outros'}`;
+  // msg-agrupada reduz o espaço entre mensagens do mesmo bloco
+  grupo.className = `msg-grupo ${eu ? 'eu' : 'outros'}${agrupado ? ' msg-agrupada' : ''}`;
   grupo.dataset.id = msg.id;
 
   // citação (reply)
@@ -128,12 +133,21 @@ function renderMensagem(msg) {
   const fotoEsc = (msg.foto || '').replace(/'/g, "\\'");
   const nomeEsc = escapeHTML(msg.autor).replace(/'/g, "\\'");
 
+  // agrupado: esconde avatar (usa espaçador) e esconde nome
+  const avatarEl = agrupado
+    ? `<div class="msg-avatar-espaco"></div>`
+    : `<div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
+         ${avatarHTML(msg.foto, msg.autor)}
+       </div>`;
+
+  const nomeEl = agrupado
+    ? ''
+    : `<span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>`;
+
   grupo.innerHTML = `
-    <div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
-      ${avatarHTML(msg.foto, msg.autor)}
-    </div>
+    ${avatarEl}
     <div class="msg-col">
-      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>
+      ${nomeEl}
       ${conteudoHTML}
     </div>`;
 
@@ -144,12 +158,14 @@ function renderMensagem(msg) {
 function renderTodas() {
   elChat.innerHTML = '';
   let dataAtual = null;
-  mensagens.forEach(msg => {
+  mensagens.forEach((msg, i) => {
     if (msg.data !== dataAtual) {
       dataAtual = msg.data;
       elChat.appendChild(criarSeparadorData(msg.data));
     }
-    elChat.appendChild(renderMensagem(msg));
+    const anterior = mensagens[i - 1];
+    const agrupado = mesmoBlocoTempo(anterior, msg);
+    elChat.appendChild(renderMensagem(msg, agrupado));
   });
   scrollBaixo();
 }
@@ -159,8 +175,9 @@ function adicionarMensagemLocal(msg) {
   if (!ultima || ultima.data !== msg.data) {
     elChat.appendChild(criarSeparadorData(msg.data));
   }
+  const agrupado = mesmoBlocoTempo(ultima, msg);
   mensagens.push(msg);
-  elChat.appendChild(renderMensagem(msg));
+  elChat.appendChild(renderMensagem(msg, agrupado));
   scrollBaixo();
 }
 
@@ -470,10 +487,8 @@ async function enviarTexto() {
   if (texto) {
     elInput.value = '';
     elInput.style.height = 'auto';
-
-    // usa o Set rastreado em inserirMention (mais confiável que regex em nomes com espaços)
     const mencoes = [...mencoesAtivas];
-    mencoesAtivas.clear(); // limpa para a próxima mensagem
+    mencoesAtivas.clear();
 
     adicionarMensagemLocal({
       id: `temp-${Date.now()}`,
