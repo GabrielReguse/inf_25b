@@ -45,6 +45,7 @@ body {
     border-radius: 3px;
 }
 
+/* ─── PAGE ─── */
 .page {
     position: relative;
     z-index: 1;
@@ -80,6 +81,7 @@ body {
     }
 }
 
+/* ─── HEADER ─── */
 .header {
     position: sticky;
     top: 0;
@@ -114,14 +116,6 @@ body {
     flex-shrink: 0;
     box-shadow: 0 0 16px rgba(124, 58, 237, .50);
     overflow: hidden;
-}
-
-.logo span {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    color: #fff;
-    letter-spacing: 1px;
 }
 
 .logo img {
@@ -205,6 +199,7 @@ body {
     }
 }
 
+/* ─── MAIN ─── */
 .main {
     padding: 20px 16px 60px;
     max-width: 640px;
@@ -349,7 +344,7 @@ body {
     }
 }
 
-/* ─── CARDS GERAIS ─── */
+/* ─── CARDS ─── */
 .item-card {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
@@ -358,49 +353,112 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    transition: box-shadow .2s;
+    transition: box-shadow .2s, border-color .3s;
+    user-select: none;
 }
 
 .item-card:hover {
     box-shadow: 0 4px 18px rgba(124, 58, 237, .10);
 }
 
+/* Feedback de long press (admin delete) */
+.item-card.pressionando {
+    border-color: rgba(239, 68, 68, .45);
+    box-shadow: 0 0 20px rgba(239, 68, 68, .18);
+}
+
+/* ─── HEADER DO CARD (título + ícone + countdown) ─── */
+.item-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Título com fonte maior que a descrição */
 .item-titulo {
-    font-size: 15px;
+    flex: 1;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.3;
 }
 
+/* Ícone de tipo (Instagram / Encontro) à direita do título */
+.item-tipo-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(124, 58, 237, .10);
+    border: 1px solid rgba(124, 58, 237, .18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tipo-svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--purple-light);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Countdown badge — à esquerda do título */
+.item-countdown {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(124, 58, 237, .12);
+    border: 1px solid rgba(124, 58, 237, .25);
+    color: var(--purple-light);
+    white-space: nowrap;
+    letter-spacing: .3px;
+}
+
+.item-countdown.aviso {
+    background: rgba(234, 179, 8, .10);
+    border-color: rgba(234, 179, 8, .28);
+    color: #fbbf24;
+}
+
+.item-countdown.urgente {
+    background: rgba(239, 68, 68, .12);
+    border-color: rgba(239, 68, 68, .30);
+    color: #f87171;
+}
+
+/* Data do evento (encontros) */
+.item-data-evento {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: -4px;
+}
+
+/* Descrição — menor que o título */
 .item-desc {
     font-size: 13px;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    /* preserva formatação extra se necessário */
 }
 
-.item-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
+/* Links inline dentro da descrição */
+.item-link-inline {
     color: var(--purple-light);
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    word-break: break-all;
     transition: color .2s;
-    align-self: flex-start;
 }
 
-.item-link:hover {
+.item-link-inline:hover {
     color: var(--purple-neon);
-}
-
-.item-link svg {
-    width: 12px;
-    height: 12px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
 }
 
 /* ─── AVATARES ─── */
@@ -408,6 +466,14 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
+    padding: 4px 0;
+    border-radius: 8px;
+    transition: opacity .2s;
+}
+
+.presenca-avatares:hover {
+    opacity: .8;
 }
 
 .avatar-mini {
@@ -435,7 +501,7 @@ body {
 }
 
 .avatar-mini--letra {
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    background: var(--gradient);
     font-size: .65rem;
     font-weight: 700;
     color: #fff;
@@ -447,10 +513,10 @@ body {
     margin-left: 6px;
 }
 
-/* ─── ENCONTROS ─── */
+/* ─── BOTÃO PARTICIPAR ─── */
 .btn-participar {
     align-self: flex-start;
-    padding: 9px 18px;
+    padding: 10px 20px;
     border-radius: 10px;
     background: var(--gradient);
     border: none;
@@ -460,25 +526,35 @@ body {
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 3px 12px rgba(124, 58, 237, .28);
-    transition: opacity .2s, transform .2s;
+    transition: opacity .2s, transform .2s, box-shadow .2s;
 }
 
 .btn-participar:hover {
     opacity: .86;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, .40);
 }
 
 .btn-participar:active {
     transform: scale(.96);
 }
 
+.btn-participar:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
 .btn-participar.saindo {
-    background: rgba(239, 68, 68, .16);
+    background: rgba(239, 68, 68, .12);
     border: 1px solid rgba(239, 68, 68, .28);
     color: #f87171;
     box-shadow: none;
 }
 
-/* ─── INSTAGRAM ─── */
+.btn-participar.saindo:hover {
+    background: rgba(239, 68, 68, .20);
+}
+
+/* ─── INSTAGRAM — VOTOS ─── */
 .votos-wrap {
     display: flex;
     flex-direction: column;
@@ -495,7 +571,7 @@ body {
 
 .votos-barra-legal {
     height: 100%;
-    background: linear-gradient(90deg, #7C3AED, #A78BFA);
+    background: var(--gradient);
     border-radius: 3px;
     transition: width .4s ease;
 }
@@ -521,7 +597,7 @@ body {
 
 .btn-voto {
     flex: 1;
-    padding: 9px 10px;
+    padding: 10px 10px;
     border-radius: 10px;
     background: rgba(255, 255, 255, .04);
     border: 1px solid var(--border-subtle);
@@ -547,6 +623,7 @@ body {
     background: linear-gradient(135deg, rgba(124, 58, 237, .22), rgba(167, 139, 250, .10));
     border-color: rgba(124, 58, 237, .50);
     color: var(--purple-light);
+    box-shadow: 0 0 10px rgba(124, 58, 237, .18);
 }
 
 .btn-voto.ativo-nao {
@@ -555,7 +632,7 @@ body {
     color: #f87171;
 }
 
-/* ─── MELHORIAS (admin) ──────────────────────────────────────── */
+/* ─── MELHORIAS (admin) ─── */
 .mel-header {
     display: flex;
     align-items: flex-start;
@@ -565,11 +642,11 @@ body {
 
 .mel-autor {
     font-size: 11px;
-    color: rgba(156, 163, 175, .55);
+    color: rgba(156, 163, 175, .50);
     font-style: italic;
+    margin-top: -4px;
 }
 
-/* badge de status */
 .mel-status {
     flex-shrink: 0;
     font-size: 10px;
@@ -598,7 +675,6 @@ body {
     color: #34d399;
 }
 
-/* botões de ação */
 .mel-acoes {
     display: flex;
     gap: 8px;
@@ -607,7 +683,7 @@ body {
 .btn-mel-andamento,
 .btn-mel-finalizado {
     flex: 1;
-    padding: 9px 10px;
+    padding: 10px 10px;
     border-radius: 10px;
     font-family: 'Inter', sans-serif;
     font-size: 12px;
@@ -672,8 +748,152 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
+    line-height: 1.7;
 }
 
+/* ─── MODAL DE PARTICIPANTES ─── */
+.modal-participantes {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(5px);
+}
+
+.modal-box {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid rgba(124, 58, 237, .28);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: min(360px, 92vw);
+    max-height: 72vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .50);
+    animation: modalEntra .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes modalEntra {
+    from {
+        opacity: 0;
+        transform: scale(.9) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-titulo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--purple-light);
+}
+
+.modal-fechar {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: rgba(239, 68, 68, .12);
+    border: 1px solid rgba(239, 68, 68, .25);
+    color: #f87171;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
+}
+
+.modal-fechar:hover {
+    background: rgba(239, 68, 68, .24);
+}
+
+.modal-fechar svg {
+    width: 14px;
+    height: 14px;
+    stroke: #f87171;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.modal-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid var(--border-subtle);
+    transition: background .2s;
+}
+
+.modal-item:hover {
+    background: rgba(124, 58, 237, .06);
+}
+
+.modal-foto {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.modal-foto--letra {
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.modal-nome {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* ─── RESPONSIVO ─── */
 @media (max-width: 480px) {
     .main {
         padding: 16px 12px 60px;
@@ -693,5 +913,9 @@ body {
 
     .mel-acoes {
         flex-direction: column;
+    }
+
+    .item-titulo {
+        font-size: 15px;
     }
 }
