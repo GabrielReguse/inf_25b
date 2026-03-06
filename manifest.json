@@ -1,7 +1,6 @@
 {
   "name": "Inf 25B",
   "short_name": "Inf 25B",
-  "description": "App da turma Inf 25B",
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
