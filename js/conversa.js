@@ -1,8 +1,6 @@
 const API = "https://inf-25b-backend.onrender.com";
 
 // ─── FIX MOBILE: lê de sessionStorage com fallback para localStorage ──────
-// sessionStorage é apagado quando o app vai para background no iOS/Android.
-// localStorage persiste entre sessões, então serve como backup seguro.
 const usuario = (() => {
   try {
     return JSON.parse(
@@ -27,13 +25,10 @@ let chunksAudio   = [];
 let timerGrav     = null;
 let segundosGrav  = 0;
 let poolingInterval = null;
-let replyAlvo     = null;   // { id, autor, texto }
+let replyAlvo     = null;
 let todosUsuarios = [];
 let mentionAtivo  = false;
 let mentionIndex  = 0;
-// ─── SET de menções ativas ─────────────────────────────────────
-// Rastreia os nomes mencionados no momento da inserção (mais confiável
-// do que tentar reler nomes com espaços do texto depois de enviado).
 let mencoesAtivas = new Set();
 
 const elChat      = document.getElementById('chatArea');
@@ -80,12 +75,62 @@ function scrollBaixo() {
   requestAnimationFrame(() => { elChat.scrollTop = elChat.scrollHeight; });
 }
 
-// ─── AGRUPAMENTO: mesmo autor + mesmo minuto + mesmo dia ──────
 function mesmoBlocoTempo(a, b) {
   return a && b && a.autor === b.autor && a.hora === b.hora && a.data === b.data;
 }
 
-// ─── mencoesAtivas (Set) é populado em inserirMention() ──────
+// ─── EASTER EGG: RODRIGO ──────────────────────────────────────
+function triggerRodrigo() {
+  if (document.getElementById('rodrigoOverlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'rodrigoOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    animation: rodrigoEntra 0.3s ease-out both;
+  `;
+
+  overlay.innerHTML = `
+    <img
+      src="../assets/rodrigo.png"
+      onerror="this.src='../assets/rodrigo.jpg'"
+      alt="RODRIGO"
+      style="
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      "
+    />
+    <style>
+      @keyframes rodrigoEntra {
+        from { opacity: 0; transform: scale(1.05); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes rodrigoSai {
+        from { opacity: 1; transform: scale(1); }
+        to   { opacity: 0; transform: scale(1.05); }
+      }
+      .rodrigo-saindo {
+        animation: rodrigoSai 0.3s ease-in both !important;
+      }
+    </style>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.classList.add('rodrigo-saindo');
+    overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
+  }, 2000);
+}
 
 // ─── RENDER ───────────────────────────────────────────────────
 function renderMensagem(msg, agrupado = false) {
@@ -97,11 +142,29 @@ function renderMensagem(msg, agrupado = false) {
   // ── citação (reply) ─────────────────────────────────────────
   let citacaoHTML = '';
   if (msg.replyTo) {
+    // Busca a msg citada no array local pelo ID
     const ref = mensagens.find(m => String(m.id) === String(msg.replyTo));
-    const replyAutor = ref ? escapeHTML(ref.autor) : 'Mensagem';
-    const replyTexto = ref
-      ? (ref.tipo === 'texto' ? escapeHTML(ref.conteudo).slice(0, 80) : `[${ref.tipo}]`)
-      : 'Mensagem apagada';
+
+    let replyAutor, replyTexto;
+
+    if (ref) {
+      // Achou no array local — usa os dados completos
+      replyAutor = escapeHTML(ref.autor);
+      replyTexto = ref.tipo === 'texto'
+        ? escapeHTML(ref.conteudo).slice(0, 80)
+        : `[${ref.tipo}]`;
+    } else if (msg.replyToData) {
+      // Não achou localmente, mas temos os dados populados do backend
+      replyAutor = escapeHTML(msg.replyToData.autor);
+      replyTexto = msg.replyToData.tipo === 'texto'
+        ? escapeHTML(msg.replyToData.texto).slice(0, 80)
+        : `[${msg.replyToData.tipo}]`;
+    } else {
+      // Realmente não encontrado (apagada)
+      replyAutor = 'Mensagem';
+      replyTexto = 'Mensagem apagada';
+    }
+
     citacaoHTML = `
       <div class="msg-citacao">
         <div class="msg-citacao-autor">${replyAutor}</div>
@@ -109,16 +172,12 @@ function renderMensagem(msg, agrupado = false) {
       </div>`;
   }
 
-  // ── nome dentro do balão: só "outros", só 1ª da sequência ───
   const nomeBalaoHTML = (!agrupado && !eu)
     ? `<span class="msg-nome-balao">${escapeHTML(msg.autor)}</span>`
     : '';
 
-  // ── hora dentro do balão ─────────────────────────────────────
-  // "outros" → direita inferior  |  "eu" → esquerda inferior (via CSS)
   const horaHTML = `<span class="msg-hora">${msg.hora}</span>`;
 
-  // ── conteúdo por tipo ────────────────────────────────────────
   let conteudoHTML = '';
 
   if (msg.tipo === 'texto') {
@@ -151,7 +210,6 @@ function renderMensagem(msg, agrupado = false) {
   const fotoEsc = (msg.foto || '').replace(/'/g, "\\'");
   const nomeEsc = escapeHTML(msg.autor).replace(/'/g, "\\'");
 
-  // ── avatar: topo da 1ª mensagem; espaçador nas agrupadas ────
   const avatarEl = agrupado
     ? `<div class="msg-avatar-espaco"></div>`
     : `<div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
@@ -165,6 +223,7 @@ function renderMensagem(msg, agrupado = false) {
   anexarLongPress(grupo, msg);
   return grupo;
 }
+
 function renderTodas() {
   elChat.innerHTML = '';
   let dataAtual = null;
@@ -373,7 +432,6 @@ function inserirMention(nome) {
   const novoAntes = antes.replace(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/, `@${nome} `);
   elInput.value = novoAntes + depois;
   elInput.selectionStart = elInput.selectionEnd = novoAntes.length;
-  // ← registra o nome completo no Set para enviar ao backend corretamente
   mencoesAtivas.add(nome);
   fecharMentionLista();
   elInput.focus();
@@ -418,27 +476,44 @@ elInput.addEventListener('keydown', e => {
   }
 });
 
-// ─── CARREGAR MENSAGENS (com sync de apagados) ────────────────
+// ─── CARREGAR MENSAGENS ────────────────────────────────────────
 async function carregarMensagens() {
   try {
     const resposta = await fetch(`${API}/mensagens`);
     const dados    = await resposta.json();
 
-    const mapear = m => ({
-      id:      m._id,
-      autor:   m.autor?.nome || 'Usuário',
-      foto:    String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-      role:    m.autor?.role || 'aluno',
-      tipo:    m.tipo || 'texto',
-      conteudo: m.texto || '',
-      src:     m.mediaUrl || '',
-      replyTo: m.replyTo || null,
-      onda:    gerarOnda(),
-      duracao: '0:00',
-      hora:    new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      data:    new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-      eu:      String(m.autor?._id || m.autor) === String(meuId)
-    });
+    const mapear = m => {
+      // replyTo pode vir como objeto populado OU como string de ID
+      const replyId = m.replyTo
+        ? (m.replyTo._id ? String(m.replyTo._id) : String(m.replyTo))
+        : null;
+
+      // Guarda os dados populados como fallback para o render
+      const replyToData = (m.replyTo && typeof m.replyTo === 'object' && m.replyTo._id)
+        ? {
+            autor: m.replyTo.autor?.nome || 'Usuário',
+            texto: m.replyTo.texto || '',
+            tipo:  m.replyTo.tipo  || 'texto'
+          }
+        : null;
+
+      return {
+        id:         m._id,
+        autor:      m.autor?.nome || 'Usuário',
+        foto:       String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+        role:       m.autor?.role || 'aluno',
+        tipo:       m.tipo || 'texto',
+        conteudo:   m.texto || '',
+        src:        m.mediaUrl || '',
+        replyTo:    replyId,      // sempre string ou null
+        replyToData,              // dados populados do backend (fallback)
+        onda:       gerarOnda(),
+        duracao:    '0:00',
+        hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+        eu:         String(m.autor?._id || m.autor) === String(meuId)
+      };
+    };
 
     const idsLocais   = new Set(mensagens.map(m => String(m.id)));
     const idsServidor = new Set(dados.map(m => String(m._id)));
@@ -460,6 +535,11 @@ async function carregarMensagens() {
 async function enviarTexto() {
   const texto = elInput.value.trim();
   if (!texto && !imagemPendente) return;
+
+  // ─── Easter egg: RODRIGO em caps totais ───────────────────
+  if (/\bRODRIGO\b/.test(texto)) {
+    triggerRodrigo();
+  }
 
   const replyId  = replyAlvo?.id || null;
   cancelarReply();
@@ -499,9 +579,8 @@ async function enviarTexto() {
     elInput.value = '';
     elInput.style.height = 'auto';
 
-    // usa o Set rastreado em inserirMention (mais confiável que regex em nomes com espaços)
     const mencoes = [...mencoesAtivas];
-    mencoesAtivas.clear(); // limpa para a próxima mensagem
+    mencoesAtivas.clear();
 
     adicionarMensagemLocal({
       id: `temp-${Date.now()}`,
