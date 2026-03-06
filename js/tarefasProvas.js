@@ -15,22 +15,21 @@ const elEventos = document.getElementById('eventosList');
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 // ─── MAPA DE SIGLAS POR MATÉRIA ───────────────────────────────
-// As chaves devem ser IDÊNTICAS aos valores do array MATERIAS em adm.js
 const SIGLAS = {
   'Artes': 'ART',
   'Banco de Dados': 'BD',
-  'Engenharia de Software': 'ES',
+  'Engenharia de Software': 'ESO',
   'Biologia': 'BIO',
-  'Educação Física': 'EF',
+  'Educação Física': 'EDF',
   'Filosofia': 'FIL',
   'Física': 'FIS',
   'Geografia': 'GEO',
-  'História': 'HIST',
+  'História': 'HIS',
   'Língua Inglesa': 'ING',
-  'Língua Portuguesa': 'PORT',
-  'Programação 1': 'PROG',
+  'Língua Portuguesa': 'POR',
+  'Programação 1': 'PRG1',
   'Projeto Integrador 2': 'PI2',
-  'Química': 'QUIM',
+  'Química': 'QUI',
   'Redes': 'RED',
   'Sociologia': 'SOC',
 };
