@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tênis · Meta 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #060b07;
+      --bg2:      #0a120a;
+      --bg3:      #090e0a;
+      --border:   #111a13;
+      --border2:  #1a2e1c;
+      --green1:   #4ade80;
+      --green2:   #86efac;
+      --green3:   #a3e4a8;
+      --muted:    #3a5a3c;
+      --muted2:   #2a4a2c;
+      --text:     #e8f5e2;
+      --text2:    #c8e6cc;
+      --red:      #f87171;
+      --yellow:   #fbbf24;
+      --blue:     #93c5fd;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', 'Courier New', monospace;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    #app { max-width: 560px; margin: 0 auto; }
+
+    /* ── typography ── */
+    .eyebrow { font-size: .66rem; color: var(--muted); letter-spacing: .14em; }
+    .display { font-family: 'Syne', sans-serif; font-size: 1.55rem; font-weight: 800; color: var(--text); }
+    .mono    { font-family: 'DM Mono', monospace; }
+
+    /* ── cards ── */
+    .card      { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    .mini-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: .9rem; }
+    .info-box  { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: .75rem 1rem; }
+
+    /* ── progress bar ── */
+    .bar-track { height: var(--h, 5px); background: #0d150e; border-radius: 99px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 99px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+
+    /* ── buttons ── */
+    button { font-family: inherit; cursor: pointer; transition: opacity .15s, background .15s; }
+    .btn-green   { width: 100%; background: var(--green1); color: var(--bg); border: none; border-radius: 10px; padding: .65rem; font-weight: 500; font-size: .9rem; }
+    .btn-outline { width: 100%; background: transparent; color: var(--green1); border: 1px solid var(--border2); border-radius: 10px; padding: .65rem; font-size: .9rem; }
+    .btn-ghost   { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; color: var(--green1); font-size: .76rem; padding: .38rem .85rem; }
+    button:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* ── tabs ── */
+    .tabs { display: flex; gap: .4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tab  { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: .76rem; padding: .38rem .85rem; }
+    .tab.active { background: #1a2e1c; border-color: var(--border2); color: var(--green1); }
+
+    /* ── fields ── */
+    .field       { display: flex; flex-direction: column; gap: .3rem; flex: 1; }
+    .field label { font-size: .65rem; color: var(--muted); letter-spacing: .12em; }
+    .field input { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: .9rem; padding: .55rem .8rem; outline: none; width: 100%; }
+    .field input:focus { border-color: var(--green1); }
+    .field input::placeholder { color: #1e2e20; }
+
+    /* ── grid helpers ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+    .grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: .6rem; }
+    .grid-211 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: .5rem; }
+
+    /* ── divider ── */
+    .divider { display: flex; align-items: center; gap: .6rem; margin: .9rem 0 .4rem; }
+    .divider span { font-size: .62rem; color: var(--muted2); letter-spacing: .12em; white-space: nowrap; }
+    .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+    /* ── sim row ── */
+    .sim-row { display: flex; justify-content: space-between; align-items: center; padding: .45rem 0; border-bottom: 1px solid #0d150e; }
+    .sim-row span:first-child { font-size: .78rem; color: var(--muted); }
+    .sim-row span:last-child  { font-size: .88rem; font-weight: 500; }
+
+    /* ── table ── */
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: .5rem .75rem; font-size: .62rem; color: var(--muted); letter-spacing: .1em; font-weight: 400; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th.r { text-align: right; }
+    th.c { text-align: center; }
+    td { padding: .5rem .75rem; font-size: .82rem; color: var(--text2); }
+    td.r { text-align: right; }
+    td.c { text-align: center; }
+    tr.total-row { background: #0d150e; border-top: 1px solid var(--border2); }
+
+    /* ── badge ── */
+    .badge { display: inline-block; border-radius: 6px; padding: .1rem .5rem; font-size: .68rem; }
+    .badge-green { background: #1a3a1c; border: 1px solid #2a5a2c; color: var(--green1); }
+    .badge-blue  { background: #1a1a2a; border: 1px solid #2a2a4a; color: var(--blue); }
+
+    /* ── stock chips ── */
+    .size-chip { border-radius: 10px; padding: .5rem .75rem; min-width: 72px; }
+    .size-chip.ok   { background: #0d1a0f; border: 1px solid #1a2e1c; }
+    .size-chip.low  { background: #1a1a0a; border: 1px solid #3a3a1a; }
+
+    /* ── month accordion ── */
+    .month-header { display: flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; padding: 1rem 1.25rem; text-align: left; }
+    .month-subtabs { display: flex; border-bottom: 1px solid var(--border); }
+    .month-subtab  { flex: 1; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-size: .74rem; padding: .6rem; letter-spacing: .08em; }
+    .month-subtab.active { background: #0d150e; border-bottom-color: var(--green1); color: var(--green1); }
+
+    /* ── sync badge ── */
+    .sync { font-size: .62rem; letter-spacing: .08em; }
+    .sync.idle    { color: var(--muted); }
+    .sync.saving  { color: var(--yellow); }
+    .sync.error   { color: var(--red); }
+    .sync.loading { color: var(--blue); }
+
+    /* ── spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #1a2e1c; border-top-color: var(--green1); animation: spin .8s linear infinite; }
+
+    /* ── misc ── */
+    .hidden { display: none !important; }
+    .mb-75  { margin-bottom: .75rem; }
+    .mt-5   { margin-top: .5rem; }
+    .gap-6  { gap: .6rem; }
+    input[type=number]::-webkit-inner-spin-button { opacity: .3; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ─── config ──────────────────────────────────────────────────────────────────
+const API         = 'https://inf-25b-backend.onrender.com';
+const GOAL        = 30000;
+const GOAL_CASH   = 20000;
+const GOAL_STOCK  = 10000;
+const BUY_PRICE   = 50;
+const SELL_PRICE  = 100;
+const PROFIT      = 25;
+const MONTHS      = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// ─── state ───────────────────────────────────────────────────────────────────
+let S = { cash: 0, units: 0, stockMap: {}, months: {}, log: [] };
+let saveTimer = null;
+let currentTab      = 'reg';
+let currentMonthTab = 'sales';
+let openMonth       = null;
+let adjustKey       = null;
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+const fmt  = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+const mKey = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()).padStart(2,'0')}`; };
+const mLbl = () => { const d=new Date(); return `${MONTHS[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`; };
+const now  = () => new Date().toLocaleDateString('pt-BR');
+const sKey = (m,s) => `${m.trim()}||${s.trim()}`;
+const recalcUnits = () => { S.units = Object.values(S.stockMap).reduce((a,x)=>a+x.qty,0); };
+const aggregateRows = entries => {
+  const map = {};
+  for (const e of entries) {
+    const k = `${e.model}__${e.size}`;
+    if (!map[k]) map[k] = { model:e.model, size:e.size, qty:0, revenue:0, profit:0, cost:0 };
+    map[k].qty     += e.qty;
+    map[k].revenue += e.revenue||0;
+    map[k].profit  += e.profit ||0;
+    map[k].cost    += e.cost   ||0;
+  }
+  return Object.values(map);
+};
+
+// ─── sync ────────────────────────────────────────────────────────────────────
+function setSyncUI(status) {
+  const el = document.getElementById('sync-badge');
+  if (!el) return;
+  const map = { idle:'✓ sincronizado', saving:'⟳ salvando…', error:'✕ erro ao salvar', loading:'⟳ carregando…' };
+  el.className = `sync ${status}`;
+  el.textContent = map[status]||'';
+}
+
+async function loadState() {
+  setSyncUI('loading');
+  try {
+    const r = await fetch(`${API}/tenis/estado`);
+    const d = await r.json();
+    S.cash     = d.cash     ?? 0;
+    S.units    = d.units    ?? 0;
+    S.stockMap = d.stockMap ?? {};
+    S.months   = d.months   ?? {};
+    S.log      = d.log      ?? [];
+    setSyncUI('idle');
+  } catch {
+    setSyncUI('error');
+  }
+  render();
+}
+
+function scheduleSave() {
+  setSyncUI('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await fetch(`${API}/tenis/estado`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ cash:S.cash, units:S.units, stockMap:S.stockMap, months:S.months, log:S.log }),
+      });
+      setSyncUI('idle');
+    } catch { setSyncUI('error'); }
+  }, 800);
+}
+
+// ─── actions ─────────────────────────────────────────────────────────────────
+function doSale(qty, model, size) {
+  const profit = qty * PROFIT;
+  const key    = sKey(model, size);
+  S.cash += profit;
+  const cur = S.stockMap[key];
+  if (cur) { cur.qty = Math.max(0, cur.qty - qty); if (cur.qty === 0) delete S.stockMap[key]; }
+  recalcUnits();
+  const mk = mKey(), ml = mLbl();
+  if (!S.months[mk]) S.months[mk] = { label:ml, sales:[], buys:[] };
+  S.months[mk].sales.push({ qty, model, size, revenue:qty*SELL_PRICE, profit:qty*PROFIT });
+  S.log.unshift({ date:now(), qty, profit, type:'sale', model, size, label:`Vendeu ${qty}x ${model} nº${size}` });
+  scheduleSave(); render();
+}
+
+function doBuy(qty, model, size) {
+  const cost = qty * BUY_PRICE;
+  const key  = sKey(model, size);
+  S.cash = Math.max(0, S.cash - cost);
+  if (!S.stockMap[key]) S.stockMap[key] = { model, size, qty:0 };
+  S.stockMap[key].qty += qty;
+  recalcUnits();
+  const mk = mKey(), ml = mLbl();
+  if (!S.months[mk]) S.months[mk] = { label:ml, sales:[], buys:[] };
+  S.months[mk].buys.push({ qty, model, size, cost:qty*BUY_PRICE });
+  S.log.unshift({ date:now(), qty, profit:-cost, type:'buy', model, size, label:`Comprou ${qty}x ${model} nº${size}` });
+  scheduleSave(); render();
+}
+
+function doAdjust(model, size, qty) {
+  const key = sKey(model, size);
+  if (qty <= 0) delete S.stockMap[key];
+  else S.stockMap[key] = { model, size, qty };
+  recalcUnits();
+  scheduleSave(); render();
+}
+
+function doInit(cash, units) {
+  S.cash  = cash;
+  S.units = units;
+  scheduleSave(); render();
+}
+
+// ─── render ───────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const stockValue = S.units * BUY_PRICE;
+  const total      = S.cash + stockValue;
+  const pctTotal   = Math.min(100,(total/GOAL)*100);
+  const pctCash    = Math.min(100,(S.cash/GOAL_CASH)*100);
+  const pctStock   = Math.min(100,(stockValue/GOAL_STOCK)*100);
+  const hasData    = S.cash>0 || S.units>0 || Object.keys(S.stockMap).length>0 || S.log.length>0;
+
+  if (!hasData) { app.innerHTML = renderSetup(); bindSetup(); return; }
+
+  app.innerHTML = `
+    <!-- header -->
+    <div style="margin-bottom:1.5rem">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <span class="eyebrow">NEGÓCIO DE TÊNIS · 2026</span>
+        <span id="sync-badge" class="sync idle">✓ sincronizado</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:.25rem">
+        <h1 class="display" style="margin:0">Meta R$&nbsp;30.000</h1>
+        <div style="text-align:right">
+          <div class="eyebrow" style="margin-bottom:.1rem">TOTAL</div>
+          <div style="font-size:1.5rem;font-weight:500;color:${total>=GOAL?'var(--green1)':'var(--text)'}">${fmt(total)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- main progress -->
+    <div style="margin-bottom:1.4rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
+        <span style="font-size:.68rem;color:var(--muted)">R$ 0</span>
+        <span style="font-size:.76rem;color:var(--green1);font-weight:500">${pctTotal.toFixed(1)}%</span>
+        <span style="font-size:.68rem;color:var(--muted)">R$ 30.000</span>
+      </div>
+      <div class="bar-track" style="--h:8px;border:1px solid var(--border)">
+        <div class="bar-fill" style="width:${pctTotal}%;background:linear-gradient(90deg,#1a5c35,#4ade80)"></div>
+      </div>
+      <p style="margin:.35rem 0 0;font-size:.7rem;color:var(--muted);text-align:center">falta ${fmt(Math.max(0,GOAL-total))} para a meta</p>
+    </div>
+
+    <!-- 2 cards -->
+    <div class="grid-2" style="margin-bottom:1.25rem">
+      <div class="mini-card">
+        <div class="eyebrow" style="margin-bottom:.4rem">💵 CAIXA</div>
+        <div style="font-size:1.15rem;color:var(--green1);font-weight:500;margin-bottom:.4rem">${fmt(S.cash)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pctCash}%;background:var(--green1)"></div></div>
+        <div style="margin-top:.25rem;font-size:.62rem;color:var(--muted2)">meta ${fmt(GOAL_CASH)} · ${pctCash.toFixed(0)}%</div>
+      </div>
+      <div class="mini-card">
+        <div class="eyebrow" style="margin-bottom:.4rem">👟 ESTOQUE</div>
+        <div style="font-size:1.15rem;color:var(--green2);font-weight:500;margin-bottom:.1rem">${fmt(stockValue)}</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:.4rem">${S.units} pares</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pctStock}%;background:var(--green2)"></div></div>
+        <div style="margin-top:.25rem;font-size:.62rem;color:var(--muted2)">meta ${fmt(GOAL_STOCK)} · ${pctStock.toFixed(0)}%</div>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      ${['reg','stock','months','sim','log'].map((id,_,__, lbl=['Registrar','Estoque','Meses','Simular','Histórico'])=>
+        `<button class="tab${currentTab===id?' active':''}" onclick="setTab('${id}')">${lbl[_]}</button>`
+      ).join('')}
+    </div>
+
+    <!-- tab content -->
+    <div id="tab-content">${renderTab()}</div>
+
+    <p style="text-align:center;color:#0d150e;font-size:.6rem;margin-top:2rem">tênis · meta 2026 · feito com claude</p>
+  `;
+
+  bindTab();
+}
+
+function setTab(id) { currentTab = id; render(); }
+
+// ─── setup screen ─────────────────────────────────────────────────────────────
+function renderSetup() {
+  return `
+    <div style="max-width:400px;margin:0 auto;padding-top:3rem">
+      <div class="eyebrow" style="margin-bottom:.4rem">NEGÓCIO DE TÊNIS · 2026</div>
+      <h1 class="display" style="margin-bottom:.4rem">Ponto de partida</h1>
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:2rem">O que você já tem hoje?</p>
+      <div class="field" style="margin-bottom:.75rem">
+        <label>DINHEIRO EM CAIXA (R$)</label>
+        <input id="s-cash" type="number" placeholder="0,00" />
+      </div>
+      <div class="field" style="margin-bottom:.4rem">
+        <label>PARES EM ESTOQUE (UNIDADES)</label>
+        <input id="s-units" type="number" placeholder="0" />
+      </div>
+      <p style="font-size:.7rem;color:var(--muted2);margin-bottom:1.25rem">Os modelos e numerações você cadastra na aba Estoque depois.</p>
+      <div id="setup-preview"></div>
+      <button class="btn-green" id="btn-init">Iniciar →</button>
+    </div>
+  `;
+}
+
+function bindSetup() {
+  const upd = () => {
+    const c = parseFloat(document.getElementById('s-cash')?.value)||0;
+    const u = parseInt(document.getElementById('s-units')?.value)||0;
+    const t = c + u*BUY_PRICE;
+    const el = document.getElementById('setup-preview');
+    if (!el) return;
+    if (t > 0) {
+      el.innerHTML = `
+        <div class="info-box" style="margin-bottom:1.25rem">
+          <div class="eyebrow">CAPITAL INICIAL</div>
+          <div style="font-size:1.4rem;color:var(--green1);margin:.3rem 0 .15rem">${fmt(t)}</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem">${fmt(c)} caixa · ${fmt(u*BUY_PRICE)} estoque (${u} pares)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(t/GOAL)*100)}%;background:var(--green1)"></div></div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">${((t/GOAL)*100).toFixed(1)}% da meta de ${fmt(GOAL)}</div>
+        </div>`;
+    } else { el.innerHTML = ''; }
+  };
+  document.getElementById('s-cash')?.addEventListener('input', upd);
+  document.getElementById('s-units')?.addEventListener('input', upd);
+  document.getElementById('btn-init')?.addEventListener('click', () => {
+    const c = parseFloat(document.getElementById('s-cash')?.value)||0;
+    const u = parseInt(document.getElementById('s-units')?.value)||0;
+    doInit(c, u);
+  });
+}
+
+// ─── tab: registrar ───────────────────────────────────────────────────────────
+function renderReg() {
+  return `
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:1rem">REGISTRAR MOVIMENTO</div>
+      <div class="grid-21" style="margin-bottom:.6rem">
+        <div class="field"><label>MODELO</label><input id="r-model" type="text" placeholder="Ex: Air Force 1" /></div>
+        <div class="field"><label>NUMERAÇÃO</label><input id="r-size" type="text" placeholder="42" /></div>
+      </div>
+      <div class="field" style="margin-bottom:.5rem"><label>QUANTIDADE DE PARES</label><input id="r-qty" type="number" placeholder="3" /></div>
+      <div id="r-preview" style="margin-bottom:.5rem"></div>
+      <div class="grid-2 gap-6">
+        <button class="btn-green" id="btn-sale" disabled>✓ Venda</button>
+        <button class="btn-outline" id="btn-buy" disabled>+ Compra</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindReg() {
+  const upd = () => {
+    const qty   = parseInt(document.getElementById('r-qty')?.value)||0;
+    const model = document.getElementById('r-model')?.value.trim()||'';
+    const size  = document.getElementById('r-size')?.value.trim()||'';
+    const ok    = qty>0 && model && size;
+    document.getElementById('btn-sale').disabled = !ok;
+    document.getElementById('btn-buy').disabled  = !ok;
+    const prev = document.getElementById('r-preview');
+    if (ok && prev) {
+      prev.innerHTML = `
+        <div class="info-box" style="font-size:.76rem">
+          <div style="color:var(--green3);margin-bottom:.2rem">${qty}x ${model} nº${size}</div>
+          <div style="color:var(--muted)">Venda → <span style="color:var(--green1)">+${fmt(qty*PROFIT)}</span> no caixa</div>
+          <div style="color:var(--muted)">Compra → <span style="color:var(--red)">−${fmt(qty*BUY_PRICE)}</span> do caixa · +${qty} no estoque</div>
+        </div>`;
+    } else if (prev) prev.innerHTML = '';
+  };
+  ['r-model','r-size','r-qty'].forEach(id => document.getElementById(id)?.addEventListener('input', upd));
+  document.getElementById('btn-sale')?.addEventListener('click', () => {
+    const qty=parseInt(document.getElementById('r-qty').value)||0;
+    const model=document.getElementById('r-model').value.trim();
+    const size=document.getElementById('r-size').value.trim();
+    if(qty>0&&model&&size) doSale(qty,model,size);
+  });
+  document.getElementById('btn-buy')?.addEventListener('click', () => {
+    const qty=parseInt(document.getElementById('r-qty').value)||0;
+    const model=document.getElementById('r-model').value.trim();
+    const size=document.getElementById('r-size').value.trim();
+    if(qty>0&&model&&size) doBuy(qty,model,size);
+  });
+}
+
+// ─── tab: estoque ─────────────────────────────────────────────────────────────
+function renderStock() {
+  const items = Object.values(S.stockMap).sort((a,b)=>a.model.localeCompare(b.model)||a.size.localeCompare(b.size));
+  const byModel = items.reduce((acc,i) => { (acc[i.model]=acc[i.model]||[]).push(i); return acc; }, {});
+  const stockValue = S.units * BUY_PRICE;
+
+  return `
+    <div class="card mb-75" style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem">
+      <div>
+        <div class="eyebrow">TOTAL EM ESTOQUE</div>
+        <div style="font-size:1.2rem;color:var(--green2);font-weight:500;margin-top:.2rem">${S.units} pares · ${fmt(stockValue)}</div>
+      </div>
+      <button class="btn-ghost" id="btn-toggle-add">+ Adicionar</button>
+    </div>
+
+    <div id="add-form" class="card mb-75" style="display:none;border-color:var(--border2)">
+      <div class="eyebrow" style="margin-bottom:.75rem">ADICIONAR (SEM DÉBITO DE CAIXA)</div>
+      <div class="grid-211" style="margin-bottom:.6rem">
+        <div class="field"><label>MODELO</label><input id="a-model" type="text" placeholder="Air Force 1" /></div>
+        <div class="field"><label>Nº</label><input id="a-size" type="text" placeholder="42" /></div>
+        <div class="field"><label>QTD</label><input id="a-qty" type="number" placeholder="5" /></div>
+      </div>
+      <button class="btn-green" id="btn-add-stock" disabled>Salvar no estoque</button>
+    </div>
+
+    <div style="margin-bottom:.75rem">
+      <div class="field"><input id="stock-search" type="text" placeholder="Buscar modelo ou numeração…" /></div>
+    </div>
+
+    <div id="stock-list">
+      ${items.length === 0
+        ? `<div class="card"><p style="color:var(--muted2);font-size:.84rem">Estoque vazio. Registre compras ou use + Adicionar.</p></div>`
+        : Object.entries(byModel).map(([modelName, mitems]) => {
+            const totalQty = mitems.reduce((s,i)=>s+i.qty,0);
+            const sorted   = [...mitems].sort((a,b)=>parseFloat(a.size)-parseFloat(b.size));
+            return `
+              <div class="card mb-75" style="padding:0;overflow:hidden">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.25rem;border-bottom:1px solid var(--border);background:#090e09">
+                  <div style="display:flex;align-items:center;gap:.75rem">
+                    <span style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700">👟 ${modelName}</span>
+                    <span class="badge badge-green">${totalQty} par${totalQty!==1?'es':''}</span>
+                  </div>
+                  <span style="font-size:.85rem;color:var(--green2);font-weight:500">${fmt(totalQty*BUY_PRICE)}</span>
+                </div>
+                <div style="padding:.85rem 1.25rem;display:flex;flex-wrap:wrap;gap:.5rem">
+                  ${sorted.map(item => {
+                    const key = sKey(item.model, item.size);
+                    const low = item.qty <= 2;
+                    return adjustKey === key
+                      ? `<div class="size-chip ${low?'low':'ok'}">
+                           <div style="font-size:.65rem;color:${low?'#6a6a2c':'var(--muted)'};margin-bottom:.15rem">Nº ${item.size}</div>
+                           <div style="display:flex;gap:.3rem;align-items:center">
+                             <input id="adj-input" type="number" value="${item.qty}"
+                               style="width:48px;background:var(--bg3);border:1px solid var(--green1);border-radius:6px;color:var(--text);font-family:inherit;font-size:.85rem;padding:.2rem .4rem;outline:none" />
+                             <button onclick="confirmAdjust('${item.model}','${item.size}')"
+                               style="background:var(--green1);border:none;border-radius:5px;color:var(--bg);font-size:.7rem;padding:.2rem .4rem;cursor:pointer">✓</button>
+                           </div>
+                         </div>`
+                      : `<div class="size-chip ${low?'low':'ok'}">
+                           <div style="font-size:.65rem;color:${low?'#6a6a2c':'var(--muted)'};margin-bottom:.15rem">Nº ${item.size}</div>
+                           <div style="display:flex;align-items:center;gap:.4rem">
+                             <span style="font-size:1.1rem;font-weight:600;color:${low?'var(--yellow)':'var(--text)'}">${item.qty}</span>
+                             ${low?'<span style="font-size:.6rem;color:var(--yellow)">⚠</span>':''}
+                             <button onclick="startAdjust('${key}')"
+                               style="background:transparent;border:none;color:var(--muted);font-size:.65rem;cursor:pointer;margin-left:auto">✎</button>
+                           </div>
+                         </div>`;
+                  }).join('')}
+                </div>
+              </div>`;
+          }).join('')
+      }
+    </div>
+  `;
+}
+
+function bindStock() {
+  let addVisible = false;
+  document.getElementById('btn-toggle-add')?.addEventListener('click', () => {
+    addVisible = !addVisible;
+    const f = document.getElementById('add-form');
+    if (f) { f.style.display = addVisible ? 'block' : 'none'; }
+    const btn = document.getElementById('btn-toggle-add');
+    if (btn) btn.textContent = addVisible ? '✕ Cancelar' : '+ Adicionar';
+  });
+  const updAdd = () => {
+    const m = document.getElementById('a-model')?.value.trim();
+    const s = document.getElementById('a-size')?.value.trim();
+    const q = parseInt(document.getElementById('a-qty')?.value)||0;
+    const btn = document.getElementById('btn-add-stock');
+    if (btn) btn.disabled = !(m && s && q > 0);
+  };
+  ['a-model','a-size','a-qty'].forEach(id => document.getElementById(id)?.addEventListener('input', updAdd));
+  document.getElementById('btn-add-stock')?.addEventListener('click', () => {
+    const m = document.getElementById('a-model').value.trim();
+    const s = document.getElementById('a-size').value.trim();
+    const q = parseInt(document.getElementById('a-qty').value)||0;
+    if (m && s && q > 0) {
+      const key = sKey(m,s);
+      const cur = S.stockMap[key]?.qty||0;
+      doAdjust(m, s, cur+q);
+    }
+  });
+  document.getElementById('stock-search')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#stock-list .card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+  });
+}
+
+window.startAdjust = (key) => { adjustKey = key; render(); };
+window.confirmAdjust = (model, size) => {
+  const val = parseInt(document.getElementById('adj-input')?.value)||0;
+  adjustKey = null;
+  doAdjust(model, size, val);
+};
+
+// ─── tab: meses ───────────────────────────────────────────────────────────────
+function renderMonths() {
+  const sorted = Object.entries(S.months).sort(([a],[b])=>b.localeCompare(a));
+  if (!sorted.length) return `<div class="card"><p style="color:var(--muted2);font-size:.84rem">Nenhum registro ainda.</p></div>`;
+
+  return sorted.map(([key, month]) => {
+    const salesRows = aggregateRows(month.sales);
+    const buysRows  = aggregateRows(month.buys);
+    const tQS = month.sales.reduce((s,e)=>s+e.qty,0);
+    const tRS = month.sales.reduce((s,e)=>s+e.revenue,0);
+    const tPS = month.sales.reduce((s,e)=>s+e.profit,0);
+    const tQB = month.buys.reduce((s,e)=>s+e.qty,0);
+    const tCB = month.buys.reduce((s,e)=>s+e.cost,0);
+    const isOpen = openMonth === key;
+
+    return `
+      <div class="card mb-75" style="padding:0;overflow:hidden">
+        <button class="month-header" onclick="toggleMonth('${key}')">
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <span style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700">${month.label}</span>
+            ${tQS>0?`<span class="badge badge-green">${tQS} vendido${tQS>1?'s':''}</span>`:''}
+            ${tQB>0?`<span class="badge badge-blue">${tQB} comprado${tQB>1?'s':''}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <div style="text-align:right">
+              <div style="font-size:.62rem;color:var(--muted)">LUCRO</div>
+              <div style="font-size:.95rem;color:var(--green1);font-weight:500">${fmt(tPS)}</div>
+            </div>
+            <span style="color:var(--muted);font-size:.8rem">${isOpen?'▲':'▼'}</span>
+          </div>
+        </button>
+        ${isOpen ? `
+          <div style="border-top:1px solid var(--border)">
+            <div class="month-subtabs">
+              <button class="month-subtab${currentMonthTab==='sales'?' active':''}" onclick="setMonthTab('sales')">VENDAS</button>
+              <button class="month-subtab${currentMonthTab==='buys'?' active':''}" onclick="setMonthTab('buys')">COMPRAS</button>
+            </div>
+            ${currentMonthTab==='sales'
+              ? (salesRows.length===0
+                  ? `<p style="padding:1rem 1.25rem;color:var(--muted2);font-size:.82rem">Nenhuma venda.</p>`
+                  : `<div style="overflow-x:auto"><table>
+                      <thead><tr style="background:#090e0a"><th>#</th><th>Modelo</th><th class="c">Nº</th><th class="c">Qtd</th><th class="r">Receita</th><th class="r">Seu lucro</th></tr></thead>
+                      <tbody>
+                        ${salesRows.map((r,i)=>`<tr style="border-bottom:1px solid #0d150e;background:${i%2?'#090e0a':'transparent'}">
+                          <td style="color:var(--muted)">${i+1}</td><td><strong>${r.model}</strong></td><td class="c" style="color:var(--green3)">${r.size}</td>
+                          <td class="c">${r.qty}</td><td class="r" style="color:var(--green2)">${fmt(r.revenue)}</td><td class="r" style="color:var(--green1);font-weight:500">${fmt(r.profit)}</td>
+                        </tr>`).join('')}
+                        <tr class="total-row"><td colspan="3" style="color:var(--muted)">TOTAL</td><td class="c"><strong>${tQS}</strong></td><td class="r" style="color:var(--green2);font-weight:500">${fmt(tRS)}</td><td class="r" style="color:var(--green1);font-weight:500">${fmt(tPS)}</td></tr>
+                      </tbody>
+                    </table></div>`)
+              : (buysRows.length===0
+                  ? `<p style="padding:1rem 1.25rem;color:var(--muted2);font-size:.82rem">Nenhuma compra.</p>`
+                  : `<div style="overflow-x:auto"><table>
+                      <thead><tr style="background:#090e0a"><th>#</th><th>Modelo</th><th class="c">Nº</th><th class="c">Qtd</th><th class="r">Custo total</th></tr></thead>
+                      <tbody>
+                        ${buysRows.map((r,i)=>`<tr style="border-bottom:1px solid #0d150e;background:${i%2?'#090e0a':'transparent'}">
+                          <td style="color:var(--muted)">${i+1}</td><td><strong>${r.model}</strong></td><td class="c" style="color:var(--green3)">${r.size}</td>
+                          <td class="c">${r.qty}</td><td class="r" style="color:var(--red)">${fmt(r.cost)}</td>
+                        </tr>`).join('')}
+                        <tr class="total-row"><td colspan="3" style="color:var(--muted)">TOTAL</td><td class="c"><strong>${tQB}</strong></td><td class="r" style="color:var(--red);font-weight:500">${fmt(tCB)}</td></tr>
+                      </tbody>
+                    </table></div>`)}
+          </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+window.toggleMonth  = (key) => { openMonth = openMonth===key?null:key; render(); };
+window.setMonthTab  = (tab) => { currentMonthTab = tab; render(); };
+
+// ─── tab: simular ─────────────────────────────────────────────────────────────
+function renderSim() {
+  return `
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:1rem">SIMULADOR DE RITMO</div>
+      <div class="field" style="margin-bottom:.75rem"><label>PARES VENDIDOS POR MÊS</label><input id="sim-q" type="number" placeholder="Ex: 20" value="20" /></div>
+      <div class="divider"><span>CUSTOS PESSOAIS MENSAIS</span></div>
+      <div class="grid-2 gap-6" style="margin-bottom:.75rem">
+        <div class="field"><label>CUSTOS DE VIDA (R$)</label><input id="sim-life" type="number" placeholder="Ex: 600" /></div>
+        <div class="field"><label>MENSALIDADE IFC (R$)</label><input id="sim-ifc" type="number" placeholder="Ex: 0" /></div>
+      </div>
+      <div id="sim-result"></div>
+    </div>
+  `;
+}
+
+function bindSim() {
+  const calc = () => {
+    const simQ    = parseInt(document.getElementById('sim-q')?.value)||0;
+    const life    = parseFloat(document.getElementById('sim-life')?.value)||0;
+    const ifc     = parseFloat(document.getElementById('sim-ifc')?.value)||0;
+    const costs   = life + ifc;
+    const gross   = simQ * PROFIT;
+    const breakEv = costs > 0 ? Math.ceil(costs/PROFIT) : 0;
+    const net     = Math.max(0, gross - costs);
+    let months = 0;
+    if (simQ > 0) {
+      let c = S.cash, u = S.units;
+      for (let m=1;m<=120;m++) { c+=Math.max(0,simQ*PROFIT-costs); if(c+u*BUY_PRICE>=GOAL){months=m;break;} }
+    }
+    const el = document.getElementById('sim-result');
+    if (!el || simQ <= 0) return;
+    el.innerHTML = `
+      <div class="divider"><span>RECEITA</span></div>
+      <div class="sim-row"><span>Lucro bruto / mês</span><span style="color:var(--green1)">${fmt(gross)}</span></div>
+      ${costs>0?`
+        <div class="divider"><span>SEUS CUSTOS</span></div>
+        ${life>0?`<div class="sim-row"><span>Custos de vida</span><span style="color:var(--red)">− ${fmt(life)}</span></div>`:''}
+        ${ifc >0?`<div class="sim-row"><span>IFC</span><span style="color:var(--red)">− ${fmt(ifc)}</span></div>`:''}
+        <div class="sim-row"><span>Total custos</span><span style="color:var(--red)">− ${fmt(costs)}</span></div>
+        <div class="sim-row"><span>Pares só pra cobrir custos</span><span style="color:var(--yellow)">${breakEv} pares</span></div>
+      `:''}
+      <div class="divider"><span>SALDO PARA A META</span></div>
+      <div style="background:${net>0?'#0d1a0e':'#1a0e0e'};border:1px solid ${net>0?'#1a3a1c':'#3a1a1a'};border-radius:10px;padding:.75rem 1rem;margin:.5rem 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.78rem;color:var(--muted)">${costs>0?'Sobra para a meta / mês':'Vai para a meta / mês'}</span>
+          <span style="font-size:1.1rem;font-weight:600;color:${net>0?'var(--green1)':'var(--red)'}">${fmt(net)}</span>
+        </div>
+        ${net<=0&&costs>0?`<p style="margin:.4rem 0 0;font-size:.72rem;color:#7f3a3a">⚠ Você precisa vender ao menos ${breakEv+1} pares/mês para sobrar algo para a meta.</p>`:''}
+      </div>
+      ${net>0?`
+        <div class="divider"><span>PROJEÇÃO</span></div>
+        <div class="sim-row"><span>Meses p/ R$20k caixa</span><span style="color:var(--green3)">${Math.ceil(Math.max(0,GOAL_CASH-S.cash)/net)} meses</span></div>
+        <div style="display:flex;justify-content:space-between;padding:.6rem .75rem;background:#0d1a0e;border-radius:8px;margin-top:.4rem">
+          <span style="font-size:.78rem;color:var(--muted)">Meta total (R$30k) em</span>
+          <span style="font-size:.95rem;color:var(--green2);font-weight:600">${months?`~${months} ${months===1?'mês':'meses'}`:'>10 anos'}</span>
+        </div>
+      `:''}
+      <div style="margin-top:.75rem;padding:.7rem .9rem;background:var(--bg3);border-radius:10px;font-size:.7rem;color:var(--muted2)">
+        Custo R$50 · Venda R$100 · Seu lucro R$25 · Lucro do pai R$25
+      </div>
+    `;
+  };
+  ['sim-q','sim-life','sim-ifc'].forEach(id => document.getElementById(id)?.addEventListener('input', calc));
+  calc();
+}
+
+// ─── tab: histórico ───────────────────────────────────────────────────────────
+function renderLog() {
+  if (!S.log.length) return `<div class="card"><p style="color:var(--muted2);font-size:.84rem">Nenhum registro ainda.</p></div>`;
+  return `
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:1rem">HISTÓRICO</div>
+      ${S.log.map(e => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid #0d150e">
+          <div>
+            <div style="font-size:.83rem;color:var(--text2)">${e.label}</div>
+            <div style="font-size:.67rem;color:var(--muted);margin-top:.1rem">${e.date}</div>
+          </div>
+          <span style="font-size:.88rem;font-weight:500;color:${e.profit>=0?'var(--green1)':'var(--red)'}">
+            ${e.profit>=0?'+':''}${fmt(e.profit)}
+          </span>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+// ─── tab router ───────────────────────────────────────────────────────────────
+function renderTab() {
+  switch (currentTab) {
+    case 'reg':    return renderReg();
+    case 'stock':  return renderStock();
+    case 'months': return renderMonths();
+    case 'sim':    return renderSim();
+    case 'log':    return renderLog();
+  }
+}
+
+function bindTab() {
+  switch (currentTab) {
+    case 'reg':   bindReg();   break;
+    case 'stock': bindStock(); break;
+    case 'sim':   bindSim();   break;
+  }
+}
+
+// ─── boot ─────────────────────────────────────────────────────────────────────
+loadState();
+</script>
+</body>
+</html>
