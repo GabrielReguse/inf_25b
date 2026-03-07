@@ -1,34 +1,43 @@
 const API = "https://inf-25b-backend.onrender.com";
 
+// ─── FIX MOBILE: lê de sessionStorage com fallback para localStorage ──────
 const usuario = (() => {
-  try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); }
+  try {
+    return JSON.parse(
+      sessionStorage.getItem('usuario') ||
+      localStorage.getItem('usuario') ||
+      '{}'
+    );
+  }
   catch { return {}; }
 })();
-const meuNome   = usuario.nome       || 'Você';
-const meuId     = usuario.id         || null;
+
+const meuNome  = usuario.nome      || 'Você';
+const meuId    = usuario.id        || null;
 const minhaFoto = usuario.fotoPerfil || null;
-const isAdmin   = usuario.role === 'admin';
+const isAdmin  = usuario.role === 'admin';
 
-let mensagens       = [];
-let imagemPendente  = null;
-let mediaRecorder   = null;
-let gravando        = false;
-let chunksAudio     = [];
-let timerGrav       = null;
-let segundosGrav    = 0;
+let mensagens     = [];
+let imagemPendente = null;
+let mediaRecorder = null;
+let gravando      = false;
+let chunksAudio   = [];
+let timerGrav     = null;
+let segundosGrav  = 0;
 let poolingInterval = null;
-let replyAlvo       = null;   // { id, autor, texto }
-let todosUsuarios   = [];
-let mentionAtivo    = false;
-let mentionIndex    = 0;
+let replyAlvo     = null;
+let todosUsuarios = [];
+let mentionAtivo  = false;
+let mentionIndex  = 0;
+let mencoesAtivas = new Set();
 
-const elChat        = document.getElementById('chatArea');
-const elInput       = document.getElementById('inputTexto');
-const elBtnEnviar   = document.getElementById('btnEnviar');
-const elBtnFoto     = document.getElementById('btnFoto');
-const elInputFoto   = document.getElementById('inputFoto');
-const elBtnAudio    = document.getElementById('btnAudio');
-const elPreview     = document.getElementById('previewImgWrap');
+const elChat      = document.getElementById('chatArea');
+const elInput     = document.getElementById('inputTexto');
+const elBtnEnviar = document.getElementById('btnEnviar');
+const elBtnFoto   = document.getElementById('btnFoto');
+const elInputFoto = document.getElementById('inputFoto');
+const elBtnAudio  = document.getElementById('btnAudio');
+const elPreview   = document.getElementById('previewImgWrap');
 const elPreviewImg  = document.getElementById('previewImgThumb');
 const elPreviewNome = document.getElementById('previewImgNome');
 const elPreviewRem  = document.getElementById('previewImgRemove');
@@ -50,7 +59,7 @@ function gerarOnda() {
 }
 
 function escapeHTML(str = '') {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function avatarHTML(foto, nome) {
@@ -66,21 +75,96 @@ function scrollBaixo() {
   requestAnimationFrame(() => { elChat.scrollTop = elChat.scrollHeight; });
 }
 
+function mesmoBlocoTempo(a, b) {
+  return a && b && a.autor === b.autor && a.hora === b.hora && a.data === b.data;
+}
+
+// ─── EASTER EGG: RODRIGO ──────────────────────────────────────
+function triggerRodrigo() {
+  if (document.getElementById('rodrigoOverlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'rodrigoOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    animation: rodrigoEntra 0.3s ease-out both;
+  `;
+
+  overlay.innerHTML = `
+    <img
+      src="../assets/rodrigo.png"
+      onerror="this.src='../assets/rodrigo.jpg'"
+      alt="RODRIGO"
+      style="
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      "
+    />
+    <style>
+      @keyframes rodrigoEntra {
+        from { opacity: 0; transform: scale(1.05); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes rodrigoSai {
+        from { opacity: 1; transform: scale(1); }
+        to   { opacity: 0; transform: scale(1.05); }
+      }
+      .rodrigo-saindo {
+        animation: rodrigoSai 0.3s ease-in both !important;
+      }
+    </style>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.classList.add('rodrigo-saindo');
+    overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
+  }, 2000);
+}
+
 // ─── RENDER ───────────────────────────────────────────────────
-function renderMensagem(msg) {
+function renderMensagem(msg, agrupado = false) {
   const eu = msg.eu || msg.autor === meuNome;
   const grupo = document.createElement('div');
-  grupo.className = `msg-grupo ${eu ? 'eu' : 'outros'}`;
+  grupo.className = `msg-grupo ${eu ? 'eu' : 'outros'}${agrupado ? ' msg-agrupada' : ''}`;
   grupo.dataset.id = msg.id;
 
-  // citação (reply)
+  // ── citação (reply) ─────────────────────────────────────────
   let citacaoHTML = '';
   if (msg.replyTo) {
+    // Busca a msg citada no array local pelo ID
     const ref = mensagens.find(m => String(m.id) === String(msg.replyTo));
-    const replyAutor = ref ? escapeHTML(ref.autor) : 'Mensagem';
-    const replyTexto = ref
-      ? (ref.tipo === 'texto' ? escapeHTML(ref.conteudo).slice(0, 80) : `[${ref.tipo}]`)
-      : 'Mensagem apagada';
+
+    let replyAutor, replyTexto;
+
+    if (ref) {
+      // Achou no array local — usa os dados completos
+      replyAutor = escapeHTML(ref.autor);
+      replyTexto = ref.tipo === 'texto'
+        ? escapeHTML(ref.conteudo).slice(0, 80)
+        : `[${ref.tipo}]`;
+    } else if (msg.replyToData) {
+      // Não achou localmente, mas temos os dados populados do backend
+      replyAutor = escapeHTML(msg.replyToData.autor);
+      replyTexto = msg.replyToData.tipo === 'texto'
+        ? escapeHTML(msg.replyToData.texto).slice(0, 80)
+        : `[${msg.replyToData.tipo}]`;
+    } else {
+      // Realmente não encontrado (apagada)
+      replyAutor = 'Mensagem';
+      replyTexto = 'Mensagem apagada';
+    }
+
     citacaoHTML = `
       <div class="msg-citacao">
         <div class="msg-citacao-autor">${replyAutor}</div>
@@ -88,41 +172,53 @@ function renderMensagem(msg) {
       </div>`;
   }
 
+  const nomeBalaoHTML = (!agrupado && !eu)
+    ? `<span class="msg-nome-balao">${escapeHTML(msg.autor)}</span>`
+    : '';
+
+  const horaHTML = `<span class="msg-hora">${msg.hora}</span>`;
+
   let conteudoHTML = '';
+
   if (msg.tipo === 'texto') {
     conteudoHTML = `
-      <div class="msg-balao">${citacaoHTML}${escapeHTML(msg.conteudo)}</div>
-      <span class="msg-hora">${msg.hora}</span>`;
+      <div class="msg-balao">
+        ${nomeBalaoHTML}${citacaoHTML}<div class="msg-balao-inner"><span class="msg-texto">${escapeHTML(msg.conteudo)}</span>${horaHTML}</div>
+      </div>`;
+
   } else if (msg.tipo === 'imagem') {
     conteudoHTML = `
-      <div class="msg-balao" style="padding:6px">${citacaoHTML}
-        <img class="msg-img" src="${msg.src}" alt="imagem" onclick="abrirImagem('${msg.src}')"/>
-      </div>
-      <span class="msg-hora">${msg.hora}</span>`;
+      <div class="msg-balao msg-balao-midia">
+        ${nomeBalaoHTML}${citacaoHTML}<div class="msg-img-wrap">
+          <img class="msg-img" src="${msg.src}" alt="imagem" onclick="abrirImagem('${msg.src}')"/>
+          <span class="msg-hora msg-hora-midia">${msg.hora}</span>
+        </div>
+      </div>`;
+
   } else if (msg.tipo === 'audio') {
     conteudoHTML = `
       <div class="msg-audio">
-        ${citacaoHTML}
-        <button class="audio-play" onclick="toggleAudio(this, '${msg.src || ''}')">
+        ${nomeBalaoHTML}${citacaoHTML}<button class="audio-play" onclick="toggleAudio(this, '${msg.src || ''}')">
           <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff"/></svg>
         </button>
         <div class="audio-onda">${ondaHTML(msg.onda)}</div>
         <span class="audio-dur">${msg.duracao}</span>
-      </div>
-      <span class="msg-hora">${msg.hora}</span>`;
+        ${horaHTML}
+      </div>`;
   }
 
   const fotoEsc = (msg.foto || '').replace(/'/g, "\\'");
   const nomeEsc = escapeHTML(msg.autor).replace(/'/g, "\\'");
 
+  const avatarEl = agrupado
+    ? `<div class="msg-avatar-espaco"></div>`
+    : `<div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
+         ${avatarHTML(msg.foto, msg.autor)}
+       </div>`;
+
   grupo.innerHTML = `
-    <div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
-      ${avatarHTML(msg.foto, msg.autor)}
-    </div>
-    <div class="msg-col">
-      <span class="msg-nome" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">${escapeHTML(msg.autor)}</span>
-      ${conteudoHTML}
-    </div>`;
+    ${avatarEl}
+    <div class="msg-col">${conteudoHTML}</div>`;
 
   anexarLongPress(grupo, msg);
   return grupo;
@@ -131,12 +227,14 @@ function renderMensagem(msg) {
 function renderTodas() {
   elChat.innerHTML = '';
   let dataAtual = null;
-  mensagens.forEach(msg => {
+  mensagens.forEach((msg, i) => {
     if (msg.data !== dataAtual) {
       dataAtual = msg.data;
       elChat.appendChild(criarSeparadorData(msg.data));
     }
-    elChat.appendChild(renderMensagem(msg));
+    const anterior = mensagens[i - 1];
+    const agrupado = mesmoBlocoTempo(anterior, msg);
+    elChat.appendChild(renderMensagem(msg, agrupado));
   });
   scrollBaixo();
 }
@@ -146,8 +244,9 @@ function adicionarMensagemLocal(msg) {
   if (!ultima || ultima.data !== msg.data) {
     elChat.appendChild(criarSeparadorData(msg.data));
   }
+  const agrupado = mesmoBlocoTempo(ultima, msg);
   mensagens.push(msg);
-  elChat.appendChild(renderMensagem(msg));
+  elChat.appendChild(renderMensagem(msg, agrupado));
   scrollBaixo();
 }
 
@@ -174,12 +273,12 @@ function anexarLongPress(el, msg) {
 
   const cancelar = () => clearTimeout(timer);
 
-  el.addEventListener('touchstart',  iniciar,  { passive: true });
-  el.addEventListener('touchend',    cancelar);
-  el.addEventListener('touchmove',   cancelar);
-  el.addEventListener('mousedown',   iniciar);
-  el.addEventListener('mouseup',     cancelar);
-  el.addEventListener('mouseleave',  cancelar);
+  el.addEventListener('touchstart', iniciar, { passive: true });
+  el.addEventListener('touchend', cancelar);
+  el.addEventListener('touchmove', cancelar);
+  el.addEventListener('mousedown', iniciar);
+  el.addEventListener('mouseup', cancelar);
+  el.addEventListener('mouseleave', cancelar);
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     abrirCtxMenu(e.clientX, e.clientY, msg);
@@ -190,7 +289,7 @@ function anexarLongPress(el, msg) {
 function abrirCtxMenu(x, y, msg) {
   fecharCtxMenu();
 
-  const ehMeu   = msg.eu || msg.autor === meuNome;
+  const ehMeu  = msg.eu || msg.autor === meuNome;
   const podeDel = ehMeu || isAdmin;
 
   const menu = document.createElement('div');
@@ -283,7 +382,7 @@ function getMentionQuery() {
   const val    = elInput.value;
   const cursor = elInput.selectionStart;
   const antes  = val.slice(0, cursor);
-  const match  = antes.match(/@([\wÀ-ú]*)$/);
+  const match  = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
   return match ? match[1] : null;
 }
 
@@ -305,7 +404,7 @@ function abrirMentionLista(filtro) {
     item.dataset.nome = u.nome;
     item.innerHTML = `
       <div class="mention-avatar">
-        ${u.fotoPerfil ? `<img src="${u.fotoPerfil}"/>` : u.nome.slice(0,2).toUpperCase()}
+        ${u.fotoPerfil ? `<img src="${u.fotoPerfil}"/>` : u.nome.slice(0, 2).toUpperCase()}
       </div>
       ${escapeHTML(u.nome)}`;
     item.addEventListener('click', () => inserirMention(u.nome));
@@ -330,9 +429,10 @@ function inserirMention(nome) {
   const cursor = elInput.selectionStart;
   const antes  = val.slice(0, cursor);
   const depois = val.slice(cursor);
-  const novoAntes = antes.replace(/@([\wÀ-ú]*)$/, `@${nome} `);
+  const novoAntes = antes.replace(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/, `@${nome} `);
   elInput.value = novoAntes + depois;
   elInput.selectionStart = elInput.selectionEnd = novoAntes.length;
+  mencoesAtivas.add(nome);
   fecharMentionLista();
   elInput.focus();
 }
@@ -376,37 +476,51 @@ elInput.addEventListener('keydown', e => {
   }
 });
 
-// ─── CARREGAR MENSAGENS (com sync de apagados) ────────────────
+// ─── CARREGAR MENSAGENS ────────────────────────────────────────
 async function carregarMensagens() {
   try {
     const resposta = await fetch(`${API}/mensagens`);
     const dados    = await resposta.json();
 
-    const mapear = m => ({
-      id:       m._id,
-      autor:    m.autor?.nome || 'Usuário',
-      foto:     String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-      role:     m.autor?.role || 'aluno',
-      tipo:     m.tipo || 'texto',
-      conteudo: m.texto || '',
-      src:      m.mediaUrl || '',
-      replyTo:  m.replyTo || null,
-      onda:     gerarOnda(),
-      duracao:  '0:00',
-      hora:     new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      data:     new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-      eu:       String(m.autor?._id || m.autor) === String(meuId)
-    });
+    const mapear = m => {
+      // replyTo pode vir como objeto populado OU como string de ID
+      const replyId = m.replyTo
+        ? (m.replyTo._id ? String(m.replyTo._id) : String(m.replyTo))
+        : null;
+
+      // Guarda os dados populados como fallback para o render
+      const replyToData = (m.replyTo && typeof m.replyTo === 'object' && m.replyTo._id)
+        ? {
+            autor: m.replyTo.autor?.nome || 'Usuário',
+            texto: m.replyTo.texto || '',
+            tipo:  m.replyTo.tipo  || 'texto'
+          }
+        : null;
+
+      return {
+        id:         m._id,
+        autor:      m.autor?.nome || 'Usuário',
+        foto:       String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+        role:       m.autor?.role || 'aluno',
+        tipo:       m.tipo || 'texto',
+        conteudo:   m.texto || '',
+        src:        m.mediaUrl || '',
+        replyTo:    replyId,      // sempre string ou null
+        replyToData,              // dados populados do backend (fallback)
+        onda:       gerarOnda(),
+        duracao:    '0:00',
+        hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+        eu:         String(m.autor?._id || m.autor) === String(meuId)
+      };
+    };
 
     const idsLocais   = new Set(mensagens.map(m => String(m.id)));
     const idsServidor = new Set(dados.map(m => String(m._id)));
 
-    // verifica se alguma mensagem foi apagada no servidor
     const algumApagado = mensagens.some(
       m => !String(m.id).startsWith('temp-') && !idsServidor.has(String(m.id))
     );
-
-    // verifica se há mensagens novas
     const temNovas = dados.some(m => !idsLocais.has(String(m._id)));
 
     if (!algumApagado && !temNovas) return;
@@ -422,7 +536,12 @@ async function enviarTexto() {
   const texto = elInput.value.trim();
   if (!texto && !imagemPendente) return;
 
-  const replyId = replyAlvo?.id || null;
+  // ─── Easter egg: RODRIGO em caps totais ───────────────────
+  if (/\bRODRIGO\b/.test(texto)) {
+    triggerRodrigo();
+  }
+
+  const replyId  = replyAlvo?.id || null;
   cancelarReply();
 
   if (imagemPendente) {
@@ -449,7 +568,7 @@ async function enviarTexto() {
           await fetch(`${API}/mensagens`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ autor: meuId, texto: '', tipo: 'imagem', mediaUrl: dados.url, replyTo: replyId })
+            body: JSON.stringify({ autor: meuId, texto: '', tipo: 'imagem', mediaUrl: dados.url, replyTo: replyId, mencoes: [] })
           });
         }
       } catch (err) { console.error('Erro upload imagem:', err); }
@@ -459,6 +578,9 @@ async function enviarTexto() {
   if (texto) {
     elInput.value = '';
     elInput.style.height = 'auto';
+
+    const mencoes = [...mencoesAtivas];
+    mencoesAtivas.clear();
 
     adicionarMensagemLocal({
       id: `temp-${Date.now()}`,
@@ -474,7 +596,7 @@ async function enviarTexto() {
       await fetch(`${API}/mensagens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autor: meuId, texto, replyTo: replyId })
+        body: JSON.stringify({ autor: meuId, texto, replyTo: replyId, mencoes })
       });
     } catch (err) { console.error('Erro ao enviar mensagem:', err); }
   }
@@ -490,7 +612,7 @@ elInputFoto.addEventListener('change', () => {
   if (!file) return;
   const url = URL.createObjectURL(file);
   imagemPendente = { src: url, nome: file.name, file };
-  elPreviewImg.src = url;
+  elPreviewImg.src  = url;
   elPreviewNome.textContent = file.name;
   elPreview.classList.add('visivel');
   elInputFoto.value = '';
@@ -536,7 +658,7 @@ elBtnAudio.addEventListener('click', async () => {
               await fetch(`${API}/mensagens`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ autor: meuId, texto: '', tipo: 'audio', mediaUrl: dados.url })
+                body: JSON.stringify({ autor: meuId, texto: '', tipo: 'audio', mediaUrl: dados.url, mencoes: [] })
               });
             }
           } catch (err) { console.error('Erro upload áudio:', err); }
@@ -556,7 +678,7 @@ elBtnAudio.addEventListener('click', async () => {
 });
 
 function formatarDuracao(s) {
-  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 // ─── PLAYER ÁUDIO ─────────────────────────────────────────────
@@ -596,7 +718,7 @@ window.addEventListener('beforeunload', () => {
 // ─── MINI PERFIL ──────────────────────────────────────────────
 function verMiniPerfil(autorId, nome, foto) {
   document.getElementById('miniPerfilModal')?.remove();
-  const inicial = nome.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+  const inicial = nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
   const modal = document.createElement('div');
   modal.id = 'miniPerfilModal';
   modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;

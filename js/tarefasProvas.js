@@ -3,16 +3,60 @@ const API = "https://inf-25b-backend.onrender.com";
 let anoAtual = new Date().getFullYear();
 let mesAtual = new Date().getMonth();
 let diaSelecionado = null;
-let eventos = {};   // tarefas/provas por data
-let feriados = {};  // feriados por data
+let eventos = {};
+let feriados = {};
 
 const elMesTitulo = document.getElementById('calMesTitulo');
-const elGrade     = document.getElementById('calGrade');
+const elGrade = document.getElementById('calGrade');
 const elPainelDia = document.getElementById('painelDia');
 const elPainelTit = document.getElementById('painelDiaTitulo');
-const elEventos   = document.getElementById('eventosList');
+const elEventos = document.getElementById('eventosList');
 
-const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+// ─── MAPA DE SIGLAS POR MATÉRIA ───────────────────────────────
+const SIGLAS = {
+  'Artes': 'ART',
+  'Banco de Dados': 'BD',
+  'Engenharia de Software': 'ESO',
+  'Biologia': 'BIO',
+  'Educação Física': 'EDF',
+  'Filosofia': 'FIL',
+  'Física': 'FIS',
+  'Geografia': 'GEO',
+  'História': 'HIS',
+  'Língua Inglesa': 'ING',
+  'Língua Portuguesa': 'POR',
+  'Programação 1': 'PRG1',
+  'Projeto Integrador 2': 'PI2',
+  'Química': 'QUI',
+  'Redes': 'RED',
+  'Sociologia': 'SOC',
+};
+
+/** Retorna a sigla de uma matéria ou abreviação automática */
+function getSigla(materia) {
+  if (!materia) return '?';
+  return SIGLAS[materia] || materia.slice(0, 4).toUpperCase();
+}
+
+// ─── FORMATA TEXTO: preserva quebras de linha e transforma links ─
+function formatarTexto(texto) {
+  if (!texto) return '';
+  // Escapa HTML para evitar XSS
+  const escaped = texto
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  // Transforma URLs em links clicáveis
+  const linked = escaped.replace(
+    /(https?:\/\/[^\s<>"]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" class="link-texto">$1</a>'
+  );
+  // Preserva quebras de linha
+  return linked.replace(/\n/g, '<br>');
+}
 
 // ─── CARREGA DADOS DO BACKEND ─────────────────────────────────
 async function carregarTudo() {
@@ -28,15 +72,15 @@ async function carregarTarefas() {
       const chave = new Date(t.dataEntrega).toISOString().slice(0, 10);
       if (!eventos[chave]) eventos[chave] = [];
       eventos[chave].push({
-        tipo:       t.tipo     || 'tarefa',
-        materia:    t.materia  || t.titulo   || 'Tarefa',
-        conteudo:   t.conteudo || t.descricao || '',
-        entrega:    t.tipoEntrega || 'digital',
-        grupo:      t.grupo    || false,
+        tipo: t.tipo || 'tarefa',
+        materia: t.materia || t.titulo || 'Tarefa',
+        conteudo: t.conteudo || t.descricao || '',
+        entrega: t.tipoEntrega || 'digital',
+        grupo: t.grupo || false,
         numMembros: t.numMembros || 0,
-        consulta:   t.consulta || false,
-        resumo:     t.descricao || '',
-        _id:        t._id
+        consulta: t.consulta || false,
+        resumo: t.descricao || '',
+        _id: t._id
       });
     });
   } catch (err) { console.error("Erro ao carregar tarefas:", err); }
@@ -58,9 +102,9 @@ function renderCalendario() {
   elMesTitulo.textContent = `${MESES[mesAtual]} ${anoAtual}`;
   elGrade.innerHTML = '';
 
-  const hoje       = new Date();
+  const hoje = new Date();
   const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
-  const totalDias   = new Date(anoAtual, mesAtual + 1, 0).getDate();
+  const totalDias = new Date(anoAtual, mesAtual + 1, 0).getDate();
 
   for (let i = 0; i < primeiroDia; i++) {
     const vazio = document.createElement('div');
@@ -69,16 +113,16 @@ function renderCalendario() {
   }
 
   for (let d = 1; d <= totalDias; d++) {
-    const chave    = chaveData(anoAtual, mesAtual, d);
-    const evsDia   = eventos[chave]  || [];
-    const feriado  = feriados[chave] || null;
-    const eHoje    = d === hoje.getDate() && mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear();
-    const eSel     = diaSelecionado === chave;
+    const chave = chaveData(anoAtual, mesAtual, d);
+    const evsDia = eventos[chave] || [];
+    const feriado = feriados[chave] || null;
+    const eHoje = d === hoje.getDate() && mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear();
+    const eSel = diaSelecionado === chave;
 
     const cel = document.createElement('div');
     let classes = 'cal-dia';
-    if (eHoje)   classes += ' hoje';
-    if (eSel)    classes += ' selecionado';
+    if (eHoje) classes += ' hoje';
+    if (eSel) classes += ' selecionado';
     if (feriado) classes += ' feriado';
     cel.className = classes;
     cel.dataset.chave = chave;
@@ -88,7 +132,7 @@ function renderCalendario() {
     num.textContent = d;
     cel.appendChild(num);
 
-    // título do feriado (completo, não sigla)
+    // FIX 2: Feriados mostram o TÍTULO COMPLETO no calendário
     if (feriado) {
       const ft = document.createElement('div');
       ft.className = 'cal-feriado-titulo';
@@ -96,17 +140,16 @@ function renderCalendario() {
       cel.appendChild(ft);
     }
 
-    // marcadores de tarefas/provas
+    // FIX 1+2: Tarefas/provas mostram SOMENTE A SIGLA no calendário
     if (evsDia.length) {
       const wrap = document.createElement('div');
       wrap.className = 'cal-marcadores';
       evsDia.slice(0, feriado ? 1 : 2).forEach(ev => {
         const m = document.createElement('div');
         m.className = 'cal-marca';
-        // exibe matéria completa (truncada por CSS)
         m.innerHTML = `
           <div class="cal-marca-dot ${ev.tipo === 'prova' ? 'dot-prova' : 'dot-tarefa'}"></div>
-          <span class="cal-marca-sigla">${ev.materia}</span>`;
+          <span class="cal-marca-sigla">${getSigla(ev.materia)}</span>`;
         wrap.appendChild(m);
       });
       const restantes = evsDia.length - (feriado ? 1 : 2);
@@ -139,7 +182,7 @@ function selecionarDia(chave, dia) {
 }
 
 function renderPainelDia(chave, dia) {
-  const evsDia  = eventos[chave]  || [];
+  const evsDia = eventos[chave] || [];
   const feriado = feriados[chave] || null;
   const [ano, mes] = chave.split('-').map(Number);
 
@@ -152,7 +195,6 @@ function renderPainelDia(chave, dia) {
     return;
   }
 
-  // card de feriado
   if (feriado) {
     const card = document.createElement('div');
     card.className = 'evento-card feriado-card';
@@ -170,16 +212,15 @@ function renderPainelDia(chave, dia) {
       <div class="evento-corpo">
         <div class="evento-corpo-inner">
           ${feriado.descricao
-            ? `<div class="evento-resumo">${feriado.descricao}</div>`
-            : `<div class="evento-resumo" style="color:var(--text-secondary);font-style:italic">Sem descrição adicional.</div>`
-          }
+        ? `<div class="evento-resumo">${formatarTexto(feriado.descricao)}</div>`
+        : `<div class="evento-resumo" style="color:var(--text-secondary);font-style:italic">Sem descrição adicional.</div>`
+      }
         </div>
       </div>`;
     card.querySelector('.evento-header').addEventListener('click', () => card.classList.toggle('aberto'));
     elEventos.appendChild(card);
   }
 
-  // cards de tarefas/provas
   evsDia.forEach(ev => {
     const card = document.createElement('div');
     card.className = 'evento-card';
@@ -194,19 +235,21 @@ function buildEventoHTML(ev) {
   const tagClass = ev.tipo === 'prova' ? 'tag-prova' : 'tag-tarefa';
   const tagLabel = ev.tipo === 'prova' ? 'Prova' : 'Tarefa';
 
+  // FIX 4+5: modalidade aparece tanto em prova quanto em tarefa; numMembros é string
+  const modalidade = ev.grupo
+    ? `<span class="badge-inline badge-grupo">Grupo · ${ev.numMembros || '?'} pessoas</span>`
+    : '<span class="badge-inline badge-individual">Individual</span>';
+
   let corpoHTML = '';
 
   if (ev.tipo === 'prova') {
     const consulta = ev.consulta
       ? '<span class="badge-inline badge-com-consulta">Com consulta</span>'
       : '<span class="badge-inline badge-sem-consulta">Sem consulta</span>';
-    const modalidade = ev.grupo
-      ? `<span class="badge-inline badge-grupo">Grupo · ${ev.numMembros} pessoas</span>`
-      : '<span class="badge-inline badge-individual">Individual</span>';
     corpoHTML = `
       <div class="evento-info-linha">
         <span class="evento-info-label">Conteúdo</span>
-        <span class="evento-info-valor">${ev.conteudo}</span>
+        <span class="evento-info-valor">${formatarTexto(ev.conteudo)}</span>
       </div>
       <div class="evento-info-linha">
         <span class="evento-info-label">Consulta</span>
@@ -217,19 +260,25 @@ function buildEventoHTML(ev) {
         <span class="evento-info-valor">${modalidade}</span>
       </div>`;
   } else {
+    // FIX 4: tarefa agora também exibe modalidade (grupo ou individual)
     corpoHTML = `
       <div class="evento-info-linha">
         <span class="evento-info-label">Conteúdo</span>
-        <span class="evento-info-valor">${ev.conteudo}</span>
+        <span class="evento-info-valor">${formatarTexto(ev.conteudo)}</span>
       </div>
       <div class="evento-info-linha">
         <span class="evento-info-label">Entrega</span>
         <span class="evento-info-valor">${capitalizar(ev.entrega)}</span>
+      </div>
+      <div class="evento-info-linha">
+        <span class="evento-info-label">Modalidade</span>
+        <span class="evento-info-valor">${modalidade}</span>
       </div>`;
   }
 
+  // FIX 6: descrição preserva formatação e links clicáveis
   if (ev.resumo && ev.resumo !== ev.conteudo) {
-    corpoHTML += `<div class="evento-resumo">${ev.resumo}</div>`;
+    corpoHTML += `<div class="evento-resumo">${formatarTexto(ev.resumo)}</div>`;
   }
 
   return `

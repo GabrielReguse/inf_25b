@@ -35,8 +35,8 @@ const elCorpo    = document.getElementById('cardCorpo');
 const elContador = document.getElementById('etapaContador');
 
 function atualizarBarra() {
-  if (elBarra)    elBarra.style.width = etapa === 1 ? '50%' : '100%';
-  if (elContador) elContador.textContent = `Etapa ${etapa}/2`;
+  if (elBarra)    elBarra.style.width       = etapa === 1 ? '50%' : '100%';
+  if (elContador) elContador.textContent    = `Etapa ${etapa}/2`;
 }
 
 function renderEtapa1() {
@@ -72,7 +72,10 @@ function renderEtapa1() {
 }
 
 function renderEtapa2() {
-  const tipo = TIPOS.find(t => t.id === tipoSelecionado);
+  const tipo        = TIPOS.find(t => t.id === tipoSelecionado);
+  const ehEncontro  = tipoSelecionado === 'encontro';
+  const hoje        = new Date().toISOString().split('T')[0];
+
   elCorpo.innerHTML = `
     <button class="btn-voltar" id="btnVoltar" type="button">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -80,21 +83,43 @@ function renderEtapa2() {
     </button>
     <span class="card-subtitulo">Título e Descreva a Sugestão</span>
     <div class="destino-badge">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+      <svg viewBox="0 0 24 24">
+        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+      </svg>
       Detalhe sua sugestão de ${tipo?.label}
     </div>
+
     <div class="campo-grupo">
       <label class="campo-label" for="inputTitulo">Título</label>
-      <input class="campo-input" type="text" id="inputTitulo" placeholder="Título da sugestão"/>
+      <input class="campo-input" type="text" id="inputTitulo" placeholder="Título da sugestão" autocomplete="off"/>
       <span class="campo-erro" id="erroTitulo"></span>
     </div>
+
+    ${ehEncontro ? `
+    <div class="campo-grupo">
+      <label class="campo-label" for="inputData">Data do encontro</label>
+      <input class="campo-input campo-input-data" type="date" id="inputData" min="${hoje}"/>
+      <span class="campo-erro" id="erroData"></span>
+    </div>
+    ` : ''}
+
     <div class="campo-grupo">
       <label class="campo-label" for="inputDesc">Descrição</label>
-      <textarea class="campo-textarea" id="inputDesc" placeholder="Descreva sua sugestão..."></textarea>
+      <textarea class="campo-textarea" id="inputDesc"
+        placeholder="Descreva sua sugestão...&#10;&#10;Dica: links serão clicáveis automaticamente!"></textarea>
       <span class="campo-erro" id="erroDesc"></span>
     </div>
+
     <div class="alerta" id="alerta"></div>
-    <button class="btn-avancar" id="btnPublicar" type="button">Publicar</button>
+
+    <button class="btn-avancar" id="btnPublicar" type="button">
+      Publicar
+      <svg viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
   `;
 
   document.getElementById('btnVoltar').addEventListener('click', () => trocarEtapa(1));
@@ -114,18 +139,33 @@ function trocarEtapa(nova) {
 }
 
 async function publicar() {
-  const titulo      = document.getElementById('inputTitulo').value.trim();
-  const desc        = document.getElementById('inputDesc').value.trim();
-  const elAlerta    = document.getElementById('alerta');
+  const titulo     = document.getElementById('inputTitulo').value.trim();
+  const desc       = document.getElementById('inputDesc').value.trim();
+  const dataInput  = document.getElementById('inputData');
+  const dataEncontro = dataInput ? dataInput.value : null;
+  const elAlerta   = document.getElementById('alerta');
   const btnPublicar = document.getElementById('btnPublicar');
 
+  // Limpa erros anteriores
   document.getElementById('erroTitulo').textContent = '';
   document.getElementById('erroDesc').textContent   = '';
+  const erroData = document.getElementById('erroData');
+  if (erroData) erroData.textContent = '';
   elAlerta.className = 'alerta';
 
   let valido = true;
-  if (!titulo) { document.getElementById('erroTitulo').textContent = 'Informe um título.';     valido = false; }
-  if (!desc)   { document.getElementById('erroDesc').textContent   = 'Escreva uma descrição.'; valido = false; }
+  if (!titulo) {
+    document.getElementById('erroTitulo').textContent = 'Informe um título.';
+    valido = false;
+  }
+  if (!desc) {
+    document.getElementById('erroDesc').textContent = 'Escreva uma descrição.';
+    valido = false;
+  }
+  if (tipoSelecionado === 'encontro' && !dataEncontro) {
+    if (erroData) erroData.textContent = 'Informe a data do encontro.';
+    valido = false;
+  }
   if (!valido) return;
 
   const usuario = (() => {
@@ -134,43 +174,52 @@ async function publicar() {
 
   if (!usuario.id) {
     elAlerta.textContent = 'Você precisa estar logado para enviar sugestões.';
-    elAlerta.className = 'alerta erro';
+    elAlerta.className   = 'alerta erro';
     return;
   }
 
-  btnPublicar.disabled = true;
-  btnPublicar.textContent = 'Enviando...';
+  btnPublicar.disabled   = true;
+  btnPublicar.innerHTML  = 'Enviando...';
 
   try {
+    const body = {
+      autor:     usuario.id,
+      tipo:      tipoSelecionado,
+      titulo,
+      descricao: desc,
+      // backward compat — mantém o campo texto no formato antigo
+      texto:     `[${tipoSelecionado}] ${titulo} — ${desc}`
+    };
+    if (tipoSelecionado === 'encontro' && dataEncontro) {
+      body.dataEncontro = dataEncontro;
+    }
+
     const resposta = await fetch(`${API}/sugestoes`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        autor: usuario.id,
-        texto: `[${tipoSelecionado}] ${titulo} — ${desc}`
-      })
+      body:    JSON.stringify(body)
     });
 
     const dados = await resposta.json();
 
     if (!resposta.ok) {
       elAlerta.textContent = dados.erro || 'Erro ao enviar sugestão.';
-      elAlerta.className = 'alerta erro';
+      elAlerta.className   = 'alerta erro';
       btnPublicar.disabled = false;
-      btnPublicar.textContent = 'Publicar';
+      btnPublicar.innerHTML = 'Publicar <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
       return;
     }
 
-    elAlerta.textContent = 'Sugestão enviada com sucesso!';
-    elAlerta.className = 'alerta sucesso';
+    elAlerta.textContent = '✓ Sugestão enviada com sucesso!';
+    elAlerta.className   = 'alerta sucesso';
     setTimeout(() => { window.location.href = 'telaInicial.html'; }, 1400);
 
   } catch (err) {
     console.error(err);
-    elAlerta.textContent = 'Erro de conexão. Tente novamente.';
-    elAlerta.className = 'alerta erro';
-    btnPublicar.disabled = false;
-    btnPublicar.textContent = 'Publicar';
+    elAlerta.textContent  = 'Erro de conexão. Tente novamente.';
+    elAlerta.className    = 'alerta erro';
+    btnPublicar.disabled  = false;
+    btnPublicar.innerHTML = 'Publicar';
   }
 }
 

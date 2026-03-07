@@ -5,11 +5,11 @@ const seta = document.querySelector('.seta-flutuante');
 const grade = document.querySelector('.seletores');
 
 function posicionarSeta(index) {
-  const larguraGrade = grade.offsetWidth;
-  const gap = 12;
-  const colWidth = (larguraGrade - gap * 2) / 3;
-  const centroColuna = index * (colWidth + gap) + colWidth / 2;
-  seta.style.transform = `translateX(${centroColuna}px) translateX(-50%)`;
+    const larguraGrade = grade.offsetWidth;
+    const gap = 12;
+    const colWidth = (larguraGrade - gap * 2) / 3;
+    const centroColuna = index * (colWidth + gap) + colWidth / 2;
+    seta.style.transform = `translateX(${centroColuna}px) translateX(-50%)`;
 }
 function trocarAba(index) {
     btns.forEach((b, i) => b.classList.toggle('ativo', i === index));

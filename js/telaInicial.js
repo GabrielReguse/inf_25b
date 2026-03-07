@@ -4,7 +4,7 @@ const usuario = (() => {
   try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
 })();
 
-const MATERIAS = ['Matemática','Português','História','Geografia','Ciências','Física','Química','Biologia','Inglês','Educação Física','Artes','Filosofia','Sociologia'];
+const MATERIAS = ['Matemática', 'Português', 'História', 'Geografia', 'Ciências', 'Física', 'Química', 'Biologia', 'Inglês', 'Educação Física', 'Artes', 'Filosofia', 'Sociologia'];
 
 // ─── AVISOS (sem bolinha) ─────────────────────────────────────
 async function carregarAvisos() {
@@ -59,7 +59,7 @@ async function carregarDestaques() {
 
     container.innerHTML = '';
 
-    const visiveis   = futuras.slice(0, 2);
+    const visiveis = futuras.slice(0, 2);
     const escondidos = futuras.slice(2);
 
     visiveis.forEach(t => container.appendChild(criarItemDestaque(t)));
@@ -115,12 +115,12 @@ function mostrarBotaoAdm() {
   btn.title = 'Painel ADM';
   btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#fff;stroke-width:2;fill:none"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
   Object.assign(btn.style, {
-    position:'fixed', bottom:'1.5rem', right:'1.5rem',
-    width:'48px', height:'48px', borderRadius:'50%',
-    background:'linear-gradient(135deg,#7c3aed,#a855f7)',
-    display:'flex', alignItems:'center', justifyContent:'center',
-    boxShadow:'0 4px 20px rgba(139,92,246,.5)',
-    zIndex:'999', textDecoration:'none', transition:'opacity .2s'
+    position: 'fixed', bottom: '1.5rem', right: '1.5rem',
+    width: '48px', height: '48px', borderRadius: '50%',
+    background: 'linear-gradient(135deg,#7c3aed,#a855f7)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 4px 20px rgba(139,92,246,.5)',
+    zIndex: '999', textDecoration: 'none', transition: 'opacity .2s'
   });
   btn.addEventListener('mouseenter', () => btn.style.opacity = '.8');
   btn.addEventListener('mouseleave', () => btn.style.opacity = '1');

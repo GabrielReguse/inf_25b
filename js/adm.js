@@ -3,13 +3,13 @@ const API = "https://inf-25b-backend.onrender.com";
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
 
-const MATERIAS = ['Artes','Banco de Dados / Engenharia de Software','Biologia','Educação Física','Filosofia','Física','Geografia','História','Língua Inglesa','Língua Portuguesa','Programação 1','Projeto Integrador 2','Química','Redes','Sociologia'];
-const ENTREGAS = ['Apresentação','Digital','Folha','Caderno'];
+const MATERIAS = ['Artes', 'Banco de Dados', 'Engenharia de Software', 'Biologia', 'Educação Física', 'Filosofia', 'Física', 'Geografia', 'História', 'Língua Inglesa', 'Língua Portuguesa', 'Programação 1', 'Projeto Integrador 2', 'Química', 'Redes', 'Sociologia'];
+const ENTREGAS = ['Apresentação', 'Digital', 'Folha', 'Caderno'];
 
 const ABAS = [
-  { id: 'Avisos',    label: 'Avisos',    icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
-  { id: 'Tarefas',   label: 'Tarefas',   icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
-  { id: 'Feriados',  label: 'Feriados',  icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>` },
+  { id: 'Avisos', label: 'Avisos', icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
+  { id: 'Tarefas', label: 'Tarefas', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
+  { id: 'Feriados', label: 'Feriados', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>` },
   { id: 'Destaques', label: 'Destaques', icone: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
   { id: 'Sugestoes', label: 'Sugestões', icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
 ];
@@ -24,17 +24,17 @@ if (!usuario.id || usuario.role !== 'admin') {
       <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
     </div>`;
-} else { 
+} else {
   renderPainel();
   iniciarHeartbeat();
- }
+}
 
 function iniciarHeartbeat() {
   const enviar = () => fetch(`${API}/admin/heartbeat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
-  }).catch(() => {});
+  }).catch(() => { });
   enviar();
   setInterval(enviar, 60 * 1000);
 }
@@ -53,7 +53,7 @@ async function carregarStats() {
         <span class="dot-online"></span>
         <span><strong>${dados.online}</strong> online agora</span>
       </div>`;
-  } catch {}
+  } catch { }
 }
 
 function renderPainel() {
@@ -240,7 +240,7 @@ async function renderTarefas() {
     <div id="campoGrupoNum" style="display:none">
       <div class="campo-grupo">
         <label class="campo-label">Número de membros por grupo</label>
-        <input class="campo-input" type="number" id="tarefaNumMembros" min="2" max="10" placeholder="Ex: 4"/>
+        <input class="campo-input" type="text" id="tarefaNumMembros" placeholder="Ex: 2 à 6"/>
       </div>
     </div>
     <div class="campo-grupo">
@@ -273,19 +273,30 @@ async function criarTarefa() {
   const consulta = document.getElementById('tarefaConsulta')?.value === 'sim';
   const tipoEntrega = document.getElementById('tarefaEntrega')?.value || '';
   const grupo = document.getElementById('tarefaGrupo').value === 'sim';
-  const numMembros = parseInt(document.getElementById('tarefaNumMembros')?.value || '0');
+  // FIX: numMembros agora é string (ex: "2 à 6"), não número
+  const numMembros = document.getElementById('tarefaNumMembros')?.value.trim() || '';
   const dataEntrega = document.getElementById('tarefaData').value;
   const alerta = document.getElementById('alertaTarefa');
   const btn = document.getElementById('btnCriarTarefa');
   alerta.className = 'alerta';
-  if (!materia || !tipo || !conteudo || !dataEntrega) { alerta.textContent = 'Preencha matéria, tipo, conteúdo e data.'; alerta.className = 'alerta erro'; return; }
+  if (!materia || !tipo || !conteudo || !dataEntrega) {
+    alerta.textContent = 'Preencha matéria, tipo, conteúdo e data.';
+    alerta.className = 'alerta erro';
+    return;
+  }
   btn.disabled = true; btn.textContent = 'Adicionando...';
   try {
-    const res = await fetch(`${API}/tarefas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ materia, tipo, conteudo, descricao, consulta, tipoEntrega, grupo, numMembros, dataEntrega, criadoPor: usuario.id }) });
+    const res = await fetch(`${API}/tarefas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ materia, tipo, conteudo, descricao, consulta, tipoEntrega, grupo, numMembros, dataEntrega, criadoPor: usuario.id })
+    });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
     alerta.textContent = 'Adicionado ao calendário!'; alerta.className = 'alerta sucesso';
-    ['tarefaMateria','tarefaTipo','tarefaConteudo','tarefaDesc','tarefaData'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    ['tarefaMateria', 'tarefaTipo', 'tarefaConteudo', 'tarefaDesc', 'tarefaData'].forEach(id => {
+      const e = document.getElementById(id); if (e) e.value = '';
+    });
     document.getElementById('camposProva').style.display = 'none';
     document.getElementById('camposTarefa').style.display = 'none';
     document.getElementById('campoGrupoNum').style.display = 'none';
@@ -301,7 +312,7 @@ async function carregarTarefas() {
     const tarefas = await (await fetch(`${API}/tarefas`)).json();
     if (!tarefas.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma tarefa cadastrada.</p>'; return; }
     lista.innerHTML = tarefas.map(t => {
-      const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       const tipo = t.tipo === 'prova' ? '📝 Prova' : '📋 Tarefa';
       return `<div class="item-card"><div class="item-info"><span class="item-titulo">${tipo}: ${t.materia || t.titulo}</span><span class="item-desc">${t.conteudo || t.descricao}</span><span class="item-meta">📅 ${data}</span></div><button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button></div>`;
     }).join('');
@@ -351,7 +362,11 @@ async function criarFeriado() {
   if (!titulo || !data) { alerta.textContent = 'Preencha título e data.'; alerta.className = 'alerta erro'; return; }
   btn.disabled = true; btn.textContent = 'Adicionando...';
   try {
-    const res = await fetch(`${API}/feriados`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, data, criadoPor: usuario.id }) });
+    const res = await fetch(`${API}/feriados`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, descricao, data, criadoPor: usuario.id })
+    });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao criar.');
     alerta.textContent = 'Feriado adicionado!'; alerta.className = 'alerta sucesso';
@@ -370,7 +385,7 @@ async function carregarFeriados() {
     const feriados = await (await fetch(`${API}/feriados`)).json();
     if (!feriados.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum feriado cadastrado.</p>'; return; }
     lista.innerHTML = feriados.map(f => {
-      const data = new Date(f.data).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+      const data = new Date(f.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       return `
         <div class="item-card">
           <div class="item-info">
@@ -422,7 +437,11 @@ async function criarDestaque() {
   if (!titulo || !descricao) { alerta.textContent = 'Preencha todos os campos.'; alerta.className = 'alerta erro'; return; }
   btn.disabled = true; btn.textContent = 'Publicando...';
   try {
-    const res = await fetch(`${API}/destaques`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id }) });
+    const res = await fetch(`${API}/destaques`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id })
+    });
     const dados = await res.json();
     if (!res.ok) throw new Error(dados.erro || 'Erro ao publicar.');
     alerta.textContent = 'Destaque publicado!'; alerta.className = 'alerta sucesso';
@@ -473,7 +492,7 @@ async function carregarSugestoes() {
     const sugestoes = await (await fetch(`${API}/sugestoes?t=${Date.now()}`, { cache: 'no-store' })).json();
     if (!sugestoes.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma sugestão ainda.</p>'; return; }
     lista.innerHTML = sugestoes.map(s => {
-      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
       const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
       const corStatus = status === 'aceita' ? '#4ade80' : status === 'recusada' ? '#f87171' : '#94a3b8';
       const labelStatus = status === 'aceita' ? '✓ Aceita' : status === 'recusada' ? '✗ Recusada' : '⏳ Aguardando';
@@ -494,7 +513,11 @@ async function carregarSugestoes() {
 
 async function responderSugestao(id, status) {
   try {
-    await fetch(`${API}/sugestoes/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+    await fetch(`${API}/sugestoes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
     carregarSugestoes();
   } catch (err) { console.error(err); }
 }

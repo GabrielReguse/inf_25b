@@ -13,8 +13,8 @@ self.addEventListener("push", event => {
 
   const opcoes = {
     body: dados.corpo || "",
-    icon: "/assets/logo.png",
-    badge: "/assets/logo.png",
+    icon: "../assets/app.png",
+    badge: "../assets/app.png",
     vibrate: [200, 100, 200],
     data: { url: dados.url || "/html/telaInicial.html" },
     actions: [
