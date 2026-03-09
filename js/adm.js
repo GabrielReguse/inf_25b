@@ -3,7 +3,7 @@ const API = "https://inf-25b-backend.onrender.com";
 const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
 const el = document.getElementById('conteudoPrincipal');
 
-const MATERIAS = ['Artes', 'Banco de Dados', 'Engenharia de Software', 'Biologia', 'Educação Física', 'Filosofia', 'Física', 'Geografia', 'História', 'Língua Inglesa', 'Língua Portuguesa', 'Programação 1', 'Projeto Integrador 2', 'Química', 'Redes', 'Sociologia'];
+const MATERIAS = ['Artes', 'Banco de Dados', 'Engenharia de Software', 'Biologia', 'Educação Física', 'Filosofia', 'Física', 'Geografia', 'História', 'Língua Inglesa', 'Língua Portuguesa', 'Matemática', 'Programação 1', 'Projeto Integrador 2', 'Química', 'Redes', 'Sociologia'];
 const ENTREGAS = ['Apresentação', 'Digital', 'Folha', 'Caderno'];
 
 const ABAS = [
