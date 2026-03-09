@@ -27,6 +27,7 @@ const SIGLAS = {
   'História': 'HIS',
   'Língua Inglesa': 'ING',
   'Língua Portuguesa': 'POR',
+  'Matemática': 'MAT',
   'Programação 1': 'PRG1',
   'Projeto Integrador 2': 'PI2',
   'Química': 'QUI',
