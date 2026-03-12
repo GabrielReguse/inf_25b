@@ -1,188 +1,236 @@
 <div align="center">
-
-<!--  ╔══════════════════════════════════════════════════════╗  -->
-<!--  ║              ANIMATED HEADER BANNER                 ║  -->
-<!--  ╚══════════════════════════════════════════════════════╝  -->
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=7C3AED,A78BFA&height=200&section=header&text=INF%2025B&fontSize=72&fontAlign=50&fontAlignY=38&fontColor=F9FAFB&desc=Plataforma%20Acadêmica%20do%20Futuro&descAlign=50&descAlignY=60&animation=fadeIn&fontFamily=Orbitron" width="100%"/>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=7C3AED,A78BFA&height=220&section=header&text=INF%2025B&fontSize=80&fontAlign=50&fontAlignY=40&fontColor=F9FAFB&desc=Plataforma%20Acadêmica%20%7C%20Turma%20de%20Informática&descAlign=50&descAlignY=60&animation=fadeIn&fontFamily=Orbitron" width="100%"/>
+</div>
 
 <br/>
 
-<!-- STATUS BADGES -->
-<a href="#"><img src="https://img.shields.io/badge/STATUS-Em%20Desenvolvimento-7C3AED?style=for-the-badge&logo=statuspage&logoColor=white"/></a>
-<a href="#"><img src="https://img.shields.io/badge/PWA-Nativo-A78BFA?style=for-the-badge&logo=pwa&logoColor=white"/></a>
-<a href="#"><img src="https://img.shields.io/badge/Dark%20Mode-Nativo-C084FC?style=for-the-badge&logo=moonrepo&logoColor=white"/></a>
-<a href="#"><img src="https://img.shields.io/badge/Design-Tecnológico-6D28D9?style=for-the-badge&logo=figma&logoColor=white"/></a>
+<div align="center">
+  <img src="https://img.shields.io/badge/Versão-1.0.0-7C3AED?style=for-the-badge&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/PWA-Suportado-A78BFA?style=for-the-badge&logo=pwa&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Dark%20Mode-Nativo-6D28D9?style=for-the-badge&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Status-Ativo-C084FC?style=for-the-badge&logoColor=white"/>
+</div>
 
-<br/><br/>
+<br/>
+<br/>
 
-<!-- TECH STACK -->
-<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white"/>
-<img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white"/>
-<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white"/>
-<img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat-square&logo=cloudinary&logoColor=white"/>
-<img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=black"/>
-<img src="https://img.shields.io/badge/Vanilla%20JS-F7DF1E?style=flat-square&logo=javascript&logoColor=black"/>
-<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white"/>
-
+<div align="center">
+  <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat-square&logo=cloudinary&logoColor=white"/>
 </div>
 
 ---
+
+<br/>
+
+## ◈ &nbsp; O que é o INF 25B?
+
+<p>
+O <strong>INF 25B</strong> é uma plataforma web progressiva (PWA) criada especialmente para a turma de Informática. Um espaço digital único onde comunicação, organização acadêmica e vida social da turma se encontram em uma experiência moderna, fluida e intuitiva.
+</p>
+
+<p>
+Com design <strong>dark nativo</strong>, identidade roxa marcante e animações cuidadosamente pensadas, o sistema foi construído para parecer uma plataforma de nível profissional — feita por e para a turma.
+</p>
+
+<br/>
+
+---
+
+<br/>
+
+## ◈ &nbsp; Funcionalidades
+
+<br/>
 
 <div align="center">
 
-```
-╔━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╗
-║                                                              ║
-║   ██╗███╗   ██╗███████╗    ██████╗ ███████╗██████╗          ║
-║   ██║████╗  ██║██╔════╝    ╚════██╗██╔════╝██╔══██╗         ║
-║   ██║██╔██╗ ██║█████╗       █████╔╝███████╗██████╔╝         ║
-║   ██║██║╚██╗██║██╔══╝      ██╔═══╝ ╚════██║██╔══██╗         ║
-║   ██║██║ ╚████║██║         ███████╗███████║██████╔╝         ║
-║   ╚═╝╚═╝  ╚═══╝╚═╝         ╚══════╝╚══════╝╚═════╝          ║
-║                                                              ║
-║         Plataforma acadêmica — Turma de Informática          ║
-╚━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╝
-```
+<table>
+  <thead>
+    <tr>
+      <th>&#x25C8;</th>
+      <th>Módulo</th>
+      <th>O que faz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>💬</td>
+      <td><strong>Chat da Turma</strong></td>
+      <td>Mensagens em tempo real com replies, menções, notificações push e agrupamento visual de mensagens</td>
+    </tr>
+    <tr>
+      <td>📅</td>
+      <td><strong>Tarefas & Provas</strong></td>
+      <td>Calendário interativo com tarefas, provas, feriados e modalidades de grupo por matéria</td>
+    </tr>
+    <tr>
+      <td>🗳️</td>
+      <td><strong>Sugestões</strong></td>
+      <td>Sistema colaborativo de votação — proponha, vote e acompanhe sugestões da turma</td>
+    </tr>
+    <tr>
+      <td>🎮</td>
+      <td><strong>Lazer</strong></td>
+      <td>Área dedicada a atividades recreativas e encontros da turma com gestão de participantes</td>
+    </tr>
+    <tr>
+      <td>👤</td>
+      <td><strong>Perfil</strong></td>
+      <td>Página pessoal com foto, informações e personalização do seu perfil na plataforma</td>
+    </tr>
+    <tr>
+      <td>🛡️</td>
+      <td><strong>Administração</strong></td>
+      <td>Painel de controle completo para gerenciar conteúdo e usuários da plataforma</td>
+    </tr>
+  </tbody>
+</table>
 
 </div>
 
 <br/>
 
-## ✦ Sobre o Projeto
-
-> **INF 25B** é uma plataforma web progressiva (PWA) construída do zero para a turma de Informática. Um hub social e acadêmico completo, onde chat em tempo real, gestão de tarefas, provas, sugestões colaborativas e perfis de estudantes se unem em uma única experiência moderna, coesa e elegante.
-
-A plataforma foi desenhada com **identidade tecnológica forte** — dark mode nativo, gradientes roxos, tipografia precisa e animações suaves que tornam cada interação fluida e memorável.
+---
 
 <br/>
 
----
+## ◈ &nbsp; Identidade Visual
 
-## ✦ Módulos do Sistema
+<br/>
 
 <div align="center">
 
-| Módulo | Descrição | Status |
-|:---:|:---|:---:|
-| 💬 **Chat** | Mensagens em tempo real com replies, menções, agrupamento estilo WhatsApp e push notifications | ✅ Ativo |
-| 📅 **Tarefas & Provas** | Calendário interativo com abreviações de matérias, feriados e modalidades de grupo | ✅ Ativo |
-| 🗳️ **Sugestões** | Sistema de votação colaborativo com cards visuais, timers e modais de participantes | ✅ Ativo |
-| 🎮 **Lazer** | Área de atividades recreativas com gerenciamento de encontros e votações | ✅ Ativo |
-| 👤 **Perfil** | Página de perfil com upload via Cloudinary, toasts e loading states | ✅ Ativo |
-| 🛡️ **Admin** | Painel de administração com deleção por long-press e gestão avançada | ✅ Ativo |
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/0F0F1A?style=circle" width="40"/><br/>
+      <sub><strong>Fundo Principal</strong></sub><br/>
+      <sub><code>#0F0F1A</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/1A1A2E?style=circle" width="40"/><br/>
+      <sub><strong>Cards</strong></sub><br/>
+      <sub><code>#1A1A2E</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/7C3AED?style=circle" width="40"/><br/>
+      <sub><strong>Roxo Principal</strong></sub><br/>
+      <sub><code>#7C3AED</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/A78BFA?style=circle" width="40"/><br/>
+      <sub><strong>Roxo Claro</strong></sub><br/>
+      <sub><code>#A78BFA</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/C084FC?style=circle" width="40"/><br/>
+      <sub><strong>Roxo Neon</strong></sub><br/>
+      <sub><code>#C084FC</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://readme-swatches.vercel.app/F9FAFB?style=circle" width="40"/><br/>
+      <sub><strong>Texto</strong></sub><br/>
+      <sub><code>#F9FAFB</code></sub>
+    </td>
+  </tr>
+</table>
 
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=7C3AED,A78BFA&height=6&section=header" width="70%"/>
+  <br/>
+  <sub>Gradiente oficial &nbsp;·&nbsp; <code>linear-gradient(135deg, #7C3AED → #A78BFA)</code></sub>
 </div>
 
 <br/>
 
 ---
 
-## ✦ Design System
+<br/>
 
-```css
-/* ┌──────────────────────────────────────────┐
-   │        PALETA OFICIAL — INF 25B          │
-   └──────────────────────────────────────────┘ */
-
-:root {
-  /* Fundos */
-  --bg-primary:    #0F0F1A;   /* Fundo principal        */
-  --bg-secondary:  #1A1A2E;   /* Cards e containers     */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-
-  /* Texto */
-  --text-primary:   #F9FAFB;  /* Texto principal        */
-  --text-secondary: #9CA3AF;  /* Texto auxiliar         */
-
-  /* Roxo — Cor primária oficial */
-  --purple-main:    #7C3AED;  /* Roxo principal         */
-  --purple-light:   #A78BFA;  /* Hover e foco           */
-  --purple-neon:    #C084FC;  /* Detalhes e glow        */
-
-  /* Gradiente oficial */
-  --gradient: linear-gradient(135deg, #7C3AED, #A78BFA);
-}
-```
+## ◈ &nbsp; Como Instalar
 
 <br/>
 
-```css
-/* ┌──────────────────────────────────────────┐
-   │         TIPOGRAFIA — INF 25B             │
-   └──────────────────────────────────────────┘ */
+**1. Clone o repositório**
 
-/* Títulos: Orbitron SemiBold — letter-spacing: 1px */
-/* Interface: Inter 400 / 500 / 600                 */
-
-h1 { font-size: 32px–36px; }   /* Orbitron */
-h2 { font-size: 22px–24px; }   /* Orbitron */
-h3 { font-size: 18px–20px; }   /* Orbitron */
-
-p  { font-size: 14px–16px; }   /* Inter    */
-.secondary { font-size: 13px; } /* Inter    */
+```bash
+git clone https://github.com/seu-usuario/inf-25b.git
+cd inf-25b
 ```
 
-<br/>
+**2. Instale as dependências**
 
-```js
-/* ┌──────────────────────────────────────────┐
-   │      ANIMAÇÕES GLOBAIS — INF 25B         │
-   └──────────────────────────────────────────┘ */
-
-const transitions = {
-  pageEnter: {
-    from:     'translateX(-24px) + opacity(0)',
-    to:       'translateX(0)     + opacity(1)',
-    duration: '300ms–400ms',
-    easing:   'ease-in-out',
-  },
-  pageLeave: {
-    to:       'translateX(24px)  + opacity(0)',
-    duration: '≤ 300ms',
-    easing:   'ease-in-out',
-  },
-  microInteraction: {
-    buttonHover:  'scale(1.03) + brightness(1.1)',
-    buttonClick:  'scale(0.97)',
-    cardHover:    'translateY(-2px) + shadow(roxo sutil)',
-    inputFocus:   'border: 2px solid var(--purple-main)',
-    transition:   '0.2s ease',
-  },
-};
+```bash
+cd backend
+npm install
 ```
+
+**3. Configure as variáveis de ambiente**
+
+```bash
+cp .env.example .env
+```
+
+Preencha o arquivo `.env` com suas credenciais:
+
+```env
+MONGO_URI         = sua_uri_do_mongodb
+CLOUDINARY_NAME   = seu_cloud_name
+CLOUDINARY_KEY    = sua_api_key
+CLOUDINARY_SECRET = sua_api_secret
+VAPID_PUBLIC_KEY  = sua_chave_publica
+VAPID_PRIVATE_KEY = sua_chave_privada
+VAPID_EMAIL       = mailto:seu@email.com
+```
+
+**4. Inicie o servidor**
+
+```bash
+npm start
+```
+
+> O frontend é estático — abra o `index.html` diretamente no navegador ou sirva com qualquer servidor HTTP.
 
 <br/>
 
 ---
 
-## ✦ Arquitetura
+<br/>
+
+## ◈ &nbsp; Estrutura do Projeto
 
 ```
 inf-25b/
 │
 ├── 📁 assets/
-│   ├── background/
-│   │   └── background.css      ← Wallpaper animado (bolhas roxas)
-│   └── icons, images...
+│   └── background/
+│       └── background.css     ← Background animado
 │
-├── 📁 pages/
-│   ├── conversa.html           ← Chat em tempo real
-│   ├── tarefasProvas.html      ← Calendário acadêmico
-│   ├── sugestoes.html          ← Sistema de sugestões
-│   ├── lazer.html              ← Área de lazer
-│   └── perfil.html             ← Perfil do usuário
+├── 📁 pages/                  ← Páginas da plataforma
+│   ├── conversa.html
+│   ├── tarefasProvas.html
+│   ├── sugestoes.html
+│   ├── lazer.html
+│   └── perfil.html
 │
-├── 📁 scripts/
-│   ├── global.js               ← DeviceID + Heartbeat (CRÍTICO)
-│   ├── conversa.js             ← Lógica do chat
-│   ├── tarefasProvas.js        ← Calendário e tarefas
-│   ├── sugestoes.js            ← Votações e sugestões
-│   ├── lazer.js                ← Módulo de lazer
-│   ├── perfil.js               ← Perfil e upload
-│   └── cadastro.js             ← Registro (IIFE isolado)
+├── 📁 scripts/                ← Lógica de cada módulo
 │
-└── 📁 backend/                 ← Node.js + Express + MongoDB
+└── 📁 backend/                ← API REST
     ├── routes/
     ├── models/
     └── server.js
@@ -192,106 +240,17 @@ inf-25b/
 
 ---
 
-## ✦ Stack Técnica
+<br/>
 
 <div align="center">
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        FRONTEND                             │
-│   Vanilla JS  ·  HTML5  ·  CSS3  ·  Web Push API  ·  PWA   │
-│              sessionStorage + localStorage                  │
-├─────────────────────────────────────────────────────────────┤
-│                        BACKEND                              │
-│          Node.js  ·  Express  ·  Mongoose  ·  MongoDB       │
-│                   Render (Free Tier)                        │
-├─────────────────────────────────────────────────────────────┤
-│                       SERVIÇOS                              │
-│        Cloudinary (imagens)  ·  Web Push (notificações)     │
-└─────────────────────────────────────────────────────────────┘
-```
+<img src="https://capsule-render.vercel.app/api?type=soft&color=7C3AED,A78BFA&height=80&text=Feito%20para%20a%20turma%20INF%2025B%20%E2%97%88%202025&fontSize=18&fontColor=F9FAFB&animation=fadeIn&fontFamily=Orbitron" width="80%"/>
 
-</div>
+<br/><br/>
 
-<br/>
+<sub>Desenvolvido com dedicação &nbsp;·&nbsp; Design tecnológico e minimalista &nbsp;·&nbsp; Dark mode nativo</sub>
 
----
-
-## ✦ Princípios de Desenvolvimento
-
-```
-◈  Scope Isolation      →  IIFEs para evitar colisões entre scripts
-◈  Backward Compat      →  Fallback para formatos legados de dados
-◈  Populated Objects    →  Atenção a shapes de objetos Mongoose
-◈  Timeout Handling     →  Wrappers explícitos para o free tier do Render
-◈  Mobile PWA           →  localStorage como fallback ao sessionStorage
-◈  Mention Parsing      →  Set populado em inserção (regex não é suficiente)
-◈  global.js é sagrado  →  Nunca sobrescrever deviceId ou heartbeat logic
-```
-
-<br/>
-
----
-
-## ✦ Como Rodar
-
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/inf-25b.git
-cd inf-25b
-
-# Instale as dependências do backend
-cd backend
-npm install
-
-# Configure as variáveis de ambiente
-cp .env.example .env
-# → Preencha MONGO_URI, CLOUDINARY_*, VAPID_KEYS...
-
-# Inicie o servidor
-npm start
-
-# O frontend é estático — abra index.html no navegador
-# ou sirva com qualquer servidor HTTP simples
-```
-
-<br/>
-
----
-
-## ✦ Variáveis de Ambiente
-
-```env
-# ─────────────────────────────────────
-#   INF 25B — Configuração do Backend
-# ─────────────────────────────────────
-
-MONGO_URI=mongodb+srv://...
-PORT=3000
-
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-
-VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
-VAPID_EMAIL=mailto:...
-```
-
-<br/>
-
----
-
-<div align="center">
-
-```
-╔━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╗
-║                                                              ║
-║   Feito com dedicação para a turma INF 25B  ◈  2025         ║
-║   Tecnologia · Organização · Identidade                      ║
-║                                                              ║
-╚━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╝
-```
+<br/><br/>
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=7C3AED,A78BFA&height=120&section=footer&animation=fadeIn" width="100%"/>
 
