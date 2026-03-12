@@ -1191,51 +1191,84 @@ function verMiniPerfil(autorId, nome, foto) {
   document.body.appendChild(modal);
 }
 
+// ─── POLLING SIDEBAR ─────────────────────────────────────────────────────────
+async function atualizarSidebar() {
+  try {
+    if (!meuId) return;
+    const resp = await fetch(`${API}/conversas/${meuId}`);
+    const lista = await resp.json();
+
+    const idsAtuais = new Set(
+      [...document.querySelectorAll('.sidebar-item')].map(el => el.dataset.id)
+    );
+    const temNova = lista.some(c => !idsAtuais.has(String(c.id)));
+
+    if (temNova) {
+      conversas = lista;
+      renderSidebar(lista);
+      return;
+    }
+
+    lista.forEach(c => {
+      if (c.ultimaMsg?.id) atualizarBadge(c.id, c.ultimaMsg.id);
+      const item = document.querySelector(`.sidebar-item[data-id="${c.id}"]`);
+      if (!item || !c.ultimaMsg) return;
+      const prev   = item.querySelector('.sidebar-item-preview');
+      const horaEl = item.querySelector('.sidebar-item-hora');
+      if (prev) {
+        const prefix = c.ultimaMsg.autorNome === 'Você' ? 'Você: ' : '';
+        prev.textContent = prefix + c.ultimaMsg.texto.slice(0, 40);
+      }
+      if (horaEl) horaEl.textContent = formatarHoraRelativa(c.ultimaMsg.criadaEm);
+    });
+  } catch { /* silencioso */ }
+}
+
+function iniciarPollings() {
+  if (poolingInterval)   clearInterval(poolingInterval);
+  if (conversasInterval) clearInterval(conversasInterval);
+  poolingInterval   = setInterval(atualizarMensagens, 5000);
+  conversasInterval = setInterval(atualizarSidebar,   8000);
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
-  await carregarUsuarios();
-  await carregarConversas();
+  // Executa em paralelo para não bloquear um pelo outro
+  await Promise.allSettled([
+    carregarUsuarios(),
+    carregarConversas()
+  ]);
+
   await carregarMensagens();
-
-  // Polling de mensagens a cada 5s
-  poolingInterval = setInterval(atualizarMensagens, 5000);
-
-  // Polling da sidebar a cada 8s — detecta novas conversas e atualiza previews
-  conversasInterval = setInterval(async () => {
-    try {
-      if (!meuId) return;
-      const resp = await fetch(`${API}/conversas/${meuId}`);
-      const lista = await resp.json();
-
-      // Verifica se apareceu alguma conversa nova na lista
-      const idsAtuais = new Set(
-        [...document.querySelectorAll('.sidebar-item')].map(el => el.dataset.id)
-      );
-      const temNova = lista.some(c => !idsAtuais.has(String(c.id)));
-
-      if (temNova) {
-        // Re-renderiza a sidebar inteira para incluir o novo item
-        conversas = lista;
-        renderSidebar(lista);
-        return;
-      }
-
-      // Sem novas conversas: atualiza só preview e hora dos existentes
-      lista.forEach(c => {
-        if (c.ultimaMsg?.id) atualizarBadge(c.id, c.ultimaMsg.id);
-        const item = document.querySelector(`.sidebar-item[data-id="${c.id}"]`);
-        if (!item || !c.ultimaMsg) return;
-        const prev  = item.querySelector('.sidebar-item-preview');
-        const horaEl = item.querySelector('.sidebar-item-hora');
-        if (prev) {
-          const prefix = c.ultimaMsg.autorNome === 'Você' ? 'Você: ' : '';
-          prev.textContent = prefix + c.ultimaMsg.texto.slice(0, 40);
-        }
-        if (horaEl) horaEl.textContent = formatarHoraRelativa(c.ultimaMsg.criadaEm);
-      });
-    } catch { /* silencioso */ }
-  }, 8000);
+  iniciarPollings();
 }
+
+// ─── VISIBILIDADE (PWA mobile: volta do fundo) ────────────────────────────────
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible') return;
+
+  // Relê sessão do localStorage (sessionStorage pode ter sido limpo no PWA)
+  const usuarioFresh = (() => {
+    try {
+      return JSON.parse(
+        sessionStorage.getItem('usuario') ||
+        localStorage.getItem('usuario') ||
+        '{}'
+      );
+    } catch { return {}; }
+  })();
+
+  // Reinicia pollings (podem ter parado com o app em fundo)
+  iniciarPollings();
+
+  // Recarrega mensagens e sidebar silenciosamente
+  try {
+    await Promise.allSettled([
+      atualizarMensagens(),
+      atualizarSidebar()
+    ]);
+  } catch { /* silencioso */ }
+});
 
 window.addEventListener('beforeunload', () => {
   if (poolingInterval)   clearInterval(poolingInterval);
