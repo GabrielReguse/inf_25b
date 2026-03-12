@@ -91,9 +91,7 @@ body {
   height: 100dvh;
 }
 
-/* ══════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════ */
+/*    SIDEBAR */
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
@@ -367,9 +365,7 @@ body {
   }
 }
 
-/* ══════════════════════════════════════
-   CHAT MAIN
-══════════════════════════════════════ */
+/*    CHAT MAIN */
 .chat-main {
   flex: 1;
   display: flex;
@@ -1338,9 +1334,7 @@ body {
   transform-origin: top;
 }
 
-/* ══════════════════════════════════════
-   RESPONSIVIDADE MOBILE
-══════════════════════════════════════ */
+/*    RESPONSIVIDADE MOBILE */
 @media (max-width: 768px) {
 
   /* No mobile, sidebar fica oculta como overlay */
