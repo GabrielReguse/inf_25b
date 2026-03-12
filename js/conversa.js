@@ -528,12 +528,20 @@ async function atualizarMensagens() {
     const mapear = getMapear();
     const novos = dados.map(mapear);
 
-    const idsLocais   = new Set(mensagens.map(m => String(m.id)));
     const idsServidor = new Set(novos.map(m => String(m.id)));
 
-    const algumApagado = mensagens.some(
-      m => !String(m.id).startsWith('temp-') && !idsServidor.has(String(m.id))
-    );
+    // Remove msgs temp do DOM e do array — o servidor já tem as versões reais
+    const temps = mensagens.filter(m => String(m.id).startsWith('temp-'));
+    if (temps.length > 0) {
+      temps.forEach(m => {
+        document.querySelector(`.msg-grupo[data-id="${m.id}"]`)?.remove();
+      });
+      mensagens = mensagens.filter(m => !String(m.id).startsWith('temp-'));
+    }
+
+    const idsLocais = new Set(mensagens.map(m => String(m.id)));
+
+    const algumApagado = mensagens.some(m => !idsServidor.has(String(m.id)));
     const msgNovas = novos.filter(m => !idsLocais.has(String(m.id)));
 
     if (!algumApagado && msgNovas.length === 0) return; // Nada mudou
@@ -584,6 +592,7 @@ async function atualizarMensagens() {
 }
 
 // ─── RENDER TOTAL ─────────────────────────────────────────────────────────────
+// scrollBehavior: 'fundo' | 'naoLida' | 'preservar'
 function renderTodas(scrollBehavior = 'fundo') {
   elChat.innerHTML = '';
 
@@ -1191,18 +1200,32 @@ async function init() {
   // Polling de mensagens a cada 5s
   poolingInterval = setInterval(atualizarMensagens, 5000);
 
-  // Polling da sidebar a cada 15s (atualiza preview de última msg)
+  // Polling da sidebar a cada 8s — detecta novas conversas e atualiza previews
   conversasInterval = setInterval(async () => {
     try {
       if (!meuId) return;
       const resp = await fetch(`${API}/conversas/${meuId}`);
       const lista = await resp.json();
+
+      // Verifica se apareceu alguma conversa nova na lista
+      const idsAtuais = new Set(
+        [...document.querySelectorAll('.sidebar-item')].map(el => el.dataset.id)
+      );
+      const temNova = lista.some(c => !idsAtuais.has(String(c.id)));
+
+      if (temNova) {
+        // Re-renderiza a sidebar inteira para incluir o novo item
+        conversas = lista;
+        renderSidebar(lista);
+        return;
+      }
+
+      // Sem novas conversas: atualiza só preview e hora dos existentes
       lista.forEach(c => {
         if (c.ultimaMsg?.id) atualizarBadge(c.id, c.ultimaMsg.id);
-        // Atualiza hora e preview na sidebar (sem re-renderizar tudo)
         const item = document.querySelector(`.sidebar-item[data-id="${c.id}"]`);
         if (!item || !c.ultimaMsg) return;
-        const prev = item.querySelector('.sidebar-item-preview');
+        const prev  = item.querySelector('.sidebar-item-preview');
         const horaEl = item.querySelector('.sidebar-item-hora');
         if (prev) {
           const prefix = c.ultimaMsg.autorNome === 'Você' ? 'Você: ' : '';
@@ -1211,7 +1234,7 @@ async function init() {
         if (horaEl) horaEl.textContent = formatarHoraRelativa(c.ultimaMsg.criadaEm);
       });
     } catch { /* silencioso */ }
-  }, 15000);
+  }, 8000);
 }
 
 window.addEventListener('beforeunload', () => {
