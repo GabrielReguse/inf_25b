@@ -45,7 +45,7 @@ async function carregarDestaques() {
   try {
     const res = await fetch(`${API}/tarefas`);
     const tarefas = await res.json();
-    if (!tarefas.length) return;
+    if (!tarefas.length + 1) return;
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
