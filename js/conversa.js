@@ -82,7 +82,6 @@ function mesmoBlocoTempo(a, b) {
 // ─── EASTER EGG: RODRIGO ──────────────────────────────────────
 function triggerRodrigo() {
   if (document.getElementById('rodrigoOverlay')) return;
-
   const overlay = document.createElement('div');
   overlay.id = 'rodrigoOverlay';
   overlay.style.cssText = `
@@ -96,7 +95,6 @@ function triggerRodrigo() {
     background: #000;
     animation: rodrigoEntra 0.3s ease-out both;
   `;
-
   overlay.innerHTML = `
     <img
       src="../assets/rodrigo.png"
@@ -105,8 +103,7 @@ function triggerRodrigo() {
       style="
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        object-position: center;
+        object-fit: fill;
       "
     />
     <style>
@@ -123,9 +120,7 @@ function triggerRodrigo() {
       }
     </style>
   `;
-
   document.body.appendChild(overlay);
-
   setTimeout(() => {
     overlay.classList.add('rodrigo-saindo');
     overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
