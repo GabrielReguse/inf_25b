@@ -11,53 +11,53 @@ const usuario = (() => {
   } catch { return {}; }
 })();
 
-const meuNome = usuario.nome || 'Você';
-const meuId = usuario.id || null;
+const meuNome   = usuario.nome       || 'Você';
+const meuId     = usuario.id         || null;
 const minhaFoto = usuario.fotoPerfil || null;
-const isAdmin = usuario.role === 'admin';
+const isAdmin   = usuario.role === 'admin';
 
 // ─── ESTADO ───────────────────────────────────────────────────────────────────
-let mensagens = [];
-let conversas = [];
-let conversaAtiva = { tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B' };
-let imagemPendente = null;
-let mediaRecorder = null;
-let gravando = false;
-let chunksAudio = [];
-let timerGrav = null;
-let segundosGrav = 0;
-let poolingInterval = null;
+let mensagens        = [];
+let conversas        = [];
+let conversaAtiva    = { tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B' };
+let imagemPendente   = null;
+let mediaRecorder    = null;
+let gravando         = false;
+let chunksAudio      = [];
+let timerGrav        = null;
+let segundosGrav     = 0;
+let poolingInterval  = null;
 let conversasInterval = null;
-let replyAlvo = null;
-let todosUsuarios = [];
-let mentionAtivo = false;
-let mentionIndex = 0;
-let mencoesAtivas = new Set();
+let replyAlvo        = null;
+let todosUsuarios    = [];
+let mentionAtivo     = false;
+let mentionIndex     = 0;
+let mencoesAtivas    = new Set();
 let carregamentoInicial = true;
 
 // ─── DOM ──────────────────────────────────────────────────────────────────────
-const elChat = document.getElementById('chatArea');
-const elInput = document.getElementById('inputTexto');
-const elBtnEnviar = document.getElementById('btnEnviar');
-const elBtnFoto = document.getElementById('btnFoto');
-const elInputFoto = document.getElementById('inputFoto');
-const elBtnAudio = document.getElementById('btnAudio');
-const elPreview = document.getElementById('previewImgWrap');
-const elPreviewImg = document.getElementById('previewImgThumb');
-const elPreviewNome = document.getElementById('previewImgNome');
-const elPreviewRem = document.getElementById('previewImgRemove');
-const elReplyBar = document.getElementById('replyBar');
-const elReplyTexto = document.getElementById('replyBarTexto');
-const elReplyFechar = document.getElementById('replyBarFechar');
-const elSidebar = document.getElementById('sidebar');
-const elOverlay = document.getElementById('sidebarOverlay');
+const elChat         = document.getElementById('chatArea');
+const elInput        = document.getElementById('inputTexto');
+const elBtnEnviar    = document.getElementById('btnEnviar');
+const elBtnFoto      = document.getElementById('btnFoto');
+const elInputFoto    = document.getElementById('inputFoto');
+const elBtnAudio     = document.getElementById('btnAudio');
+const elPreview      = document.getElementById('previewImgWrap');
+const elPreviewImg   = document.getElementById('previewImgThumb');
+const elPreviewNome  = document.getElementById('previewImgNome');
+const elPreviewRem   = document.getElementById('previewImgRemove');
+const elReplyBar     = document.getElementById('replyBar');
+const elReplyTexto   = document.getElementById('replyBarTexto');
+const elReplyFechar  = document.getElementById('replyBarFechar');
+const elSidebar      = document.getElementById('sidebar');
+const elOverlay      = document.getElementById('sidebarOverlay');
 const elSidebarLista = document.getElementById('sidebarLista');
 const elSidebarLoading = document.getElementById('sidebarLoading');
 const elSidebarBusca = document.getElementById('sidebarBusca');
-const elBtnAbrir = document.getElementById('btnAbrirSidebar');
+const elBtnAbrir     = document.getElementById('btnAbrirSidebar');
 const elSidebarFechar = document.getElementById('sidebarFecharBtn');
-const elHeaderTitulo = document.getElementById('headerTitulo');
-const elHeaderSub = document.getElementById('headerSubtitulo');
+const elHeaderTitulo  = document.getElementById('headerTitulo');
+const elHeaderSub     = document.getElementById('headerSubtitulo');
 const elHeaderAvatarImg = document.getElementById('headerAvatarImg');
 
 // ─── UTILITÁRIOS ──────────────────────────────────────────────────────────────
@@ -104,13 +104,13 @@ function formatarHoraRelativa(iso) {
   const agora = new Date();
   const diffMs = agora - d;
   const diffMin = Math.floor(diffMs / 60000);
-  const diffH = Math.floor(diffMs / 3600000);
-  const diffD = Math.floor(diffMs / 86400000);
+  const diffH   = Math.floor(diffMs / 3600000);
+  const diffD   = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return 'agora';
+  if (diffMin < 1)  return 'agora';
   if (diffMin < 60) return `${diffMin}min`;
-  if (diffH < 24) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  if (diffD < 7) return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()];
+  if (diffH < 24)   return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (diffD < 7)    return ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()];
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
@@ -160,20 +160,20 @@ function mapearMsgGrupo(m) {
     : null;
 
   return {
-    id: m._id,
-    autor: m.autor?.nome || 'Usuário',
-    foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-    role: m.autor?.role || 'aluno',
-    tipo: m.tipo || 'texto',
-    conteudo: m.texto || '',
-    src: m.mediaUrl || '',
-    replyTo: replyId,
+    id:         m._id,
+    autor:      m.autor?.nome || 'Usuário',
+    foto:       String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+    role:       m.autor?.role || 'aluno',
+    tipo:       m.tipo || 'texto',
+    conteudo:   m.texto || '',
+    src:        m.mediaUrl || '',
+    replyTo:    replyId,
     replyToData,
-    onda: gerarOnda(),
-    duracao: '0:00',
-    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu: String(m.autor?._id || m.autor) === String(meuId)
+    onda:       gerarOnda(),
+    duracao:    '0:00',
+    hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu:         String(m.autor?._id || m.autor) === String(meuId)
   };
 }
 
@@ -187,20 +187,20 @@ function mapearMsgDireta(m) {
     : null;
 
   return {
-    id: m._id,
-    autor: m.de?.nome || 'Usuário',
-    foto: String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
-    role: m.de?.role || 'aluno',
-    tipo: m.tipo || 'texto',
-    conteudo: m.texto || '',
-    src: m.mediaUrl || '',
-    replyTo: replyId,
+    id:         m._id,
+    autor:      m.de?.nome || 'Usuário',
+    foto:       String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
+    role:       m.de?.role || 'aluno',
+    tipo:       m.tipo || 'texto',
+    conteudo:   m.texto || '',
+    src:        m.mediaUrl || '',
+    replyTo:    replyId,
     replyToData,
-    onda: gerarOnda(),
-    duracao: '0:00',
-    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu: String(m.de?._id || m.de) === String(meuId)
+    onda:       gerarOnda(),
+    duracao:    '0:00',
+    hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu:         String(m.de?._id || m.de) === String(meuId)
   };
 }
 
@@ -276,7 +276,7 @@ function renderSidebar(lista) {
 function criarItemSidebar(c) {
   const item = document.createElement('div');
   item.className = 'sidebar-item';
-  item.dataset.id = c.id;
+  item.dataset.id   = c.id;
   item.dataset.nome = c.nome;
 
   // Avatar
@@ -317,7 +317,93 @@ function marcarAtivo(id) {
   });
 }
 
-// ─── SELECIONAR CONVERSA ──────────────────────────────────────────────────────
+// ─── MODAL NOVA CONVERSA ─────────────────────────────────────────────────────
+document.getElementById('btnNovaConversa')?.addEventListener('click', abrirModalNovaConversa);
+
+function abrirModalNovaConversa() {
+  document.getElementById('modalNovaConversa')?.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-nova-conversa';
+  modal.id = 'modalNovaConversa';
+
+  modal.innerHTML = `
+    <div class="modal-nova-conversa-box">
+      <div class="modal-nova-conversa-header">
+        <span class="modal-nova-conversa-titulo">Nova Conversa</span>
+        <button class="modal-nova-conversa-fechar" id="modalNovaConversaFechar" type="button">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-nova-conversa-busca-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="modal-nova-conversa-busca" id="modalNovaBusca" type="text" placeholder="Buscar pessoa..." autocomplete="off"/>
+      </div>
+      <div class="modal-nova-conversa-lista" id="modalNovaLista"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  // Fecha ao clicar fora
+  modal.addEventListener('click', e => { if (e.target === modal) fecharModalNovaConversa(); });
+  document.getElementById('modalNovaConversaFechar').addEventListener('click', fecharModalNovaConversa);
+
+  // Popula lista
+  renderModalUsuarios('');
+
+  // Busca
+  const inputBusca = document.getElementById('modalNovaBusca');
+  inputBusca.focus();
+  inputBusca.addEventListener('input', () => renderModalUsuarios(inputBusca.value.trim().toLowerCase()));
+}
+
+function fecharModalNovaConversa() {
+  document.getElementById('modalNovaConversa')?.remove();
+}
+
+function renderModalUsuarios(filtro) {
+  const lista = document.getElementById('modalNovaLista');
+  if (!lista) return;
+
+  const usuarios = todosUsuarios.filter(u =>
+    u._id !== meuId &&
+    String(u._id) !== String(meuId) &&
+    (!filtro || u.nome?.toLowerCase().includes(filtro))
+  );
+
+  if (!usuarios.length) {
+    lista.innerHTML = `<div class="modal-usuario-vazio">Nenhuma pessoa encontrada</div>`;
+    return;
+  }
+
+  lista.innerHTML = '';
+  usuarios.forEach(u => {
+    const item = document.createElement('div');
+    item.className = 'modal-usuario-item';
+
+    const iniciais = u.nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    item.innerHTML = `
+      <div class="modal-usuario-avatar">
+        ${u.fotoPerfil ? `<img src="${u.fotoPerfil}" alt="${escapeHTML(u.nome)}"/>` : iniciais}
+      </div>
+      <span class="modal-usuario-nome">${escapeHTML(u.nome)}</span>`;
+
+    item.addEventListener('click', () => {
+      fecharModalNovaConversa();
+      selecionarConversa({
+        tipo:   'direto',
+        id:     String(u._id),
+        userId: String(u._id),
+        nome:   u.nome,
+        foto:   u.fotoPerfil || null
+      });
+    });
+
+    lista.appendChild(item);
+  });
+}
+
+
 async function selecionarConversa(c) {
   if (c.id === conversaAtiva.id) {
     fecharSidebar();
@@ -392,7 +478,7 @@ function atualizarPreviewSidebar() {
   if (!item) return;
 
   const previewEl = item.querySelector('.sidebar-item-preview');
-  const horaEl = item.querySelector('.sidebar-item-hora');
+  const horaEl    = item.querySelector('.sidebar-item-hora');
 
   if (previewEl) {
     const prefix = ultima.eu ? 'Você: ' : '';
@@ -413,7 +499,7 @@ async function carregarMensagens() {
     mensagens = dados.map(mapear);
 
     // Determina comportamento de scroll
-    const lastReadId = getLastRead();
+    const lastReadId  = getLastRead();
     const lastReadIdx = lastReadId
       ? mensagens.findIndex(m => String(m.id) === String(lastReadId))
       : -1;
@@ -442,7 +528,7 @@ async function atualizarMensagens() {
     const mapear = getMapear();
     const novos = dados.map(mapear);
 
-    const idsLocais = new Set(mensagens.map(m => String(m.id)));
+    const idsLocais   = new Set(mensagens.map(m => String(m.id)));
     const idsServidor = new Set(novos.map(m => String(m.id)));
 
     const algumApagado = mensagens.some(
@@ -452,8 +538,8 @@ async function atualizarMensagens() {
 
     if (!algumApagado && msgNovas.length === 0) return; // Nada mudou
 
-    const foiNoFundo = estaNoFundo();
-    const scrollAntes = elChat.scrollTop;
+    const foiNoFundo    = estaNoFundo();
+    const scrollAntes   = elChat.scrollTop;
 
     if (algumApagado) {
       // Precisa re-renderizar tudo — preserva posição de scroll
@@ -498,11 +584,10 @@ async function atualizarMensagens() {
 }
 
 // ─── RENDER TOTAL ─────────────────────────────────────────────────────────────
-// scrollBehavior: 'fundo' | 'naoLida' | 'preservar'
 function renderTodas(scrollBehavior = 'fundo') {
   elChat.innerHTML = '';
 
-  const lastReadId = getLastRead();
+  const lastReadId  = getLastRead();
   const lastReadIdx = lastReadId
     ? mensagens.findIndex(m => String(m.id) === String(lastReadId))
     : -1;
@@ -676,14 +761,14 @@ function renderMensagem(msg, agrupado = false) {
 // ─── LONG PRESS ───────────────────────────────────────────────────────────────
 function anexarLongPress(el, msg) {
   let timer = null;
-  const iniciar = (e) => { timer = setTimeout(() => { const t = e.touches ? e.touches[0] : e; abrirCtxMenu(t.clientX, t.clientY, msg); }, 500); };
+  const iniciar  = (e) => { timer = setTimeout(() => { const t = e.touches ? e.touches[0] : e; abrirCtxMenu(t.clientX, t.clientY, msg); }, 500); };
   const cancelar = () => clearTimeout(timer);
 
   el.addEventListener('touchstart', iniciar, { passive: true });
-  el.addEventListener('touchend', cancelar);
-  el.addEventListener('touchmove', cancelar);
-  el.addEventListener('mousedown', iniciar);
-  el.addEventListener('mouseup', cancelar);
+  el.addEventListener('touchend',   cancelar);
+  el.addEventListener('touchmove',  cancelar);
+  el.addEventListener('mousedown',  iniciar);
+  el.addEventListener('mouseup',    cancelar);
   el.addEventListener('mouseleave', cancelar);
   el.addEventListener('contextmenu', e => { e.preventDefault(); abrirCtxMenu(e.clientX, e.clientY, msg); });
 }
@@ -692,7 +777,7 @@ function anexarLongPress(el, msg) {
 function abrirCtxMenu(x, y, msg) {
   fecharCtxMenu();
 
-  const ehMeu = msg.eu || msg.autor === meuNome;
+  const ehMeu  = msg.eu || msg.autor === meuNome;
   const podeDel = ehMeu || isAdmin;
 
   const menu = document.createElement('div');
@@ -722,9 +807,9 @@ function abrirCtxMenu(x, y, msg) {
 
   document.body.appendChild(menu);
   const mw = menu.offsetWidth, mh = menu.offsetHeight;
-  const vw = window.innerWidth, vh = window.innerHeight;
+  const vw = window.innerWidth,  vh = window.innerHeight;
   menu.style.left = `${Math.min(x, vw - mw - 10)}px`;
-  menu.style.top = `${Math.min(y, vh - mh - 10)}px`;
+  menu.style.top  = `${Math.min(y, vh - mh - 10)}px`;
 
   setTimeout(() => document.addEventListener('click', fecharCtxMenu, { once: true }), 10);
 }
@@ -783,10 +868,10 @@ async function carregarUsuarios() {
 }
 
 function getMentionQuery() {
-  const val = elInput.value;
+  const val    = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes = val.slice(0, cursor);
-  const match = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
+  const antes  = val.slice(0, cursor);
+  const match  = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
   return match ? match[1] : null;
 }
 
@@ -816,7 +901,7 @@ function abrirMentionLista(filtro) {
 
   const rect = elInput.getBoundingClientRect();
   lista.style.bottom = `${window.innerHeight - rect.top + 6}px`;
-  lista.style.left = `${rect.left}px`;
+  lista.style.left   = `${rect.left}px`;
   document.body.appendChild(lista);
   mentionAtivo = true;
   mentionIndex = 0;
@@ -828,9 +913,9 @@ function fecharMentionLista() {
 }
 
 function inserirMention(nome) {
-  const val = elInput.value;
+  const val    = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes = val.slice(0, cursor);
+  const antes  = val.slice(0, cursor);
   const depois = val.slice(cursor);
   const novoAntes = antes.replace(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/, `@${nome} `);
   elInput.value = novoAntes + depois;
@@ -902,7 +987,7 @@ async function enviarTexto() {
 
   // ── Envio de imagem ──
   if (imagemPendente) {
-    const previewSrc = imagemPendente.src;
+    const previewSrc     = imagemPendente.src;
     const fileParaUpload = imagemPendente.file;
     limparPreview();
 
@@ -918,9 +1003,9 @@ async function enviarTexto() {
 
     if (meuId && fileParaUpload) {
       try {
-        const fd = new FormData();
+        const fd  = new FormData();
         fd.append('midia', fileParaUpload);
-        const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+        const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
         const dados = await res.json();
         if (res.ok) await enviarParaApi({ texto: '', tipo: 'imagem', mediaUrl: dados.url, replyTo: replyId, mencoes: [] });
       } catch (err) { console.error('Erro upload imagem:', err); }
@@ -990,7 +1075,7 @@ elInputFoto.addEventListener('change', () => {
   if (!file) return;
   const url = URL.createObjectURL(file);
   imagemPendente = { src: url, nome: file.name, file };
-  elPreviewImg.src = url;
+  elPreviewImg.src  = url;
   elPreviewNome.textContent = file.name;
   elPreview.classList.add('visivel');
   elInputFoto.value = '';
@@ -1010,13 +1095,13 @@ elBtnAudio.addEventListener('click', async () => {
   if (!gravando) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunksAudio = [];
+      chunksAudio  = [];
       mediaRecorder = new MediaRecorder(stream);
       mediaRecorder.ondataavailable = e => chunksAudio.push(e.data);
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksAudio, { type: 'audio/webm' });
-        const url = URL.createObjectURL(blob);
-        const dur = formatarDuracao(segundosGrav);
+        const url  = URL.createObjectURL(blob);
+        const dur  = formatarDuracao(segundosGrav);
         adicionarMensagemLocal({
           id: `temp-audio-${Date.now()}`,
           autor: meuNome, foto: minhaFoto,
@@ -1030,7 +1115,7 @@ elBtnAudio.addEventListener('click', async () => {
           try {
             const fd = new FormData();
             fd.append('midia', blob, 'audio.webm');
-            const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+            const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
             const dados = await res.json();
             if (res.ok) await enviarParaApi({ texto: '', tipo: 'audio', mediaUrl: dados.url, mencoes: [] });
           } catch (err) { console.error('Erro upload áudio:', err); }
@@ -1130,7 +1215,7 @@ async function init() {
 }
 
 window.addEventListener('beforeunload', () => {
-  if (poolingInterval) clearInterval(poolingInterval);
+  if (poolingInterval)   clearInterval(poolingInterval);
   if (conversasInterval) clearInterval(conversasInterval);
   if (mensagens.length > 0 && estaNoFundo()) {
     saveLastRead(mensagens[mensagens.length - 1].id);
