@@ -1,5 +1,32 @@
 const API = "https://inf-25b-backend.onrender.com";
 
+// ─── PWA HEIGHT FIX ───────────────────────────────────────────────────────────
+// No Android PWA, 100dvh pode variar conforme barra de sistema aparece/some,
+// quebrando o flex layout. Fixamos via variável CSS --vh baseada em window.innerHeight.
+(function fixPWAHeight() {
+  function aplicar() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  aplicar();
+  window.addEventListener('resize', aplicar, { passive: true });
+})();
+
+// ─── ANIMATION FALLBACK ───────────────────────────────────────────────────────
+// No PWA mobile, animações CSS podem não disparar (fill-mode: both deixa opacity:0).
+// Garantimos visibilidade após timeout mesmo sem animationend.
+(function fixPageAnimation() {
+  const page = document.getElementById('page');
+  if (!page) return;
+  const forcar = () => {
+    page.style.opacity = '1';
+    page.style.transform = 'none';
+  };
+  page.addEventListener('animationend', forcar, { once: true });
+  // Fallback: se animação não disparar em 500ms, força visibilidade
+  setTimeout(forcar, 500);
+})();
+
 // ─── SESSÃO ───────────────────────────────────────────────────────────────────
 const usuario = (() => {
   try {
@@ -11,53 +38,53 @@ const usuario = (() => {
   } catch { return {}; }
 })();
 
-const meuNome   = usuario.nome       || 'Você';
-const meuId     = usuario.id         || null;
+const meuNome = usuario.nome || 'Você';
+const meuId = usuario.id || null;
 const minhaFoto = usuario.fotoPerfil || null;
-const isAdmin   = usuario.role === 'admin';
+const isAdmin = usuario.role === 'admin';
 
 // ─── ESTADO ───────────────────────────────────────────────────────────────────
-let mensagens        = [];
-let conversas        = [];
-let conversaAtiva    = { tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B' };
-let imagemPendente   = null;
-let mediaRecorder    = null;
-let gravando         = false;
-let chunksAudio      = [];
-let timerGrav        = null;
-let segundosGrav     = 0;
-let poolingInterval  = null;
+let mensagens = [];
+let conversas = [];
+let conversaAtiva = { tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B' };
+let imagemPendente = null;
+let mediaRecorder = null;
+let gravando = false;
+let chunksAudio = [];
+let timerGrav = null;
+let segundosGrav = 0;
+let poolingInterval = null;
 let conversasInterval = null;
-let replyAlvo        = null;
-let todosUsuarios    = [];
-let mentionAtivo     = false;
-let mentionIndex     = 0;
-let mencoesAtivas    = new Set();
+let replyAlvo = null;
+let todosUsuarios = [];
+let mentionAtivo = false;
+let mentionIndex = 0;
+let mencoesAtivas = new Set();
 let carregamentoInicial = true;
 
 // ─── DOM ──────────────────────────────────────────────────────────────────────
-const elChat         = document.getElementById('chatArea');
-const elInput        = document.getElementById('inputTexto');
-const elBtnEnviar    = document.getElementById('btnEnviar');
-const elBtnFoto      = document.getElementById('btnFoto');
-const elInputFoto    = document.getElementById('inputFoto');
-const elBtnAudio     = document.getElementById('btnAudio');
-const elPreview      = document.getElementById('previewImgWrap');
-const elPreviewImg   = document.getElementById('previewImgThumb');
-const elPreviewNome  = document.getElementById('previewImgNome');
-const elPreviewRem   = document.getElementById('previewImgRemove');
-const elReplyBar     = document.getElementById('replyBar');
-const elReplyTexto   = document.getElementById('replyBarTexto');
-const elReplyFechar  = document.getElementById('replyBarFechar');
-const elSidebar      = document.getElementById('sidebar');
-const elOverlay      = document.getElementById('sidebarOverlay');
+const elChat = document.getElementById('chatArea');
+const elInput = document.getElementById('inputTexto');
+const elBtnEnviar = document.getElementById('btnEnviar');
+const elBtnFoto = document.getElementById('btnFoto');
+const elInputFoto = document.getElementById('inputFoto');
+const elBtnAudio = document.getElementById('btnAudio');
+const elPreview = document.getElementById('previewImgWrap');
+const elPreviewImg = document.getElementById('previewImgThumb');
+const elPreviewNome = document.getElementById('previewImgNome');
+const elPreviewRem = document.getElementById('previewImgRemove');
+const elReplyBar = document.getElementById('replyBar');
+const elReplyTexto = document.getElementById('replyBarTexto');
+const elReplyFechar = document.getElementById('replyBarFechar');
+const elSidebar = document.getElementById('sidebar');
+const elOverlay = document.getElementById('sidebarOverlay');
 const elSidebarLista = document.getElementById('sidebarLista');
 const elSidebarLoading = document.getElementById('sidebarLoading');
 const elSidebarBusca = document.getElementById('sidebarBusca');
-const elBtnAbrir     = document.getElementById('btnAbrirSidebar');
+const elBtnAbrir = document.getElementById('btnAbrirSidebar');
 const elSidebarFechar = document.getElementById('sidebarFecharBtn');
-const elHeaderTitulo  = document.getElementById('headerTitulo');
-const elHeaderSub     = document.getElementById('headerSubtitulo');
+const elHeaderTitulo = document.getElementById('headerTitulo');
+const elHeaderSub = document.getElementById('headerSubtitulo');
 const elHeaderAvatarImg = document.getElementById('headerAvatarImg');
 
 // ─── UTILITÁRIOS ──────────────────────────────────────────────────────────────
@@ -104,13 +131,13 @@ function formatarHoraRelativa(iso) {
   const agora = new Date();
   const diffMs = agora - d;
   const diffMin = Math.floor(diffMs / 60000);
-  const diffH   = Math.floor(diffMs / 3600000);
-  const diffD   = Math.floor(diffMs / 86400000);
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffD = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1)  return 'agora';
+  if (diffMin < 1) return 'agora';
   if (diffMin < 60) return `${diffMin}min`;
-  if (diffH < 24)   return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  if (diffD < 7)    return ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()];
+  if (diffH < 24) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (diffD < 7) return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()];
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
@@ -131,13 +158,11 @@ function saveLastRead(msgId) {
 function marcarTodasLidas() {
   if (mensagens.length > 0) {
     saveLastRead(mensagens[mensagens.length - 1].id);
-    // Remove badge da conversa ativa na sidebar
     const item = document.querySelector(`.sidebar-item[data-id="${conversaAtiva.id}"]`);
     if (item) item.classList.remove('tem-nao-lidas');
   }
 }
 
-// Atualiza badge de não lidas na sidebar para uma conversa
 function atualizarBadge(conversaId, ultimaMsgId) {
   const item = document.querySelector(`.sidebar-item[data-id="${conversaId}"]`);
   if (!item || !ultimaMsgId) return;
@@ -160,20 +185,20 @@ function mapearMsgGrupo(m) {
     : null;
 
   return {
-    id:         m._id,
-    autor:      m.autor?.nome || 'Usuário',
-    foto:       String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-    role:       m.autor?.role || 'aluno',
-    tipo:       m.tipo || 'texto',
-    conteudo:   m.texto || '',
-    src:        m.mediaUrl || '',
-    replyTo:    replyId,
+    id: m._id,
+    autor: m.autor?.nome || 'Usuário',
+    foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+    role: m.autor?.role || 'aluno',
+    tipo: m.tipo || 'texto',
+    conteudo: m.texto || '',
+    src: m.mediaUrl || '',
+    replyTo: replyId,
     replyToData,
-    onda:       gerarOnda(),
-    duracao:    '0:00',
-    hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu:         String(m.autor?._id || m.autor) === String(meuId)
+    onda: gerarOnda(),
+    duracao: '0:00',
+    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu: String(m.autor?._id || m.autor) === String(meuId)
   };
 }
 
@@ -187,20 +212,20 @@ function mapearMsgDireta(m) {
     : null;
 
   return {
-    id:         m._id,
-    autor:      m.de?.nome || 'Usuário',
-    foto:       String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
-    role:       m.de?.role || 'aluno',
-    tipo:       m.tipo || 'texto',
-    conteudo:   m.texto || '',
-    src:        m.mediaUrl || '',
-    replyTo:    replyId,
+    id: m._id,
+    autor: m.de?.nome || 'Usuário',
+    foto: String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
+    role: m.de?.role || 'aluno',
+    tipo: m.tipo || 'texto',
+    conteudo: m.texto || '',
+    src: m.mediaUrl || '',
+    replyTo: replyId,
     replyToData,
-    onda:       gerarOnda(),
-    duracao:    '0:00',
-    hora:       new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data:       new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu:         String(m.de?._id || m.de) === String(meuId)
+    onda: gerarOnda(),
+    duracao: '0:00',
+    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu: String(m.de?._id || m.de) === String(meuId)
   };
 }
 
@@ -244,7 +269,6 @@ function renderSidebar(lista) {
   if (elSidebarLoading) elSidebarLoading.remove();
   elSidebarLista.innerHTML = '';
 
-  // ── Grupos ──
   const grupos = lista.filter(c => c.tipo === 'grupo');
   if (grupos.length) {
     const secLabel = document.createElement('div');
@@ -254,7 +278,6 @@ function renderSidebar(lista) {
     grupos.forEach(c => elSidebarLista.appendChild(criarItemSidebar(c)));
   }
 
-  // ── Pessoais ──
   const pessoais = lista.filter(c => c.tipo === 'direto');
   if (pessoais.length) {
     const secLabel2 = document.createElement('div');
@@ -264,22 +287,19 @@ function renderSidebar(lista) {
     pessoais.forEach(c => elSidebarLista.appendChild(criarItemSidebar(c)));
   }
 
-  // Atualiza badges
   lista.forEach(c => {
     if (c.ultimaMsg?.id) atualizarBadge(c.id, c.ultimaMsg.id);
   });
 
-  // Marca conversa ativa na sidebar
   marcarAtivo(conversaAtiva.id);
 }
 
 function criarItemSidebar(c) {
   const item = document.createElement('div');
   item.className = 'sidebar-item';
-  item.dataset.id   = c.id;
+  item.dataset.id = c.id;
   item.dataset.nome = c.nome;
 
-  // Avatar
   let avatarConteudo = '';
   if (c.foto) {
     avatarConteudo = `<img src="${c.foto}" alt="${escapeHTML(c.nome)}"/>`;
@@ -344,14 +364,11 @@ function abrirModalNovaConversa() {
 
   document.body.appendChild(modal);
 
-  // Fecha ao clicar fora
   modal.addEventListener('click', e => { if (e.target === modal) fecharModalNovaConversa(); });
   document.getElementById('modalNovaConversaFechar').addEventListener('click', fecharModalNovaConversa);
 
-  // Popula lista
   renderModalUsuarios('');
 
-  // Busca
   const inputBusca = document.getElementById('modalNovaBusca');
   inputBusca.focus();
   inputBusca.addEventListener('input', () => renderModalUsuarios(inputBusca.value.trim().toLowerCase()));
@@ -391,11 +408,11 @@ function renderModalUsuarios(filtro) {
     item.addEventListener('click', () => {
       fecharModalNovaConversa();
       selecionarConversa({
-        tipo:   'direto',
-        id:     String(u._id),
+        tipo: 'direto',
+        id: String(u._id),
         userId: String(u._id),
-        nome:   u.nome,
-        foto:   u.fotoPerfil || null
+        nome: u.nome,
+        foto: u.fotoPerfil || null
       });
     });
 
@@ -410,7 +427,6 @@ async function selecionarConversa(c) {
     return;
   }
 
-  // Salva última lida da conversa anterior
   if (mensagens.length > 0 && estaNoFundo()) {
     saveLastRead(mensagens[mensagens.length - 1].id);
   }
@@ -419,7 +435,6 @@ async function selecionarConversa(c) {
   mensagens = [];
   carregamentoInicial = true;
 
-  // Atualiza header
   elHeaderTitulo.textContent = c.nome;
   elHeaderSub.textContent = c.tipo === 'grupo' ? 'conversa em grupo' : 'mensagem direta';
 
@@ -429,22 +444,15 @@ async function selecionarConversa(c) {
     elHeaderAvatarImg.src = '../assets/logo.png';
   }
 
-  // Limpa chat
   elChat.innerHTML = '';
-
-  // Marca ativo na sidebar
   marcarAtivo(c.id);
 
-  // Fecha sidebar no mobile
   if (window.innerWidth <= 768) fecharSidebar();
 
-  // Reinicia polling
   if (poolingInterval) clearInterval(poolingInterval);
 
-  // Carrega mensagens
   await carregarMensagens();
 
-  // Reinicia polling
   poolingInterval = setInterval(atualizarMensagens, 5000);
 }
 
@@ -453,7 +461,6 @@ async function carregarConversas() {
   try {
     const url = meuId ? `${API}/conversas/${meuId}` : null;
     if (!url) {
-      // Sem login: só mostra grupo
       conversas = [{ tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B', foto: null, ultimaMsg: null }];
       renderSidebar(conversas);
       return;
@@ -464,7 +471,6 @@ async function carregarConversas() {
     renderSidebar(conversas);
   } catch (err) {
     console.error('Erro ao carregar conversas:', err);
-    // Fallback: só grupo
     conversas = [{ tipo: 'grupo', id: 'grupo', nome: 'Turma INF 25B', foto: null, ultimaMsg: null }];
     renderSidebar(conversas);
   }
@@ -478,7 +484,7 @@ function atualizarPreviewSidebar() {
   if (!item) return;
 
   const previewEl = item.querySelector('.sidebar-item-preview');
-  const horaEl    = item.querySelector('.sidebar-item-hora');
+  const horaEl = item.querySelector('.sidebar-item-hora');
 
   if (previewEl) {
     const prefix = ultima.eu ? 'Você: ' : '';
@@ -498,8 +504,7 @@ async function carregarMensagens() {
     const mapear = getMapear();
     mensagens = dados.map(mapear);
 
-    // Determina comportamento de scroll
-    const lastReadId  = getLastRead();
+    const lastReadId = getLastRead();
     const lastReadIdx = lastReadId
       ? mensagens.findIndex(m => String(m.id) === String(lastReadId))
       : -1;
@@ -509,7 +514,6 @@ async function carregarMensagens() {
     renderTodas(temNaoLidas ? 'naoLida' : 'fundo');
     carregamentoInicial = false;
 
-    // Se já está no fundo, marca tudo como lido
     if (!temNaoLidas && mensagens.length > 0) {
       saveLastRead(mensagens[mensagens.length - 1].id);
       marcarAtivo(conversaAtiva.id);
@@ -530,7 +534,6 @@ async function atualizarMensagens() {
 
     const idsServidor = new Set(novos.map(m => String(m.id)));
 
-    // Remove msgs temp do DOM e do array — o servidor já tem as versões reais
     const temps = mensagens.filter(m => String(m.id).startsWith('temp-'));
     if (temps.length > 0) {
       temps.forEach(m => {
@@ -544,13 +547,12 @@ async function atualizarMensagens() {
     const algumApagado = mensagens.some(m => !idsServidor.has(String(m.id)));
     const msgNovas = novos.filter(m => !idsLocais.has(String(m.id)));
 
-    if (!algumApagado && msgNovas.length === 0) return; // Nada mudou
+    if (!algumApagado && msgNovas.length === 0) return;
 
-    const foiNoFundo    = estaNoFundo();
-    const scrollAntes   = elChat.scrollTop;
+    const foiNoFundo = estaNoFundo();
+    const scrollAntes = elChat.scrollTop;
 
     if (algumApagado) {
-      // Precisa re-renderizar tudo — preserva posição de scroll
       const alturaAntes = elChat.scrollHeight;
       mensagens = novos;
       renderTodasSilencioso();
@@ -563,11 +565,9 @@ async function atualizarMensagens() {
         }
       });
     } else {
-      // Só adiciona novas mensagens ao DOM (sem re-render total)
       msgNovas.forEach(msg => {
         const penultima = mensagens.length > 0 ? mensagens[mensagens.length - 1] : null;
 
-        // Separador de data se necessário
         if (!penultima || penultima.data !== msg.data) {
           elChat.appendChild(criarSeparadorData(msg.data));
         }
@@ -583,7 +583,6 @@ async function atualizarMensagens() {
       }
     }
 
-    // Atualiza preview na sidebar
     atualizarPreviewSidebar();
 
   } catch (err) {
@@ -592,11 +591,10 @@ async function atualizarMensagens() {
 }
 
 // ─── RENDER TOTAL ─────────────────────────────────────────────────────────────
-// scrollBehavior: 'fundo' | 'naoLida' | 'preservar'
 function renderTodas(scrollBehavior = 'fundo') {
   elChat.innerHTML = '';
 
-  const lastReadId  = getLastRead();
+  const lastReadId = getLastRead();
   const lastReadIdx = lastReadId
     ? mensagens.findIndex(m => String(m.id) === String(lastReadId))
     : -1;
@@ -609,7 +607,6 @@ function renderTodas(scrollBehavior = 'fundo') {
       elChat.appendChild(criarSeparadorData(msg.data));
     }
 
-    // Insere separador "Não lidas" antes da primeira msg não lida
     if (scrollBehavior === 'naoLida' && lastReadIdx !== -1 && i === lastReadIdx + 1) {
       elChat.appendChild(criarSeparadorNaoLidas());
     }
@@ -632,7 +629,6 @@ function renderTodas(scrollBehavior = 'fundo') {
   });
 }
 
-// Render silencioso (sem tocar no scroll) — usado pelo polling
 function renderTodasSilencioso() {
   elChat.innerHTML = '';
   let dataAtual = null;
@@ -670,13 +666,11 @@ function criarSeparadorNaoLidas() {
   return sep;
 }
 
-// ─── SCROLL LISTENER — marca como lido ao chegar no fundo ────────────────────
+// ─── SCROLL LISTENER ─────────────────────────────────────────────────────────
 elChat.addEventListener('scroll', () => {
   if (estaNoFundo() && mensagens.length > 0) {
     saveLastRead(mensagens[mensagens.length - 1].id);
-    // Remove separador de não lidas se estiver visível
     document.getElementById('naoLidasSep')?.remove();
-    // Remove badge da conversa ativa
     const item = document.querySelector(`.sidebar-item[data-id="${conversaAtiva.id}"]`);
     if (item) item.classList.remove('tem-nao-lidas');
   }
@@ -689,7 +683,6 @@ function renderMensagem(msg, agrupado = false) {
   grupo.className = `msg-grupo ${eu ? 'eu' : 'outros'}${agrupado ? ' msg-agrupada' : ''}`;
   grupo.dataset.id = msg.id;
 
-  // Citação (reply)
   let citacaoHTML = '';
   if (msg.replyTo) {
     const ref = mensagens.find(m => String(m.id) === String(msg.replyTo));
@@ -770,14 +763,14 @@ function renderMensagem(msg, agrupado = false) {
 // ─── LONG PRESS ───────────────────────────────────────────────────────────────
 function anexarLongPress(el, msg) {
   let timer = null;
-  const iniciar  = (e) => { timer = setTimeout(() => { const t = e.touches ? e.touches[0] : e; abrirCtxMenu(t.clientX, t.clientY, msg); }, 500); };
+  const iniciar = (e) => { timer = setTimeout(() => { const t = e.touches ? e.touches[0] : e; abrirCtxMenu(t.clientX, t.clientY, msg); }, 500); };
   const cancelar = () => clearTimeout(timer);
 
   el.addEventListener('touchstart', iniciar, { passive: true });
-  el.addEventListener('touchend',   cancelar);
-  el.addEventListener('touchmove',  cancelar);
-  el.addEventListener('mousedown',  iniciar);
-  el.addEventListener('mouseup',    cancelar);
+  el.addEventListener('touchend', cancelar);
+  el.addEventListener('touchmove', cancelar);
+  el.addEventListener('mousedown', iniciar);
+  el.addEventListener('mouseup', cancelar);
   el.addEventListener('mouseleave', cancelar);
   el.addEventListener('contextmenu', e => { e.preventDefault(); abrirCtxMenu(e.clientX, e.clientY, msg); });
 }
@@ -786,7 +779,7 @@ function anexarLongPress(el, msg) {
 function abrirCtxMenu(x, y, msg) {
   fecharCtxMenu();
 
-  const ehMeu  = msg.eu || msg.autor === meuNome;
+  const ehMeu = msg.eu || msg.autor === meuNome;
   const podeDel = ehMeu || isAdmin;
 
   const menu = document.createElement('div');
@@ -816,9 +809,9 @@ function abrirCtxMenu(x, y, msg) {
 
   document.body.appendChild(menu);
   const mw = menu.offsetWidth, mh = menu.offsetHeight;
-  const vw = window.innerWidth,  vh = window.innerHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
   menu.style.left = `${Math.min(x, vw - mw - 10)}px`;
-  menu.style.top  = `${Math.min(y, vh - mh - 10)}px`;
+  menu.style.top = `${Math.min(y, vh - mh - 10)}px`;
 
   setTimeout(() => document.addEventListener('click', fecharCtxMenu, { once: true }), 10);
 }
@@ -877,10 +870,10 @@ async function carregarUsuarios() {
 }
 
 function getMentionQuery() {
-  const val    = elInput.value;
+  const val = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes  = val.slice(0, cursor);
-  const match  = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
+  const antes = val.slice(0, cursor);
+  const match = antes.match(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/);
   return match ? match[1] : null;
 }
 
@@ -910,7 +903,7 @@ function abrirMentionLista(filtro) {
 
   const rect = elInput.getBoundingClientRect();
   lista.style.bottom = `${window.innerHeight - rect.top + 6}px`;
-  lista.style.left   = `${rect.left}px`;
+  lista.style.left = `${rect.left}px`;
   document.body.appendChild(lista);
   mentionAtivo = true;
   mentionIndex = 0;
@@ -922,9 +915,9 @@ function fecharMentionLista() {
 }
 
 function inserirMention(nome) {
-  const val    = elInput.value;
+  const val = elInput.value;
   const cursor = elInput.selectionStart;
-  const antes  = val.slice(0, cursor);
+  const antes = val.slice(0, cursor);
   const depois = val.slice(cursor);
   const novoAntes = antes.replace(/@([\wÀ-úà-ÿA-ZÇçÃãÕõÊêÔôÁáÉéÍíÓóÚú]*)$/, `@${nome} `);
   elInput.value = novoAntes + depois;
@@ -994,9 +987,8 @@ async function enviarTexto() {
   const replyId = replyAlvo?.id || null;
   cancelarReply();
 
-  // ── Envio de imagem ──
   if (imagemPendente) {
-    const previewSrc     = imagemPendente.src;
+    const previewSrc = imagemPendente.src;
     const fileParaUpload = imagemPendente.file;
     limparPreview();
 
@@ -1012,16 +1004,15 @@ async function enviarTexto() {
 
     if (meuId && fileParaUpload) {
       try {
-        const fd  = new FormData();
+        const fd = new FormData();
         fd.append('midia', fileParaUpload);
-        const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+        const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
         const dados = await res.json();
         if (res.ok) await enviarParaApi({ texto: '', tipo: 'imagem', mediaUrl: dados.url, replyTo: replyId, mencoes: [] });
       } catch (err) { console.error('Erro upload imagem:', err); }
     }
   }
 
-  // ── Envio de texto ──
   if (texto) {
     elInput.value = '';
     elInput.style.height = 'auto';
@@ -1045,7 +1036,6 @@ async function enviarTexto() {
   }
 }
 
-// Envia mensagem para a API correta (grupo ou DM)
 async function enviarParaApi(campos) {
   if (conversaAtiva.tipo === 'grupo') {
     await fetch(`${API}/mensagens`, {
@@ -1084,7 +1074,7 @@ elInputFoto.addEventListener('change', () => {
   if (!file) return;
   const url = URL.createObjectURL(file);
   imagemPendente = { src: url, nome: file.name, file };
-  elPreviewImg.src  = url;
+  elPreviewImg.src = url;
   elPreviewNome.textContent = file.name;
   elPreview.classList.add('visivel');
   elInputFoto.value = '';
@@ -1104,13 +1094,13 @@ elBtnAudio.addEventListener('click', async () => {
   if (!gravando) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunksAudio  = [];
+      chunksAudio = [];
       mediaRecorder = new MediaRecorder(stream);
       mediaRecorder.ondataavailable = e => chunksAudio.push(e.data);
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksAudio, { type: 'audio/webm' });
-        const url  = URL.createObjectURL(blob);
-        const dur  = formatarDuracao(segundosGrav);
+        const url = URL.createObjectURL(blob);
+        const dur = formatarDuracao(segundosGrav);
         adicionarMensagemLocal({
           id: `temp-audio-${Date.now()}`,
           autor: meuNome, foto: minhaFoto,
@@ -1124,7 +1114,7 @@ elBtnAudio.addEventListener('click', async () => {
           try {
             const fd = new FormData();
             fd.append('midia', blob, 'audio.webm');
-            const res   = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
+            const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
             const dados = await res.json();
             if (res.ok) await enviarParaApi({ texto: '', tipo: 'audio', mediaUrl: dados.url, mencoes: [] });
           } catch (err) { console.error('Erro upload áudio:', err); }
@@ -1213,7 +1203,7 @@ async function atualizarSidebar() {
       if (c.ultimaMsg?.id) atualizarBadge(c.id, c.ultimaMsg.id);
       const item = document.querySelector(`.sidebar-item[data-id="${c.id}"]`);
       if (!item || !c.ultimaMsg) return;
-      const prev   = item.querySelector('.sidebar-item-preview');
+      const prev = item.querySelector('.sidebar-item-preview');
       const horaEl = item.querySelector('.sidebar-item-hora');
       if (prev) {
         const prefix = c.ultimaMsg.autorNome === 'Você' ? 'Você: ' : '';
@@ -1225,15 +1215,14 @@ async function atualizarSidebar() {
 }
 
 function iniciarPollings() {
-  if (poolingInterval)   clearInterval(poolingInterval);
+  if (poolingInterval) clearInterval(poolingInterval);
   if (conversasInterval) clearInterval(conversasInterval);
-  poolingInterval   = setInterval(atualizarMensagens, 5000);
-  conversasInterval = setInterval(atualizarSidebar,   8000);
+  poolingInterval = setInterval(atualizarMensagens, 5000);
+  conversasInterval = setInterval(atualizarSidebar, 8000);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
-  // Executa em paralelo para não bloquear um pelo outro
   await Promise.allSettled([
     carregarUsuarios(),
     carregarConversas()
@@ -1247,21 +1236,12 @@ async function init() {
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible') return;
 
-  // Relê sessão do localStorage (sessionStorage pode ter sido limpo no PWA)
-  const usuarioFresh = (() => {
-    try {
-      return JSON.parse(
-        sessionStorage.getItem('usuario') ||
-        localStorage.getItem('usuario') ||
-        '{}'
-      );
-    } catch { return {}; }
-  })();
+  // Recalcula --vh ao voltar do background (barra de sistema pode ter mudado)
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
 
-  // Reinicia pollings (podem ter parado com o app em fundo)
   iniciarPollings();
 
-  // Recarrega mensagens e sidebar silenciosamente
   try {
     await Promise.allSettled([
       atualizarMensagens(),
@@ -1271,7 +1251,7 @@ document.addEventListener('visibilitychange', async () => {
 });
 
 window.addEventListener('beforeunload', () => {
-  if (poolingInterval)   clearInterval(poolingInterval);
+  if (poolingInterval) clearInterval(poolingInterval);
   if (conversasInterval) clearInterval(conversasInterval);
   if (mensagens.length > 0 && estaNoFundo()) {
     saveLastRead(mensagens[mensagens.length - 1].id);

@@ -1,5 +1,4 @@
 // sw.js — Service Worker de notificações push
-// deve ficar na RAIZ do projeto (mesmo nível da pasta html/)
 
 self.addEventListener("push", event => {
   if (!event.data) return;
