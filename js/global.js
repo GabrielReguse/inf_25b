@@ -5,37 +5,27 @@ const deviceId = localStorage.getItem('deviceId') || (() => {
   return id;
 })();
 
-// ─── MOBILE ──────────
+// ─── SINCRONIZA SESSÃO (auto login) ──────────────────────────
+// se tem usuário no localStorage mas não no sessionStorage, sincroniza
+if (!sessionStorage.getItem('usuario') && localStorage.getItem('usuario')) {
+  sessionStorage.setItem('usuario', localStorage.getItem('usuario'));
+}
 
-(function () {
-  const page = document.getElementById('page');
-  if (!page) return;
-
-  const tornarVisivel = () => {
-    if (!page.classList.contains('saindo')) {
-      page.style.opacity = '1';
-      page.style.transform = 'translateX(0)';
-    }
-  };
-  page.addEventListener('animationend', tornarVisivel, { once: true });
-  setTimeout(tornarVisivel, 500);
-})();
-
-// ─── RESTAURA PÁGINA AO VOLTAR (navegador / celular) ─────────
+// restaura página ao voltar pelo navegador/celular
 window.addEventListener('pageshow', () => {
   const page = document.getElementById('page');
   if (!page) return;
   page.classList.remove('saindo');
   page.style.animation = 'none';
-  page.style.opacity = '1';
+  page.style.opacity   = '1';
   page.style.transform = 'translateX(0)';
-  page.offsetHeight; // força reflow
+  page.offsetHeight;
   page.style.animation = '';
-  page.style.opacity = '';
+  page.style.opacity   = '';
   page.style.transform = '';
 });
 
-// ─── HEADER SCROLL ───────────────────────────────────────────
+// header scroll
 const header = document.getElementById('header');
 const headerLinha = document.getElementById('headerLinha');
 
@@ -47,7 +37,7 @@ if (header && headerLinha) {
   }, { passive: true });
 }
 
-// ─── ANIMAÇÃO DE SAÍDA ────────────────────────────────────────
+// animação de saída
 document.querySelectorAll('a[href]').forEach(link => {
   if (link.hostname !== location.hostname && link.hostname !== '') return;
   if (link.getAttribute('href').startsWith('#')) return;
@@ -60,7 +50,7 @@ document.querySelectorAll('a[href]').forEach(link => {
   });
 });
 
-// previne que links mailto/tel/http disparem navegação interna
+// enviar email
 document.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', e => {
     const href = link.getAttribute('href');
@@ -69,18 +59,20 @@ document.querySelectorAll('a').forEach(link => {
   });
 });
 
+// ─── LOGOUT ───────────────────────────────────────────────────
+// use: logout() em qualquer página pra deslogar
+function logout() {
+  localStorage.removeItem('usuario');
+  sessionStorage.removeItem('usuario');
+  window.location.href = '/html/cadastro.html';
+}
+
 // ─── NOTIFICAÇÕES PUSH ────────────────────────────────────────
 const API_PUSH = "https://inf-25b-backend.onrender.com";
 
 async function iniciarPush() {
   const usuario = (() => {
-    try {
-      return JSON.parse(
-        sessionStorage.getItem('usuario') ||
-        localStorage.getItem('usuario') ||
-        '{}'
-      );
-    } catch { return {}; }
+    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
   })();
   if (!usuario.id) return;
 
@@ -123,13 +115,7 @@ function urlBase64ToUint8Array(base64String) {
 // ─── HEARTBEAT ────────────────────────────────────────────────
 async function enviarHeartbeat() {
   const usuario = (() => {
-    try {
-      return JSON.parse(
-        sessionStorage.getItem('usuario') ||
-        localStorage.getItem('usuario') ||
-        '{}'
-      );
-    } catch { return {}; }
+    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
   })();
   if (!usuario.id) return;
 
@@ -137,21 +123,17 @@ async function enviarHeartbeat() {
     let modelo = "Indisponível";
     if (navigator.userAgentData) {
       try {
-        const d = await navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]);
+        const d = await navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]);
         modelo = `${d.platform} | ${d.model || "modelo não disponível"} | v${d.platformVersion}`;
-      } catch { }
+      } catch {}
     }
 
     await fetch(`${API_PUSH}/admin/heartbeat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-device-model': modelo,
-        'x-device-id': deviceId
-      },
+      headers: { 'Content-Type': 'application/json', 'x-device-model': modelo, 'x-device-id': deviceId },
       body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
     });
-  } catch { }
+  } catch {}
 }
 
 window.addEventListener('DOMContentLoaded', () => {
