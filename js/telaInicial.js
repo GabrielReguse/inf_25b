@@ -45,21 +45,28 @@ async function carregarDestaques() {
   try {
     const res = await fetch(`${API}/tarefas`);
     const tarefas = await res.json();
-    if (!tarefas.length + 1) return;
+    if (!tarefas.length) return;
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // filtra só futuras, ordena por data
+    // ✅ CORRIGIDO: parse manual para evitar interpretação UTC
     const futuras = tarefas
-      .filter(t => new Date(t.dataEntrega) >= hoje)
-      .sort((a, b) => new Date(a.dataEntrega) - new Date(b.dataEntrega));
+      .filter(t => {
+        const [ano, mes, dia] = t.dataEntrega.split('T')[0].split('-').map(Number);
+        return new Date(ano, mes - 1, dia) >= hoje;
+      })
+      .sort((a, b) => {
+        const [aa, ma, da] = a.dataEntrega.split('T')[0].split('-').map(Number);
+        const [ab, mb, db] = b.dataEntrega.split('T')[0].split('-').map(Number);
+        return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
+      });
 
     if (!futuras.length) return;
 
     container.innerHTML = '';
 
-    const visiveis = futuras.slice(0, 2);
+    const visiveis   = futuras.slice(0, 2);
     const escondidos = futuras.slice(2);
 
     visiveis.forEach(t => container.appendChild(criarItemDestaque(t)));
@@ -75,11 +82,16 @@ async function carregarDestaques() {
 function criarItemDestaque(t) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-  const entrega = new Date(t.dataEntrega);
-  entrega.setHours(0, 0, 0, 0);
+
+  // ✅ CORRIGIDO: parse manual para evitar desvio de fuso horário
+  const [ano, mes, dia] = t.dataEntrega.split('T')[0].split('-').map(Number);
+  const entrega = new Date(ano, mes - 1, dia);
+
   const diasRestantes = Math.round((entrega - hoje) / (1000 * 60 * 60 * 24));
 
+  // ✅ CORRIGIDO: toLocaleDateString agora usa a data local correta
   const data = entrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
   const isProva = t.tipo === 'prova';
   const indClass = isProva ? 'ind-red' : 'ind-blue';
   const tipoLabel = isProva ? 'Prova' : 'Tarefa';
