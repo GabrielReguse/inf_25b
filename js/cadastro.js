@@ -1,12 +1,5 @@
 const API = "https://inf-25b-backend.onrender.com";
 
-// ─── Device ID ────────────────────────────────────────────────
-const deviceId = localStorage.getItem('deviceId') || (() => {
-  const id = crypto.randomUUID();
-  localStorage.setItem('deviceId', id);
-  return id;
-})();
-
 // ─── AUTO LOGIN ───────────────────────────────────────────────
 // se já estiver logado, redireciona direto
 const usuarioSalvo = (() => {
