@@ -1,8 +1,6 @@
 const API = "https://inf-25b-backend.onrender.com";
 
 // ─── PWA HEIGHT FIX ───────────────────────────────────────────────────────────
-// No Android PWA, 100dvh pode variar conforme barra de sistema aparece/some,
-// quebrando o flex layout. Fixamos via variável CSS --vh baseada em window.innerHeight.
 (function fixPWAHeight() {
   function aplicar() {
     const vh = window.innerHeight * 0.01;
@@ -13,8 +11,6 @@ const API = "https://inf-25b-backend.onrender.com";
 })();
 
 // ─── ANIMATION FALLBACK ───────────────────────────────────────────────────────
-// No PWA mobile, animações CSS podem não disparar (fill-mode: both deixa opacity:0).
-// Garantimos visibilidade após timeout mesmo sem animationend.
 (function fixPageAnimation() {
   const page = document.getElementById('page');
   if (!page) return;
@@ -23,7 +19,6 @@ const API = "https://inf-25b-backend.onrender.com";
     page.style.transform = 'none';
   };
   page.addEventListener('animationend', forcar, { once: true });
-  // Fallback: se animação não disparar em 500ms, força visibilidade
   setTimeout(forcar, 500);
 })();
 
@@ -185,20 +180,21 @@ function mapearMsgGrupo(m) {
     : null;
 
   return {
-    id: m._id,
-    autor: m.autor?.nome || 'Usuário',
-    foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-    role: m.autor?.role || 'aluno',
-    tipo: m.tipo || 'texto',
-    conteudo: m.texto || '',
-    src: m.mediaUrl || '',
-    replyTo: replyId,
+    id:          m._id,
+    autorId:     String(m.autor?._id || m.autor),
+    autor:       m.autor?.nome || 'Usuário',
+    foto:        String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+    role:        m.autor?.role || 'aluno',
+    tipo:        m.tipo || 'texto',
+    conteudo:    m.texto || '',
+    src:         m.mediaUrl || '',
+    replyTo:     replyId,
     replyToData,
-    onda: gerarOnda(),
-    duracao: '0:00',
-    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu: String(m.autor?._id || m.autor) === String(meuId)
+    onda:        gerarOnda(),
+    duracao:     m.duracao || '0:00',
+    hora:        new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data:        new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu:          String(m.autor?._id || m.autor) === String(meuId)
   };
 }
 
@@ -212,20 +208,21 @@ function mapearMsgDireta(m) {
     : null;
 
   return {
-    id: m._id,
-    autor: m.de?.nome || 'Usuário',
-    foto: String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
-    role: m.de?.role || 'aluno',
-    tipo: m.tipo || 'texto',
-    conteudo: m.texto || '',
-    src: m.mediaUrl || '',
-    replyTo: replyId,
+    id:          m._id,
+    autorId:     String(m.de?._id || m.de),
+    autor:       m.de?.nome || 'Usuário',
+    foto:        String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
+    role:        m.de?.role || 'aluno',
+    tipo:        m.tipo || 'texto',
+    conteudo:    m.texto || '',
+    src:         m.mediaUrl || '',
+    replyTo:     replyId,
     replyToData,
-    onda: gerarOnda(),
-    duracao: '0:00',
-    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu: String(m.de?._id || m.de) === String(meuId)
+    onda:        gerarOnda(),
+    duracao:     m.duracao || '0:00',
+    hora:        new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data:        new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu:          String(m.de?._id || m.de) === String(meuId)
   };
 }
 
@@ -748,10 +745,11 @@ function renderMensagem(msg, agrupado = false) {
 
   const fotoEsc = (msg.foto || '').replace(/'/g, "\\'");
   const nomeEsc = escapeHTML(msg.autor).replace(/'/g, "\\'");
+  const autorIdEsc = (msg.autorId || '').replace(/'/g, "\\'");
 
   const avatarEl = agrupado
     ? `<div class="msg-avatar-espaco"></div>`
-    : `<div class="msg-avatar" onclick="verMiniPerfil(null,'${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
+    : `<div class="msg-avatar" onclick="verMiniPerfil('${autorIdEsc}','${nomeEsc}','${fotoEsc}')" style="cursor:pointer">
          ${avatarHTML(msg.foto, msg.autor)}
        </div>`;
 
@@ -1116,7 +1114,7 @@ elBtnAudio.addEventListener('click', async () => {
             fd.append('midia', blob, 'audio.webm');
             const res = await fetch(`${API}/mensagens/upload`, { method: 'POST', body: fd });
             const dados = await res.json();
-            if (res.ok) await enviarParaApi({ texto: '', tipo: 'audio', mediaUrl: dados.url, mencoes: [] });
+            if (res.ok) await enviarParaApi({ texto: '', tipo: 'audio', mediaUrl: dados.url, duracao: dur, mencoes: [] });
           } catch (err) { console.error('Erro upload áudio:', err); }
         }
       };
@@ -1162,9 +1160,10 @@ function toggleAudio(btn, src) {
 function abrirImagem(src) { window.open(src, '_blank'); }
 
 // ─── MINI PERFIL ──────────────────────────────────────────────────────────────
-function verMiniPerfil(autorId, nome, foto) {
+async function verMiniPerfil(autorId, nome, foto) {
   document.getElementById('miniPerfilModal')?.remove();
   const inicial = nome.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+
   const modal = document.createElement('div');
   modal.id = 'miniPerfilModal';
   modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;`;
@@ -1172,13 +1171,59 @@ function verMiniPerfil(autorId, nome, foto) {
     <div style="background:#1a0a3a;border:1px solid rgba(139,92,246,.3);border-radius:20px;padding:2rem;text-align:center;min-width:220px;position:relative">
       <button onclick="document.getElementById('miniPerfilModal').remove()"
         style="position:absolute;top:.75rem;right:.75rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer">✕</button>
-      <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 1rem;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,92,246,.4)">
-        ${foto ? `<img src="${foto}" style="width:100%;height:100%;object-fit:cover"/>` : inicial}
+      <div style="position:relative;width:72px;height:72px;margin:0 auto 1rem;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,92,246,.4)">
+          ${foto ? `<img src="${foto}" style="width:100%;height:100%;object-fit:cover"/>` : inicial}
+        </div>
+        <div id="miniStatusDot" style="position:absolute;bottom:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#475569;border:2px solid #1a0a3a;transition:background .3s"></div>
       </div>
-      <div style="font-weight:700;color:#e2e8f0;font-size:1rem">${nome}</div>
+      <div style="font-weight:700;color:#e2e8f0;font-size:1rem;margin-bottom:.4rem">${escapeHTML(nome)}</div>
+      <div id="miniStatusTexto" style="font-size:.75rem;color:#94a3b8">carregando...</div>
     </div>`;
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
+
+  if (autorId) {
+    try {
+      const res = await fetch(`${API}/usuarios/${autorId}/status`, { cache: 'no-store' });
+      const { online, ultimaVez } = await res.json();
+      const dot = document.getElementById('miniStatusDot');
+      const txt = document.getElementById('miniStatusTexto');
+      if (!dot || !txt) return;
+      if (online) {
+        dot.style.background = '#22c55e';
+        txt.style.color = '#22c55e';
+        txt.textContent = 'Online agora';
+      } else if (ultimaVez) {
+        const dt = new Date(ultimaVez);
+        const agora = new Date();
+        const diffMin = Math.floor((agora - dt) / 60000);
+        let labelTempo;
+        if (diffMin < 1)         labelTempo = 'há menos de 1 min';
+        else if (diffMin < 60)   labelTempo = `há ${diffMin} min`;
+        else if (diffMin < 1440) {
+          const h = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          labelTempo = `hoje às ${h}`;
+        } else {
+          const d = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+          const h = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          labelTempo = `${d} às ${h}`;
+        }
+        dot.style.background = '#94a3b8';
+        txt.style.color = '#94a3b8';
+        txt.textContent = `Visto ${labelTempo}`;
+      } else {
+        const txt2 = document.getElementById('miniStatusTexto');
+        if (txt2) txt2.textContent = 'Nunca visto';
+      }
+    } catch {
+      const txt = document.getElementById('miniStatusTexto');
+      if (txt) txt.textContent = '';
+    }
+  } else {
+    const txt = document.getElementById('miniStatusTexto');
+    if (txt) txt.textContent = '';
+  }
 }
 
 // ─── POLLING SIDEBAR ─────────────────────────────────────────────────────────
@@ -1236,7 +1281,6 @@ async function init() {
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible') return;
 
-  // Recalcula --vh ao voltar do background (barra de sistema pode ter mudado)
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 
