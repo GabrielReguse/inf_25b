@@ -17,11 +17,11 @@ window.addEventListener('pageshow', () => {
   if (!page) return;
   page.classList.remove('saindo');
   page.style.animation = 'none';
-  page.style.opacity   = '1';
+  page.style.opacity = '1';
   page.style.transform = 'translateX(0)';
   page.offsetHeight;
   page.style.animation = '';
-  page.style.opacity   = '';
+  page.style.opacity = '';
   page.style.transform = '';
 });
 
@@ -123,9 +123,9 @@ async function enviarHeartbeat() {
     let modelo = "Indisponível";
     if (navigator.userAgentData) {
       try {
-        const d = await navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]);
+        const d = await navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]);
         modelo = `${d.platform} | ${d.model || "modelo não disponível"} | v${d.platformVersion}`;
-      } catch {}
+      } catch { }
     }
 
     await fetch(`${API_PUSH}/admin/heartbeat`, {
@@ -133,7 +133,7 @@ async function enviarHeartbeat() {
       headers: { 'Content-Type': 'application/json', 'x-device-model': modelo, 'x-device-id': deviceId },
       body: JSON.stringify({ email: usuario.email, nome: usuario.nome })
     });
-  } catch {}
+  } catch { }
 }
 
 window.addEventListener('DOMContentLoaded', () => {

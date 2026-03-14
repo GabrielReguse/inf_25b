@@ -4,22 +4,22 @@ const usuario = (() => {
   try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); }
   catch { return {}; }
 })();
-const meuId   = usuario.id   || '';
+const meuId = usuario.id || '';
 const meuNome = usuario.nome || '';
 const ehAdmin = usuario.role === 'admin';
 
 let encontros = [];
-let posts     = [];
+let posts = [];
 let melhorias = [];
-let abaAtiva  = 'encontros';
+let abaAtiva = 'encontros';
 
 const elAbaEncontros = document.getElementById('abaEncontros');
 const elAbaInstagram = document.getElementById('abaInstagram');
 const elAbaMelhorias = document.getElementById('abaMelhorias');
-const elSeta         = document.getElementById('abaSeta');
-const elPainelEnc    = document.getElementById('painelEncontros');
-const elPainelInst   = document.getElementById('painelInstagram');
-const elPainelMel    = document.getElementById('painelMelhorias');
+const elSeta = document.getElementById('abaSeta');
+const elPainelEnc = document.getElementById('painelEncontros');
+const elPainelInst = document.getElementById('painelInstagram');
+const elPainelMel = document.getElementById('painelMelhorias');
 
 if (ehAdmin) elAbaMelhorias.style.display = '';
 
@@ -43,9 +43,9 @@ function trocarAba(aba) {
   elPainelInst.classList.toggle('ativo', aba === 'instagram');
   elPainelMel.classList.toggle('ativo', aba === 'melhorias');
   posicionarSeta(aba);
-  if (aba === 'encontros')     renderEncontros();
+  if (aba === 'encontros') renderEncontros();
   else if (aba === 'instagram') renderInstagram();
-  else                          renderMelhorias();
+  else renderMelhorias();
 }
 
 elAbaEncontros.addEventListener('click', () => trocarAba('encontros'));
@@ -90,11 +90,11 @@ function calcularDiasRestantes(tipo, criadaEm, dataEncontro) {
   const agora = new Date();
   if (tipo === 'instagram' && criadaEm) {
     const criacao = new Date(criadaEm);
-    const expira  = new Date(criacao.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const expira = new Date(criacao.getTime() + 7 * 24 * 60 * 60 * 1000);
     return Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
   }
   if (tipo === 'encontro' && dataEncontro) {
-    const evento     = new Date(dataEncontro);
+    const evento = new Date(dataEncontro);
     const fimVotacao = new Date(evento.getTime() - 24 * 60 * 60 * 1000);
     return Math.max(0, Math.ceil((fimVotacao - agora) / (1000 * 60 * 60 * 24)));
   }
@@ -103,11 +103,11 @@ function calcularDiasRestantes(tipo, criadaEm, dataEncontro) {
 
 function renderCountdown(dias) {
   if (dias === null) return '';
-  let cls   = 'item-countdown';
+  let cls = 'item-countdown';
   let label;
-  if (dias === 0)      { cls += ' urgente'; label = 'Encerra hoje'; }
-  else if (dias === 1) { cls += ' aviso';   label = '1 dia'; }
-  else                 {                    label = `${dias} dias`; }
+  if (dias === 0) { cls += ' urgente'; label = 'Encerra hoje'; }
+  else if (dias === 1) { cls += ' aviso'; label = '1 dia'; }
+  else { label = `${dias} dias`; }
   return `<span class="${cls}" title="Dias restantes para votação">${label}</span>`;
 }
 
@@ -154,10 +154,10 @@ function adicionarLongPress(el, callback, duracao = 700) {
   }
 
   el.addEventListener('touchstart', iniciar, { passive: true });
-  el.addEventListener('touchend',   cancelar);
-  el.addEventListener('touchmove',  cancelar, { passive: true });
-  el.addEventListener('mousedown',  iniciar);
-  el.addEventListener('mouseup',    cancelar);
+  el.addEventListener('touchend', cancelar);
+  el.addEventListener('touchmove', cancelar, { passive: true });
+  el.addEventListener('mousedown', iniciar);
+  el.addEventListener('mouseup', cancelar);
   el.addEventListener('mouseleave', cancelar);
 }
 
@@ -166,9 +166,9 @@ async function deletarSugestao(id) {
   if (!confirm('Apagar esta sugestão permanentemente?')) return;
   try {
     const res = await fetch(`${API}/sugestoes/${id}`, {
-      method:  'DELETE',
+      method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ solicitanteId: meuId })
+      body: JSON.stringify({ solicitanteId: meuId })
     });
     if (!res.ok) throw new Error();
     await carregarSugestoes();
@@ -197,17 +197,17 @@ function mostrarModalParticipantes(confirmados) {
       </div>
       <div class="modal-lista">
         ${confirmados.map(p => {
-          const nome    = p.nome || 'Usuário';
-          const foto    = p.fotoPerfil || null;
-          const iniciais = nome.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
-          return `
+    const nome = p.nome || 'Usuário';
+    const foto = p.fotoPerfil || null;
+    const iniciais = nome.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+    return `
             <div class="modal-item">
               ${foto
-                ? `<img src="${foto}" class="modal-foto" alt="${nome}">`
-                : `<div class="modal-foto modal-foto--letra">${iniciais}</div>`}
+        ? `<img src="${foto}" class="modal-foto" alt="${nome}">`
+        : `<div class="modal-foto modal-foto--letra">${iniciais}</div>`}
               <span class="modal-nome">${nome}</span>
             </div>`;
-        }).join('')}
+  }).join('')}
       </div>
     </div>`;
 
@@ -224,51 +224,51 @@ async function carregarSugestoes() {
     const todas = await (await fetch(`${API}/sugestoes`)).json();
 
     encontros = [];
-    posts     = [];
+    posts = [];
     melhorias = [];
 
     todas.forEach(s => {
       // Suporte a formato novo (campos diretos) e antigo (parse do texto)
-      const tipo     = s.tipo || parseTipoFromTexto(s.texto);
-      const titulo   = s.titulo   || extrairTitulo(s.texto || '');
+      const tipo = s.tipo || parseTipoFromTexto(s.texto);
+      const titulo = s.titulo || extrairTitulo(s.texto || '');
       const descricao = s.descricao || extrairDesc(s.texto || '');
 
       if (tipo === 'melhoria') {
         if (ehAdmin && ['aceita', 'em_andamento', 'finalizado'].includes(s.status)) {
           melhorias.push({
-            id:       s._id,
+            id: s._id,
             titulo,
             descricao,
-            autor:    s.autor?.nome || 'Anônimo',
-            status:   s.status
+            autor: s.autor?.nome || 'Anônimo',
+            status: s.status
           });
         }
 
       } else if (tipo === 'instagram' && s.status === 'aceita') {
         const votosLegal = Array.isArray(s.votos?.legal) ? s.votos.legal : [];
-        const votosNao   = Array.isArray(s.votos?.nao)   ? s.votos.nao   : [];
-        const meuVoto    = votosLegal.some(id => String(id) === String(meuId)) ? 'legal'
-                         : votosNao.some(id => String(id) === String(meuId))   ? 'nao'
-                         : null;
+        const votosNao = Array.isArray(s.votos?.nao) ? s.votos.nao : [];
+        const meuVoto = votosLegal.some(id => String(id) === String(meuId)) ? 'legal'
+          : votosNao.some(id => String(id) === String(meuId)) ? 'nao'
+            : null;
         posts.push({
-          id:       s._id,
+          id: s._id,
           titulo,
           descricao,
-          autor:    s.autor?.nome || 'Anônimo',
+          autor: s.autor?.nome || 'Anônimo',
           criadaEm: s.criadaEm,
-          votos:    { legal: votosLegal.length, nao: votosNao.length },
+          votos: { legal: votosLegal.length, nao: votosNao.length },
           meuVoto
         });
 
       } else if (tipo === 'encontro' && s.status === 'aceita') {
         encontros.push({
-          id:           s._id,
+          id: s._id,
           titulo,
           descricao,
-          autor:        s.autor?.nome || 'Anônimo',
+          autor: s.autor?.nome || 'Anônimo',
           dataEncontro: s.dataEncontro,
-          criadaEm:     s.criadaEm,
-          confirmados:  Array.isArray(s.confirmados) ? s.confirmados : []
+          criadaEm: s.criadaEm,
+          confirmados: Array.isArray(s.confirmados) ? s.confirmados : []
         });
       }
     });
@@ -313,8 +313,8 @@ function renderEncontros() {
         ${ev.confirmados.slice(-5).map(p => avatarMini(p.nome || p, p.fotoPerfil || null)).join('')}
         <span class="presenca-count">
           ${ev.confirmados.length > 0
-            ? `${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}`
-            : 'Nenhum confirmado ainda'}
+        ? `${ev.confirmados.length} confirmado${ev.confirmados.length > 1 ? 's' : ''}`
+        : 'Nenhum confirmado ainda'}
         </span>
       </div>
       <button class="btn-participar${euConfirmei ? ' saindo' : ''}" id="btn-enc-${ev.id}">
@@ -349,9 +349,9 @@ async function togglePresenca(id) {
 
   try {
     const res = await fetch(`${API}/sugestoes/${id}/participar`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ userId: meuId })
+      body: JSON.stringify({ userId: meuId })
     });
     if (!res.ok) throw new Error();
     const dados = await res.json();
@@ -377,10 +377,10 @@ function renderInstagram() {
   }
 
   posts.forEach(post => {
-    const total    = post.votos.legal + post.votos.nao;
+    const total = post.votos.legal + post.votos.nao;
     const pctLegal = total ? Math.round(post.votos.legal / total * 100) : 50;
-    const pctNao   = total ? 100 - pctLegal : 50;
-    const dias     = calcularDiasRestantes('instagram', post.criadaEm, null);
+    const pctNao = total ? 100 - pctLegal : 50;
+    const dias = calcularDiasRestantes('instagram', post.criadaEm, null);
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -404,12 +404,12 @@ function renderInstagram() {
       </div>
       <div class="votos-btns">
         <button class="btn-voto${post.meuVoto === 'legal' ? ' ativo-legal' : ''}" id="btn-legal-${post.id}">👍 Acho Legal</button>
-        <button class="btn-voto${post.meuVoto === 'nao'   ? ' ativo-nao'   : ''}" id="btn-nao-${post.id}">🤷 Não Sei Não</button>
+        <button class="btn-voto${post.meuVoto === 'nao' ? ' ativo-nao' : ''}" id="btn-nao-${post.id}">🤷 Não Sei Não</button>
       </div>
       ${ehAdmin ? `<span class="mel-autor">por ${post.autor}</span>` : ''}`;
 
     card.querySelector(`#btn-legal-${post.id}`).addEventListener('click', () => votar(post.id, 'legal'));
-    card.querySelector(`#btn-nao-${post.id}`  ).addEventListener('click', () => votar(post.id, 'nao'));
+    card.querySelector(`#btn-nao-${post.id}`).addEventListener('click', () => votar(post.id, 'nao'));
 
     if (ehAdmin) adicionarLongPress(card, () => deletarSugestao(post.id));
 
@@ -432,15 +432,15 @@ async function votar(id, tipo) {
   // Persiste no backend
   try {
     const res = await fetch(`${API}/sugestoes/${id}/votar`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ userId: meuId, voto: tipo })
+      body: JSON.stringify({ userId: meuId, voto: tipo })
     });
     if (res.ok) {
       const dados = await res.json();
       // Sincroniza com valores reais do servidor
       post.votos.legal = dados.legal;
-      post.votos.nao   = dados.nao;
+      post.votos.nao = dados.nao;
       atualizarUIVoto(id, post);
     }
   } catch (err) {
@@ -449,22 +449,22 @@ async function votar(id, tipo) {
 }
 
 function atualizarUIVoto(id, post) {
-  const total    = post.votos.legal + post.votos.nao;
+  const total = post.votos.legal + post.votos.nao;
   const pctLegal = total ? Math.round(post.votos.legal / total * 100) : 50;
 
   const barraLegal = document.getElementById(`barra-legal-${id}`);
-  const barraNao   = document.getElementById(`barra-nao-${id}`);
+  const barraNao = document.getElementById(`barra-nao-${id}`);
   const labelLegal = document.getElementById(`label-legal-${id}`);
-  const labelNao   = document.getElementById(`label-nao-${id}`);
-  const btnLegal   = document.getElementById(`btn-legal-${id}`);
-  const btnNao     = document.getElementById(`btn-nao-${id}`);
+  const labelNao = document.getElementById(`label-nao-${id}`);
+  const btnLegal = document.getElementById(`btn-legal-${id}`);
+  const btnNao = document.getElementById(`btn-nao-${id}`);
 
   if (barraLegal) barraLegal.style.width = pctLegal + '%';
-  if (barraNao)   barraNao.style.width   = (100 - pctLegal) + '%';
+  if (barraNao) barraNao.style.width = (100 - pctLegal) + '%';
   if (labelLegal) labelLegal.textContent = `${post.votos.legal} acharam legal`;
-  if (labelNao)   labelNao.textContent   = `${post.votos.nao} não sei não`;
-  if (btnLegal)   btnLegal.className = `btn-voto${post.meuVoto === 'legal' ? ' ativo-legal' : ''}`;
-  if (btnNao)     btnNao.className   = `btn-voto${post.meuVoto === 'nao'   ? ' ativo-nao'   : ''}`;
+  if (labelNao) labelNao.textContent = `${post.votos.nao} não sei não`;
+  if (btnLegal) btnLegal.className = `btn-voto${post.meuVoto === 'legal' ? ' ativo-legal' : ''}`;
+  if (btnNao) btnNao.className = `btn-voto${post.meuVoto === 'nao' ? ' ativo-nao' : ''}`;
 }
 
 // ─── MELHORIAS (admin only) ───────────────────────────────────
@@ -482,9 +482,9 @@ function renderMelhorias() {
 
 function renderCardMelhoria(m, container) {
   const statusInfo = {
-    aceita:       { label: 'Aguardando',   cls: 'status-aguardando' },
-    em_andamento: { label: 'Em andamento', cls: 'status-andamento'  },
-    finalizado:   { label: 'Finalizado',   cls: 'status-finalizado' }
+    aceita: { label: 'Aguardando', cls: 'status-aguardando' },
+    em_andamento: { label: 'Em andamento', cls: 'status-andamento' },
+    finalizado: { label: 'Finalizado', cls: 'status-finalizado' }
   };
   const info = statusInfo[m.status] || statusInfo.aceita;
 
@@ -518,9 +518,9 @@ function renderCardMelhoria(m, container) {
 async function atualizarMelhoria(id, novoStatus) {
   try {
     const res = await fetch(`${API}/sugestoes/${id}`, {
-      method:  'PATCH',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ status: novoStatus })
+      body: JSON.stringify({ status: novoStatus })
     });
     if (!res.ok) throw new Error();
     const m = melhorias.find(x => x.id === id);

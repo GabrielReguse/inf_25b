@@ -66,7 +66,7 @@ async function carregarDestaques() {
 
     container.innerHTML = '';
 
-    const visiveis   = futuras.slice(0, 2);
+    const visiveis = futuras.slice(0, 2);
     const escondidos = futuras.slice(2);
 
     visiveis.forEach(t => container.appendChild(criarItemDestaque(t)));

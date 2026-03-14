@@ -180,21 +180,21 @@ function mapearMsgGrupo(m) {
     : null;
 
   return {
-    id:          m._id,
-    autorId:     String(m.autor?._id || m.autor),
-    autor:       m.autor?.nome || 'Usuário',
-    foto:        String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
-    role:        m.autor?.role || 'aluno',
-    tipo:        m.tipo || 'texto',
-    conteudo:    m.texto || '',
-    src:         m.mediaUrl || '',
-    replyTo:     replyId,
+    id: m._id,
+    autorId: String(m.autor?._id || m.autor),
+    autor: m.autor?.nome || 'Usuário',
+    foto: String(m.autor?._id || m.autor) === String(meuId) ? minhaFoto : (m.autor?.fotoPerfil || null),
+    role: m.autor?.role || 'aluno',
+    tipo: m.tipo || 'texto',
+    conteudo: m.texto || '',
+    src: m.mediaUrl || '',
+    replyTo: replyId,
     replyToData,
-    onda:        gerarOnda(),
-    duracao:     m.duracao || '0:00',
-    hora:        new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data:        new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu:          String(m.autor?._id || m.autor) === String(meuId)
+    onda: gerarOnda(),
+    duracao: m.duracao || '0:00',
+    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu: String(m.autor?._id || m.autor) === String(meuId)
   };
 }
 
@@ -208,21 +208,21 @@ function mapearMsgDireta(m) {
     : null;
 
   return {
-    id:          m._id,
-    autorId:     String(m.de?._id || m.de),
-    autor:       m.de?.nome || 'Usuário',
-    foto:        String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
-    role:        m.de?.role || 'aluno',
-    tipo:        m.tipo || 'texto',
-    conteudo:    m.texto || '',
-    src:         m.mediaUrl || '',
-    replyTo:     replyId,
+    id: m._id,
+    autorId: String(m.de?._id || m.de),
+    autor: m.de?.nome || 'Usuário',
+    foto: String(m.de?._id || m.de) === String(meuId) ? minhaFoto : (m.de?.fotoPerfil || null),
+    role: m.de?.role || 'aluno',
+    tipo: m.tipo || 'texto',
+    conteudo: m.texto || '',
+    src: m.mediaUrl || '',
+    replyTo: replyId,
     replyToData,
-    onda:        gerarOnda(),
-    duracao:     m.duracao || '0:00',
-    hora:        new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    data:        new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
-    eu:          String(m.de?._id || m.de) === String(meuId)
+    onda: gerarOnda(),
+    duracao: m.duracao || '0:00',
+    hora: new Date(m.criadaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    data: new Date(m.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    eu: String(m.de?._id || m.de) === String(meuId)
   };
 }
 
@@ -1199,8 +1199,8 @@ async function verMiniPerfil(autorId, nome, foto) {
         const agora = new Date();
         const diffMin = Math.floor((agora - dt) / 60000);
         let labelTempo;
-        if (diffMin < 1)         labelTempo = 'há menos de 1 min';
-        else if (diffMin < 60)   labelTempo = `há ${diffMin} min`;
+        if (diffMin < 1) labelTempo = 'há menos de 1 min';
+        else if (diffMin < 60) labelTempo = `há ${diffMin} min`;
         else if (diffMin < 1440) {
           const h = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
           labelTempo = `hoje às ${h}`;

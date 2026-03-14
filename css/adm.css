@@ -351,6 +351,167 @@ body {
 }
 
 /* CONTEÚDO */
+
+/* Botão Editar */
+.btn-editar {
+  background: rgba(124, 58, 237, .10);
+  border: 1px solid rgba(124, 58, 237, .25);
+  border-radius: 8px;
+  color: var(--purple-light);
+  cursor: pointer;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+
+.btn-editar:hover {
+  background: rgba(124, 58, 237, .22);
+}
+
+/* Coluna de ações dos cards (Editar + Remover empilhados) */
+.item-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Formulário de edição inline */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.edit-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-salvar {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+}
+
+.btn-cancelar {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .10);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, .09);
+}
+
+/* item-card no modo edição ocupa largura total */
+.item-card:has(.edit-form) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ── CARDS DE SUGESTÕES (redesign) ─────────────────────────── */
+.sug-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow .2s;
+}
+
+.sug-card:hover {
+  box-shadow: 0 4px 18px rgba(124, 58, 237, .12);
+}
+
+/* Cabeçalho: título + badge de tipo */
+.sug-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sug-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.sug-tipo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(124, 58, 237, .12);
+  border: 1px solid rgba(124, 58, 237, .22);
+  color: var(--purple-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Corpo: texto preservando formatação original */
+.sug-corpo {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+  background: rgba(255, 255, 255, .03);
+  border-left: 2px solid rgba(124, 58, 237, .35);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+}
+
+/* Rodapé: autor + data/status + botões */
+.sug-rodape {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sug-autor-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sug-autor-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--purple-light);
+}
+
+.sug-data {
+  font-size: 11px;
+  color: rgba(156, 163, 175, .60);
+}
+
+.sug-acoes-wrap {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .conteudo {
   position: relative;
 }

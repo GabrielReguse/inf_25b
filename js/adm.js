@@ -6,15 +6,30 @@ const el = document.getElementById('conteudoPrincipal');
 const MATERIAS = ['Artes', 'Banco de Dados', 'Engenharia de Software', 'Biologia', 'Educação Física', 'Filosofia', 'Física', 'Geografia', 'História', 'Língua Inglesa', 'Língua Portuguesa', 'Matemática', 'Programação 1', 'Projeto Integrador 2', 'Química', 'Redes', 'Sociologia'];
 const ENTREGAS = ['Apresentação', 'Digital', 'Folha', 'Caderno'];
 
+const TIPO_SUG = {
+  encontro: 'Encontro',
+  atividade: 'Atividade',
+  outro: 'Outro'
+};
+
+// ── 4 abas (Destaques removido) ──────────────────────────────
 const ABAS = [
   { id: 'Avisos', label: 'Avisos', icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
   { id: 'Tarefas', label: 'Tarefas', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
   { id: 'Feriados', label: 'Feriados', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>` },
-  { id: 'Destaques', label: 'Destaques', icone: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
   { id: 'Sugestoes', label: 'Sugestões', icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
 ];
 
 let abaAtiva = 0;
+
+// ── Helper: escapa HTML para texto e atributos ───────────────
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
@@ -63,7 +78,7 @@ function renderPainel() {
         <span style="opacity:.5;font-size:.8rem">Carregando...</span>
       </div>
 
-      <div class="seletores seletores-5">
+      <div class="seletores">
         ${ABAS.map((a, i) => `
           <button class="seletor-btn${i === 0 ? ' ativo' : ''}" data-idx="${i}" type="button">
             <div class="seletor-icone">${a.icone}</div>
@@ -93,7 +108,6 @@ function renderPainel() {
   renderAvisos();
   renderTarefas();
   renderFeriados();
-  renderDestaques();
   renderSugestoes();
 }
 
@@ -166,15 +180,55 @@ async function carregarAvisos() {
     const avisos = await (await fetch(`${API}/avisos`)).json();
     if (!avisos.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum aviso publicado ainda.</p>'; return; }
     lista.innerHTML = avisos.map(a => `
-      <div class="item-card">
+      <div class="item-card" id="aviso-${a._id}"
+        data-titulo="${esc(a.titulo)}"
+        data-desc="${esc(a.descricao)}">
         <div class="item-info">
-          <span class="item-titulo">${a.titulo}</span>
-          <span class="item-desc">${a.descricao}</span>
+          <span class="item-titulo">${esc(a.titulo)}</span>
+          <span class="item-desc">${esc(a.descricao)}</span>
           <span class="item-meta">${new Date(a.criadoEm).toLocaleDateString('pt-BR')}</span>
         </div>
-        <button class="btn-deletar" onclick="deletarAviso('${a._id}')">Remover</button>
+        <div class="item-acoes">
+          <button class="btn-editar" onclick="editarAviso('${a._id}')">Editar</button>
+          <button class="btn-deletar" onclick="deletarAviso('${a._id}')">Remover</button>
+        </div>
       </div>`).join('');
   } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
+}
+
+function editarAviso(id) {
+  const card = document.getElementById(`aviso-${id}`);
+  const titulo = card.dataset.titulo;
+  const desc = card.dataset.desc;
+  card.innerHTML = `
+    <div class="edit-form">
+      <div class="campo-grupo">
+        <label class="campo-label">Título</label>
+        <input class="campo-input" id="eaTitulo-${id}" value="${titulo}"/>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Descrição</label>
+        <textarea class="campo-textarea" id="eaDesc-${id}">${desc}</textarea>
+      </div>
+      <div class="edit-acoes">
+        <button class="btn-publicar btn-salvar" onclick="salvarAviso('${id}')">Salvar</button>
+        <button class="btn-cancelar" onclick="carregarAvisos()">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+async function salvarAviso(id) {
+  const titulo = document.getElementById(`eaTitulo-${id}`).value.trim();
+  const descricao = document.getElementById(`eaDesc-${id}`).value.trim();
+  if (!titulo || !descricao) return;
+  try {
+    await fetch(`${API}/avisos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, descricao })
+    });
+    carregarAvisos();
+  } catch (err) { console.error(err); }
 }
 
 async function deletarAviso(id) {
@@ -273,7 +327,6 @@ async function criarTarefa() {
   const consulta = document.getElementById('tarefaConsulta')?.value === 'sim';
   const tipoEntrega = document.getElementById('tarefaEntrega')?.value || '';
   const grupo = document.getElementById('tarefaGrupo').value === 'sim';
-  // FIX: numMembros agora é string (ex: "2 à 6"), não número
   const numMembros = document.getElementById('tarefaNumMembros')?.value.trim() || '';
   const dataEntrega = document.getElementById('tarefaData').value;
   const alerta = document.getElementById('alertaTarefa');
@@ -313,10 +366,86 @@ async function carregarTarefas() {
     if (!tarefas.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma tarefa cadastrada.</p>'; return; }
     lista.innerHTML = tarefas.map(t => {
       const data = new Date(t.dataEntrega).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-      const tipo = t.tipo === 'prova' ? '📝 Prova' : '📋 Tarefa';
-      return `<div class="item-card"><div class="item-info"><span class="item-titulo">${tipo}: ${t.materia || t.titulo}</span><span class="item-desc">${t.conteudo || t.descricao}</span><span class="item-meta">📅 ${data}</span></div><button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button></div>`;
+      const label = t.tipo === 'prova' ? '📝 Prova' : '📋 Tarefa';
+      return `
+        <div class="item-card" id="tarefa-${t._id}"
+          data-materia="${esc(t.materia || '')}"
+          data-tipo="${esc(t.tipo || '')}"
+          data-conteudo="${esc(t.conteudo || '')}"
+          data-desc="${esc(t.descricao || '')}"
+          data-data="${(t.dataEntrega || '').slice(0, 10)}">
+          <div class="item-info">
+            <span class="item-titulo">${label}: ${esc(t.materia || t.titulo)}</span>
+            <span class="item-desc">${esc(t.conteudo || t.descricao)}</span>
+            <span class="item-meta">📅 ${data}</span>
+          </div>
+          <div class="item-acoes">
+            <button class="btn-editar" onclick="editarTarefa('${t._id}')">Editar</button>
+            <button class="btn-deletar" onclick="deletarTarefa('${t._id}')">Remover</button>
+          </div>
+        </div>`;
     }).join('');
   } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
+}
+
+function editarTarefa(id) {
+  const card = document.getElementById(`tarefa-${id}`);
+  const materia = card.dataset.materia;
+  const tipo = card.dataset.tipo;
+  const conteudo = card.dataset.conteudo;
+  const desc = card.dataset.desc;
+  const data = card.dataset.data;
+
+  card.innerHTML = `
+    <div class="edit-form" style="width:100%">
+      <div class="campo-grupo">
+        <label class="campo-label">Matéria</label>
+        <select class="campo-input" id="etMateria-${id}">
+          <option value="">Selecione...</option>
+          ${MATERIAS.map(m => `<option value="${m}"${m === materia ? ' selected' : ''}>${m}</option>`).join('')}
+        </select>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Tipo</label>
+        <select class="campo-input" id="etTipo-${id}">
+          <option value="prova"${tipo === 'prova' ? ' selected' : ''}>Prova</option>
+          <option value="tarefa"${tipo === 'tarefa' ? ' selected' : ''}>Tarefa</option>
+        </select>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Conteúdo</label>
+        <input class="campo-input" id="etConteudo-${id}" value="${conteudo}"/>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Descrição</label>
+        <textarea class="campo-textarea" id="etDesc-${id}">${desc}</textarea>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Data</label>
+        <input class="campo-input" type="date" id="etData-${id}" value="${data}"/>
+      </div>
+      <div class="edit-acoes">
+        <button class="btn-publicar btn-salvar" onclick="salvarTarefa('${id}')">Salvar</button>
+        <button class="btn-cancelar" onclick="carregarTarefas()">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+async function salvarTarefa(id) {
+  const materia = document.getElementById(`etMateria-${id}`).value;
+  const tipo = document.getElementById(`etTipo-${id}`).value;
+  const conteudo = document.getElementById(`etConteudo-${id}`).value.trim();
+  const descricao = document.getElementById(`etDesc-${id}`).value.trim();
+  const dataEntrega = document.getElementById(`etData-${id}`).value;
+  if (!materia || !tipo || !conteudo || !dataEntrega) return;
+  try {
+    await fetch(`${API}/tarefas/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ materia, tipo, conteudo, descricao, dataEntrega })
+    });
+    carregarTarefas();
+  } catch (err) { console.error(err); }
 }
 
 async function deletarTarefa(id) {
@@ -387,93 +516,69 @@ async function carregarFeriados() {
     lista.innerHTML = feriados.map(f => {
       const data = new Date(f.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       return `
-        <div class="item-card">
+        <div class="item-card" id="feriado-${f._id}"
+          data-titulo="${esc(f.titulo)}"
+          data-desc="${esc(f.descricao || '')}"
+          data-data="${(f.data || '').slice(0, 10)}">
           <div class="item-info">
-            <span class="item-titulo">🟢 ${f.titulo}</span>
-            <span class="item-desc">${f.descricao || 'Sem descrição.'}</span>
+            <span class="item-titulo">🟢 ${esc(f.titulo)}</span>
+            <span class="item-desc">${esc(f.descricao || 'Sem descrição.')}</span>
             <span class="item-meta">📅 ${data}</span>
           </div>
-          <button class="btn-deletar" onclick="deletarFeriado('${f._id}')">Remover</button>
+          <div class="item-acoes">
+            <button class="btn-editar" onclick="editarFeriado('${f._id}')">Editar</button>
+            <button class="btn-deletar" onclick="deletarFeriado('${f._id}')">Remover</button>
+          </div>
         </div>`;
     }).join('');
   } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
+}
+
+function editarFeriado(id) {
+  const card = document.getElementById(`feriado-${id}`);
+  const titulo = card.dataset.titulo;
+  const desc = card.dataset.desc;
+  const data = card.dataset.data;
+  card.innerHTML = `
+    <div class="edit-form" style="width:100%">
+      <div class="campo-grupo">
+        <label class="campo-label">Título</label>
+        <input class="campo-input" id="efTitulo-${id}" value="${titulo}"/>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Descrição</label>
+        <textarea class="campo-textarea" id="efDesc-${id}">${desc}</textarea>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Data</label>
+        <input class="campo-input" type="date" id="efData-${id}" value="${data}"/>
+      </div>
+      <div class="edit-acoes">
+        <button class="btn-publicar btn-salvar" onclick="salvarFeriado('${id}')">Salvar</button>
+        <button class="btn-cancelar" onclick="carregarFeriados()">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+async function salvarFeriado(id) {
+  const titulo = document.getElementById(`efTitulo-${id}`).value.trim();
+  const descricao = document.getElementById(`efDesc-${id}`).value.trim();
+  const data = document.getElementById(`efData-${id}`).value;
+  if (!titulo || !data) return;
+  try {
+    await fetch(`${API}/feriados/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, descricao, data })
+    });
+    carregarFeriados();
+  } catch (err) { console.error(err); }
 }
 
 async function deletarFeriado(id) {
   if (!confirm('Remover este feriado?')) return;
   await fetch(`${API}/feriados/${id}`, { method: 'DELETE' });
   carregarFeriados();
-}
-
-// ─── DESTAQUES ────────────────────────────────────────────────
-async function renderDestaques() {
-  const painel = document.getElementById('painelDestaques');
-  painel.innerHTML = `
-    <p class="form-titulo">Criar destaque</p>
-    <div id="alertaDestaque" class="alerta"></div>
-    <div class="campo-grupo">
-      <label class="campo-label">Título</label>
-      <input class="campo-input" id="destaqueTitulo" placeholder="Ex: Parabéns ao time de robótica!"/>
-    </div>
-    <div class="campo-grupo">
-      <label class="campo-label">Descrição</label>
-      <textarea class="campo-textarea" id="destaqueDesc" placeholder="Detalhes do destaque..."></textarea>
-    </div>
-    <button class="btn-publicar" id="btnCriarDestaque">Publicar destaque</button>
-    <div class="secao-lista">
-      <div class="secao-lista-titulo">Destaques publicados</div>
-      <div id="listaDestaques"><p class="lista-vazia">Carregando...</p></div>
-    </div>`;
-  document.getElementById('btnCriarDestaque').addEventListener('click', criarDestaque);
-  carregarDestaques();
-}
-
-async function criarDestaque() {
-  const titulo = document.getElementById('destaqueTitulo').value.trim();
-  const descricao = document.getElementById('destaqueDesc').value.trim();
-  const alerta = document.getElementById('alertaDestaque');
-  const btn = document.getElementById('btnCriarDestaque');
-  alerta.className = 'alerta';
-  if (!titulo || !descricao) { alerta.textContent = 'Preencha todos os campos.'; alerta.className = 'alerta erro'; return; }
-  btn.disabled = true; btn.textContent = 'Publicando...';
-  try {
-    const res = await fetch(`${API}/destaques`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, descricao, criadoPor: usuario.id })
-    });
-    const dados = await res.json();
-    if (!res.ok) throw new Error(dados.erro || 'Erro ao publicar.');
-    alerta.textContent = 'Destaque publicado!'; alerta.className = 'alerta sucesso';
-    document.getElementById('destaqueTitulo').value = '';
-    document.getElementById('destaqueDesc').value = '';
-    carregarDestaques();
-  } catch (err) { alerta.textContent = err.message; alerta.className = 'alerta erro'; }
-  finally { btn.disabled = false; btn.textContent = 'Publicar destaque'; }
-}
-
-async function carregarDestaques() {
-  const lista = document.getElementById('listaDestaques');
-  if (!lista) return;
-  try {
-    const destaques = await (await fetch(`${API}/destaques`)).json();
-    if (!destaques.length) { lista.innerHTML = '<p class="lista-vazia">Nenhum destaque publicado.</p>'; return; }
-    lista.innerHTML = destaques.map(d => `
-      <div class="item-card">
-        <div class="item-info">
-          <span class="item-titulo">${d.titulo}</span>
-          <span class="item-desc">${d.descricao}</span>
-          <span class="item-meta">${new Date(d.criadoEm).toLocaleDateString('pt-BR')}</span>
-        </div>
-        <button class="btn-deletar" onclick="deletarDestaque('${d._id}')">Remover</button>
-      </div>`).join('');
-  } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
-}
-
-async function deletarDestaque(id) {
-  if (!confirm('Remover este destaque?')) return;
-  await fetch(`${API}/destaques/${id}`, { method: 'DELETE' });
-  carregarDestaques();
 }
 
 // ─── SUGESTÕES ────────────────────────────────────────────────
@@ -491,21 +596,36 @@ async function carregarSugestoes() {
   try {
     const sugestoes = await (await fetch(`${API}/sugestoes?t=${Date.now()}`, { cache: 'no-store' })).json();
     if (!sugestoes.length) { lista.innerHTML = '<p class="lista-vazia">Nenhuma sugestão ainda.</p>'; return; }
+
     lista.innerHTML = sugestoes.map(s => {
       const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
       const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
       const corStatus = status === 'aceita' ? '#4ade80' : status === 'recusada' ? '#f87171' : '#94a3b8';
       const labelStatus = status === 'aceita' ? '✓ Aceita' : status === 'recusada' ? '✗ Recusada' : '⏳ Aguardando';
-      const btnAceitar = status === 'aguardando' ? `<button class="btn-aceitar" onclick="responderSugestao('${s._id}','aceita')">Aceitar</button>` : '';
-      const btnRecusar = status === 'aguardando' ? `<button class="btn-recusar" onclick="responderSugestao('${s._id}','recusada')">Recusar</button>` : '';
+      const tipoLabel = TIPO_SUG[s.tipo] || s.tipo || 'Geral';
+      const texto = esc(s.texto || s.descricao || '');
+      const autor = esc(s.autor?.nome || 'Aluno');
+      const titulo = esc(s.titulo || 'Sugestão');
+
+      const btnAceitar = status === 'aguardando'
+        ? `<button class="btn-aceitar" onclick="responderSugestao('${s._id}','aceita')">Aceitar</button>` : '';
+      const btnRecusar = status === 'aguardando'
+        ? `<button class="btn-recusar" onclick="responderSugestao('${s._id}','recusada')">Recusar</button>` : '';
+
       return `
-        <div class="item-card" id="sug-${s._id}">
-          <div class="item-info">
-            <span class="item-titulo">${s.autor?.nome || 'Aluno'}</span>
-            <span class="item-desc" style="white-space:normal;overflow:visible;text-overflow:unset">${s.texto}</span>
-            <span class="item-meta">${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
+        <div class="sug-card" id="sug-${s._id}">
+          <div class="sug-header">
+            <span class="sug-titulo">${titulo}</span>
+            <span class="sug-tipo">${tipoLabel}</span>
           </div>
-          <div style="display:flex;gap:.4rem;flex-shrink:0">${btnAceitar}${btnRecusar}</div>
+          <div class="sug-corpo">${texto}</div>
+          <div class="sug-rodape">
+            <div class="sug-autor-wrap">
+              <span class="sug-autor-nome">— ${autor}</span>
+              <span class="sug-data">${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
+            </div>
+            <div class="sug-acoes-wrap">${btnAceitar}${btnRecusar}</div>
+          </div>
         </div>`;
     }).join('');
   } catch { lista.innerHTML = '<p class="lista-vazia" style="color:#f87171">Erro ao carregar.</p>'; }
