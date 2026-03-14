@@ -516,6 +516,7 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   justify-content: space-between;
   gap: 12px;
   transition: box-shadow .2s;
+  margin-bottom: 10px;
 }
 
 .item-card:hover {
@@ -675,10 +676,13 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
 }
 
 /* ── CARDS DE SUGESTÕES ─────────────────────────────────────── */
-#listaSugestoes {
+#listaSugestoes,
+#listaAvisos,
+#listaTarefas,
+#listaFeriados {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .sug-card {

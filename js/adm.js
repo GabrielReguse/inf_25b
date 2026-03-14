@@ -44,7 +44,7 @@ function esc(str) {
     .replace(/"/g, '&quot;');
 }
 
-/* if (!usuario.id || usuario.role !== 'admin') {
+if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -52,10 +52,10 @@ function esc(str) {
       <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
     </div>`;
-} else { */
+} else {
 renderPainel();
 iniciarHeartbeat();
-// }
+}
 
 function iniciarHeartbeat() {
   const enviar = () => fetch(`${API}/admin/heartbeat`, {
