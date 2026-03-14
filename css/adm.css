@@ -32,6 +32,7 @@ body {
   overflow-x: hidden;
 }
 
+/* ── SCROLLBAR ─────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -49,6 +50,7 @@ body {
   background: var(--purple-main);
 }
 
+/* ── ANIMAÇÕES DE PÁGINA ────────────────────────────────────── */
 .page {
   position: relative;
   z-index: 1;
@@ -84,7 +86,7 @@ body {
   }
 }
 
-/* HEADER */
+/* ── HEADER ─────────────────────────────────────────────────── */
 .header {
   position: sticky;
   top: 0;
@@ -184,7 +186,7 @@ body {
   stroke-linecap: round;
 }
 
-/* linha header */
+/* ── LINHA HEADER ───────────────────────────────────────────── */
 .header-linha-wrap {
   position: sticky;
   top: 66px;
@@ -216,7 +218,7 @@ body {
   }
 }
 
-/* MAIN */
+/* ── MAIN ───────────────────────────────────────────────────── */
 .main {
   padding: 24px 20px 60px;
   max-width: 680px;
@@ -226,33 +228,11 @@ body {
   gap: 0;
 }
 
-/* SELETORES */
+/* ── SELETORES (4 abas) ─────────────────────────────────────── */
 .seletores {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-}
-
-/* ── 5 abas: flex com scroll horizontal no mobile ── */
-.seletores-5 {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.seletores-5::-webkit-scrollbar {
-  display: none;
-}
-
-.seletores-5 .seletor-btn {
-  flex: 0 0 calc(20% - 8px);
-  /* 5 colunas em desktop */
-  scroll-snap-align: start;
-  min-width: 72px;
 }
 
 .seletor-btn {
@@ -322,7 +302,7 @@ body {
   color: var(--purple-light);
 }
 
-/* seta flutuante */
+/* ── SETA FLUTUANTE ─────────────────────────────────────────── */
 .seta-wrap {
   position: relative;
   height: 22px;
@@ -350,168 +330,7 @@ body {
   filter: drop-shadow(0 0 4px rgba(124, 58, 237, .6));
 }
 
-/* CONTEÚDO */
-
-/* Botão Editar */
-.btn-editar {
-  background: rgba(124, 58, 237, .10);
-  border: 1px solid rgba(124, 58, 237, .25);
-  border-radius: 8px;
-  color: var(--purple-light);
-  cursor: pointer;
-  padding: 6px 11px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  flex-shrink: 0;
-  transition: background .2s;
-}
-
-.btn-editar:hover {
-  background: rgba(124, 58, 237, .22);
-}
-
-/* Coluna de ações dos cards (Editar + Remover empilhados) */
-.item-acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-/* Formulário de edição inline */
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.edit-acoes {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-salvar {
-  flex: 1;
-  padding: 10px;
-  font-size: 13px;
-}
-
-.btn-cancelar {
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .10);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background .2s;
-  white-space: nowrap;
-}
-
-.btn-cancelar:hover {
-  background: rgba(255, 255, 255, .09);
-}
-
-/* item-card no modo edição ocupa largura total */
-.item-card:has(.edit-form) {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-/* ── CARDS DE SUGESTÕES (redesign) ─────────────────────────── */
-.sug-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: box-shadow .2s;
-}
-
-.sug-card:hover {
-  box-shadow: 0 4px 18px rgba(124, 58, 237, .12);
-}
-
-/* Cabeçalho: título + badge de tipo */
-.sug-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.sug-titulo {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  flex: 1;
-  min-width: 0;
-}
-
-.sug-tipo {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .4px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: rgba(124, 58, 237, .12);
-  border: 1px solid rgba(124, 58, 237, .22);
-  color: var(--purple-light);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Corpo: texto preservando formatação original */
-.sug-corpo {
-  font-size: 13px;
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.65;
-  background: rgba(255, 255, 255, .03);
-  border-left: 2px solid rgba(124, 58, 237, .35);
-  border-radius: 0 8px 8px 0;
-  padding: 10px 14px;
-}
-
-/* Rodapé: autor + data/status + botões */
-.sug-rodape {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.sug-autor-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.sug-autor-nome {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--purple-light);
-}
-
-.sug-data {
-  font-size: 11px;
-  color: rgba(156, 163, 175, .60);
-}
-
-.sug-acoes-wrap {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
+/* ── PAINÉIS ────────────────────────────────────────────────── */
 .conteudo {
   position: relative;
 }
@@ -539,7 +358,7 @@ body {
   }
 }
 
-/* FORMULÁRIO */
+/* ── FORMULÁRIO ─────────────────────────────────────────────── */
 .form-titulo {
   font-family: 'Orbitron', sans-serif;
   font-size: 13px;
@@ -608,6 +427,7 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+/* ── BOTÃO PRINCIPAL ────────────────────────────────────────── */
 .btn-publicar {
   width: 100%;
   padding: 13px;
@@ -637,6 +457,7 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   transform: none;
 }
 
+/* ── ALERTAS ────────────────────────────────────────────────── */
 .alerta {
   font-size: 12px;
   padding: 10px 14px;
@@ -658,6 +479,7 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   color: #f87171;
 }
 
+/* ── LISTA SECTION ──────────────────────────────────────────── */
 .secao-lista {
   display: flex;
   flex-direction: column;
@@ -683,6 +505,7 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   padding: 24px 0;
 }
 
+/* ── ITEM CARD (avisos / tarefas / feriados) ────────────────── */
 .item-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -697,6 +520,12 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
 
 .item-card:hover {
   box-shadow: 0 4px 16px rgba(124, 58, 237, .10);
+}
+
+/* modo edição: ocupa largura total */
+.item-card:has(.edit-form) {
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .item-info {
@@ -725,6 +554,33 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   font-size: 11px;
   color: rgba(156, 163, 175, .55);
   margin-top: 2px;
+}
+
+/* Coluna de ações (Editar + Remover empilhados) */
+.item-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── BOTÕES DE AÇÃO ─────────────────────────────────────────── */
+.btn-editar {
+  background: rgba(124, 58, 237, .10);
+  border: 1px solid rgba(124, 58, 237, .25);
+  border-radius: 8px;
+  color: var(--purple-light);
+  cursor: pointer;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+
+.btn-editar:hover {
+  background: rgba(124, 58, 237, .22);
 }
 
 .btn-deletar {
@@ -781,7 +637,138 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   background: rgba(239, 68, 68, .22);
 }
 
-/* acesso negado */
+/* ── FORMULÁRIO DE EDIÇÃO INLINE ────────────────────────────── */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.edit-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-salvar {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+}
+
+.btn-cancelar {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .10);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, .09);
+}
+
+/* ── CARDS DE SUGESTÕES ─────────────────────────────────────── */
+#listaSugestoes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sug-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow .2s;
+}
+
+.sug-card:hover {
+  box-shadow: 0 4px 18px rgba(124, 58, 237, .12);
+}
+
+/* Cabeçalho: título + badge de tipo */
+.sug-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sug-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.sug-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  background: rgba(124, 58, 237, .12);
+  border: 1px solid rgba(124, 58, 237, .22);
+  color: var(--purple-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sug-tipo svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--purple-light);
+  flex-shrink: 0;
+}
+
+/* Corpo: preserva formatação original */
+.sug-corpo {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+  background: rgba(255, 255, 255, .03);
+  border-left: 2px solid rgba(124, 58, 237, .35);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+}
+
+/* Rodapé: autor · data · status em linha + botões */
+.sug-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sug-meta {
+  font-size: 11px;
+  color: rgba(156, 163, 175, .60);
+}
+
+.sug-acoes-wrap {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── ACESSO NEGADO ──────────────────────────────────────────── */
 .acesso-negado {
   display: flex;
   flex-direction: column;
@@ -830,49 +817,14 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   background: rgba(124, 58, 237, .24);
 }
 
-@media (max-width: 540px) {
-
-  /* grid de 4 abas vira 2 colunas */
-  .seletores:not(.seletores-5) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .seletores:not(.seletores-5)~.seta-wrap .seta-flutuante {
-    width: calc(50% - 5px);
-  }
-
-  /* 5 abas: botões menores no mobile */
-  .seletores-5 .seletor-btn {
-    flex: 0 0 calc(33% - 7px);
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    padding: 11px 14px;
-  }
-
-  .header-titulo {
-    font-size: 15px;
-  }
-
-  .badge-adm {
-    display: none;
-  }
-
-  .main {
-    padding: 14px 13px 60px;
-  }
-}
-
-/* STATS BAR */
+/* ── STATS BAR ──────────────────────────────────────────────── */
 .stats-bar {
   display: flex;
   gap: 1.5rem;
   align-items: center;
   padding: .75rem 1rem;
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: rgba(124, 58, 237, .10);
+  border: 1px solid rgba(124, 58, 237, .20);
   border-radius: .75rem;
   margin-bottom: 1rem;
   font-size: .9rem;
@@ -909,5 +861,34 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
 
   50% {
     opacity: .4;
+  }
+}
+
+/* ── RESPONSIVO ─────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .seletores {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .seta-flutuante {
+    width: calc(50% - 5px);
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 11px 14px;
+  }
+
+  .header-titulo {
+    font-size: 15px;
+  }
+
+  .badge-adm {
+    display: none;
+  }
+
+  .main {
+    padding: 14px 13px 60px;
   }
 }

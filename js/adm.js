@@ -7,9 +7,22 @@ const MATERIAS = ['Artes', 'Banco de Dados', 'Engenharia de Software', 'Biologia
 const ENTREGAS = ['Apresentação', 'Digital', 'Folha', 'Caderno'];
 
 const TIPO_SUG = {
-  encontro: 'Encontro',
-  atividade: 'Atividade',
-  outro: 'Outro'
+  instagram: {
+    label: 'Instagram',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>`
+  },
+  encontro: {
+    label: 'Encontro',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+  },
+  melhoria: {
+    label: 'Melhoria',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+  },
+  outro: {
+    label: 'Outro',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+  }
 };
 
 // ── 4 abas (Destaques removido) ──────────────────────────────
@@ -31,7 +44,7 @@ function esc(str) {
     .replace(/"/g, '&quot;');
 }
 
-if (!usuario.id || usuario.role !== 'admin') {
+/* if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -39,10 +52,10 @@ if (!usuario.id || usuario.role !== 'admin') {
       <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
     </div>`;
-} else {
-  renderPainel();
-  iniciarHeartbeat();
-}
+} else { */
+renderPainel();
+iniciarHeartbeat();
+// }
 
 function iniciarHeartbeat() {
   const enviar = () => fetch(`${API}/admin/heartbeat`, {
@@ -602,8 +615,10 @@ async function carregarSugestoes() {
       const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
       const corStatus = status === 'aceita' ? '#4ade80' : status === 'recusada' ? '#f87171' : '#94a3b8';
       const labelStatus = status === 'aceita' ? '✓ Aceita' : status === 'recusada' ? '✗ Recusada' : '⏳ Aguardando';
-      const tipoLabel = TIPO_SUG[s.tipo] || s.tipo || 'Geral';
-      const texto = esc(s.texto || s.descricao || '');
+      const tipoInfo = TIPO_SUG[s.tipo] || { label: s.tipo || 'Outro', svg: TIPO_SUG.outro.svg };
+      const tipoLabel = tipoInfo.label;
+      const tipoSvg = tipoInfo.svg;
+      const texto = esc(s.descricao || s.texto || '');
       const autor = esc(s.autor?.nome || 'Aluno');
       const titulo = esc(s.titulo || 'Sugestão');
 
@@ -616,14 +631,11 @@ async function carregarSugestoes() {
         <div class="sug-card" id="sug-${s._id}">
           <div class="sug-header">
             <span class="sug-titulo">${titulo}</span>
-            <span class="sug-tipo">${tipoLabel}</span>
+            <span class="sug-tipo">${tipoSvg}${tipoLabel}</span>
           </div>
           <div class="sug-corpo">${texto}</div>
           <div class="sug-rodape">
-            <div class="sug-autor-wrap">
-              <span class="sug-autor-nome">— ${autor}</span>
-              <span class="sug-data">${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
-            </div>
+            <span class="sug-meta">${autor} · ${data} · <span style="color:${corStatus}">${labelStatus}</span></span>
             <div class="sug-acoes-wrap">${btnAceitar}${btnRecusar}</div>
           </div>
         </div>`;
