@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/pages/:file",
+      "source": "/Info-25B",
       "destination": "/html/:file"
     }
   ]
