@@ -1,8 +1,36 @@
 {
   "rewrites": [
     {
-      "source": "/Info-25B",
+      "source": "/pages/:file",
       "destination": "/html/:file"
+    },
+    {
+      "source": "/Info-25B",
+      "destination": "/html/telaInicial.html"
+    },
+    {
+      "source": "/Info-25B/conversas",
+      "destination": "/html/conversa.html"
+    },
+    {
+      "source": "/Info-25B/calendario",
+      "destination": "/html/tarefasProvas.html"
+    },
+    {
+      "source": "/Info-25B/importantes",
+      "destination": "/html/importantes.html"
+    },
+    {
+      "source": "/Info-25B/votações",
+      "destination": "/html/lazer.html"
+    },
+    {
+      "source": "/Info-25B/sugestões",
+      "destination": "/html/sugestoes.html"
+    },
+    {
+      "source": "/Info-25B/administração",
+      "destination": "/html/adm.html"
     }
   ]
 }
