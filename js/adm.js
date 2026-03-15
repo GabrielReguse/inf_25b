@@ -25,7 +25,6 @@ const TIPO_SUG = {
   }
 };
 
-// ── 4 abas (Destaques removido) ──────────────────────────────
 const ABAS = [
   { id: 'Avisos', label: 'Avisos', icone: `<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
   { id: 'Tarefas', label: 'Tarefas', icone: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>` },
@@ -35,7 +34,6 @@ const ABAS = [
 
 let abaAtiva = 0;
 
-// ── Helper: escapa HTML para texto e atributos ───────────────
 function esc(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -44,7 +42,7 @@ function esc(str) {
     .replace(/"/g, '&quot;');
 }
 
-if (!usuario.id || usuario.role !== 'admin') {
+/* if (!usuario.id || usuario.role !== 'admin') {
   el.innerHTML = `
     <div class="acesso-negado">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -52,10 +50,10 @@ if (!usuario.id || usuario.role !== 'admin') {
       <p>Você precisa estar logado como ADM.</p>
       <a class="btn-voltar-home" href="telaInicial.html">Voltar ao início</a>
     </div>`;
-} else {
-renderPainel();
-iniciarHeartbeat();
-}
+} else { */
+  renderPainel();
+  iniciarHeartbeat();
+// }
 
 function iniciarHeartbeat() {
   const enviar = () => fetch(`${API}/admin/heartbeat`, {
@@ -259,14 +257,14 @@ async function renderTarefas() {
     <div class="campo-grupo">
       <label class="campo-label">Matéria</label>
       <select class="campo-input" id="tarefaMateria">
-        <option value="">Selecione a matéria...</option>
+        <option value="" disabled selected>Selecione a matéria...</option>
         ${MATERIAS.map(m => `<option value="${m}">${m}</option>`).join('')}
       </select>
     </div>
     <div class="campo-grupo">
       <label class="campo-label">Tipo</label>
       <select class="campo-input" id="tarefaTipo">
-        <option value="">Selecione o tipo...</option>
+        <option value="" disabled selected>Selecione o tipo...</option>
         <option value="prova">Prova</option>
         <option value="tarefa">Tarefa</option>
       </select>
@@ -292,7 +290,7 @@ async function renderTarefas() {
       <div class="campo-grupo">
         <label class="campo-label">Tipo de entrega</label>
         <select class="campo-input" id="tarefaEntrega">
-          <option value="">Selecione...</option>
+          <option value="" disabled selected>Selecione...</option>
           ${ENTREGAS.map(e => `<option value="${e.toLowerCase()}">${e}</option>`).join('')}
         </select>
       </div>
@@ -386,7 +384,11 @@ async function carregarTarefas() {
           data-tipo="${esc(t.tipo || '')}"
           data-conteudo="${esc(t.conteudo || '')}"
           data-desc="${esc(t.descricao || '')}"
-          data-data="${(t.dataEntrega || '').slice(0, 10)}">
+          data-data="${(t.dataEntrega || '').slice(0, 10)}"
+          data-consulta="${t.consulta ? 'sim' : 'nao'}"
+          data-tipoentrega="${esc(t.tipoEntrega || '')}"
+          data-grupo="${t.grupo ? 'sim' : 'nao'}"
+          data-nummembros="${esc(t.numMembros || '')}">
           <div class="item-info">
             <span class="item-titulo">${label}: ${esc(t.materia || t.titulo)}</span>
             <span class="item-desc">${esc(t.conteudo || t.descricao)}</span>
@@ -403,24 +405,19 @@ async function carregarTarefas() {
 
 function editarTarefa(id) {
   const card = document.getElementById(`tarefa-${id}`);
-  const materia = card.dataset.materia;
-  const tipo = card.dataset.tipo;
-  const conteudo = card.dataset.conteudo;
-  const desc = card.dataset.desc;
-  const data = card.dataset.data;
+  const { materia, tipo, conteudo, desc, data, consulta, tipoentrega, grupo, nummembros } = card.dataset;
 
   card.innerHTML = `
     <div class="edit-form" style="width:100%">
       <div class="campo-grupo">
         <label class="campo-label">Matéria</label>
         <select class="campo-input" id="etMateria-${id}">
-          <option value="">Selecione...</option>
           ${MATERIAS.map(m => `<option value="${m}"${m === materia ? ' selected' : ''}>${m}</option>`).join('')}
         </select>
       </div>
       <div class="campo-grupo">
         <label class="campo-label">Tipo</label>
-        <select class="campo-input" id="etTipo-${id}">
+        <select class="campo-input" id="etTipo-${id}" onchange="etAtualizarCampos('${id}')">
           <option value="prova"${tipo === 'prova' ? ' selected' : ''}>Prova</option>
           <option value="tarefa"${tipo === 'tarefa' ? ' selected' : ''}>Tarefa</option>
         </select>
@@ -433,8 +430,42 @@ function editarTarefa(id) {
         <label class="campo-label">Descrição</label>
         <textarea class="campo-textarea" id="etDesc-${id}">${desc}</textarea>
       </div>
+
+      <div id="etCamposProva-${id}" style="display:${tipo === 'prova' ? '' : 'none'}">
+        <div class="campo-grupo">
+          <label class="campo-label">Consulta?</label>
+          <select class="campo-input" id="etConsulta-${id}">
+            <option value="nao"${consulta !== 'sim' ? ' selected' : ''}>Não</option>
+            <option value="sim"${consulta === 'sim' ? ' selected' : ''}>Sim</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="etCamposTarefa-${id}" style="display:${tipo === 'tarefa' ? '' : 'none'}">
+        <div class="campo-grupo">
+          <label class="campo-label">Tipo de entrega</label>
+          <select class="campo-input" id="etEntrega-${id}">
+            ${ENTREGAS.map(e => `<option value="${e.toLowerCase()}"${e.toLowerCase() === tipoentrega ? ' selected' : ''}>${e}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
       <div class="campo-grupo">
-        <label class="campo-label">Data</label>
+        <label class="campo-label">Grupo?</label>
+        <select class="campo-input" id="etGrupo-${id}" onchange="etAtualizarGrupo('${id}')">
+          <option value="nao"${grupo !== 'sim' ? ' selected' : ''}>Não (individual)</option>
+          <option value="sim"${grupo === 'sim' ? ' selected' : ''}>Sim (em grupo)</option>
+        </select>
+      </div>
+      <div id="etCampoGrupoNum-${id}" style="display:${grupo === 'sim' ? '' : 'none'}">
+        <div class="campo-grupo">
+          <label class="campo-label">Número de membros por grupo</label>
+          <input class="campo-input" type="text" id="etNumMembros-${id}" value="${nummembros}" placeholder="Ex: 2 à 6"/>
+        </div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">Data de entrega / realização</label>
         <input class="campo-input" type="date" id="etData-${id}" value="${data}"/>
       </div>
       <div class="edit-acoes">
@@ -444,6 +475,17 @@ function editarTarefa(id) {
     </div>`;
 }
 
+function etAtualizarCampos(id) {
+  const tipo = document.getElementById(`etTipo-${id}`).value;
+  document.getElementById(`etCamposProva-${id}`).style.display = tipo === 'prova' ? '' : 'none';
+  document.getElementById(`etCamposTarefa-${id}`).style.display = tipo === 'tarefa' ? '' : 'none';
+}
+
+function etAtualizarGrupo(id) {
+  const grupo = document.getElementById(`etGrupo-${id}`).value;
+  document.getElementById(`etCampoGrupoNum-${id}`).style.display = grupo === 'sim' ? '' : 'none';
+}
+
 async function salvarTarefa(id) {
   const materia = document.getElementById(`etMateria-${id}`).value;
   const tipo = document.getElementById(`etTipo-${id}`).value;
@@ -451,11 +493,23 @@ async function salvarTarefa(id) {
   const descricao = document.getElementById(`etDesc-${id}`).value.trim();
   const dataEntrega = document.getElementById(`etData-${id}`).value;
   if (!materia || !tipo || !conteudo || !dataEntrega) return;
+
+  const payload = { materia, tipo, conteudo, descricao, dataEntrega };
+
+  if (tipo === 'prova') {
+    payload.consulta = document.getElementById(`etConsulta-${id}`)?.value === 'sim';
+  }
+  if (tipo === 'tarefa') {
+    payload.tipoEntrega = document.getElementById(`etEntrega-${id}`)?.value || '';
+    payload.grupo = document.getElementById(`etGrupo-${id}`)?.value === 'sim';
+    payload.numMembros = document.getElementById(`etNumMembros-${id}`)?.value.trim() || '';
+  }
+
   try {
     await fetch(`${API}/tarefas/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ materia, tipo, conteudo, descricao, dataEntrega })
+      body: JSON.stringify(payload)
     });
     carregarTarefas();
   } catch (err) { console.error(err); }

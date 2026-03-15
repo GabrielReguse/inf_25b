@@ -422,6 +422,11 @@ select.campo-input option {
   color: var(--text-primary);
 }
 
+/* Placeholder desabilitado nos selects */
+select.campo-input option:disabled {
+  color: rgba(156, 163, 175, .45);
+}
+
 input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   filter: invert(.5) sepia(1) hue-rotate(220deg) saturate(1.5);
   cursor: pointer;
@@ -523,7 +528,6 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   box-shadow: 0 4px 16px rgba(124, 58, 237, .10);
 }
 
-/* modo edição: ocupa largura total */
 .item-card:has(.edit-form) {
   flex-direction: column;
   align-items: stretch;
@@ -557,7 +561,6 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   margin-top: 2px;
 }
 
-/* Coluna de ações (Editar + Remover empilhados) */
 .item-acoes {
   display: flex;
   flex-direction: column;
@@ -646,6 +649,14 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   width: 100%;
 }
 
+/* Seções condicionais dentro do edit-form (prova / tarefa) */
+.edit-form>div[id^="etCampos"],
+.edit-form>div[id^="etCampoGrupo"] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .edit-acoes {
   display: flex;
   gap: 8px;
@@ -700,7 +711,6 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   box-shadow: 0 4px 18px rgba(124, 58, 237, .12);
 }
 
-/* Cabeçalho: título + badge de tipo */
 .sug-header {
   display: flex;
   align-items: center;
@@ -739,7 +749,6 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   flex-shrink: 0;
 }
 
-/* Corpo: preserva formatação original */
 .sug-corpo {
   font-size: 13px;
   color: var(--text-primary);
@@ -752,7 +761,6 @@ input[type="date"].campo-input::-webkit-calendar-picker-indicator {
   padding: 10px 14px;
 }
 
-/* Rodapé: autor · data · status em linha + botões */
 .sug-rodape {
   display: flex;
   align-items: center;
