@@ -496,13 +496,15 @@ async function salvarTarefa(id) {
 
   const payload = { materia, tipo, conteudo, descricao, dataEntrega };
 
+  // grupo e numMembros valem para prova E tarefa
+  payload.grupo = document.getElementById(`etGrupo-${id}`)?.value === 'sim';
+  payload.numMembros = document.getElementById(`etNumMembros-${id}`)?.value.trim() || '';
+
   if (tipo === 'prova') {
     payload.consulta = document.getElementById(`etConsulta-${id}`)?.value === 'sim';
   }
   if (tipo === 'tarefa') {
     payload.tipoEntrega = document.getElementById(`etEntrega-${id}`)?.value || '';
-    payload.grupo = document.getElementById(`etGrupo-${id}`)?.value === 'sim';
-    payload.numMembros = document.getElementById(`etNumMembros-${id}`)?.value.trim() || '';
   }
 
   try {
