@@ -1,135 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inf 25B — Perfil</title>
-  <link rel="stylesheet" href="../css/backGround.css" />
-  <link rel="stylesheet" href="../css/perfil.css" />
-  <link rel="manifest" href="../manifest.json" />
-  <meta name="theme-color" content="#7c3aed" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Inf 25B" />
-  <link rel="apple-touch-icon" href="../assets/logo.png" />
-  <link rel="icon" type="image/png" href="../assets/icon.png" />
-  <!-- vercel analytics -->
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-  </script>
-  <script defer src="/_vercel/insights/script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Plataforma oficial da turma INF 25B.">
+  <title>INF 25B — Meu perfil</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../assets/icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/app.png">
 </head>
-
-<body>
-
-  <div class="page" id="page">
-
-    <!-- HEADER -->
-    <header class="header" id="header">
-      <div class="header-esquerda">
-        <div class="logo"><img src="../assets/logo.png" alt="Logo da Inf 25B"></div>
-        <span class="header-titulo">Perfil</span>
-      </div>
-      <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </a>
-    </header>
-
-    <div class="header-linha-wrap" aria-hidden="true">
-      <div class="header-linha" id="headerLinha"></div>
+<body data-page="perfil" data-title="Meu perfil" data-subtitle="Conta, preferências e histórico pessoal">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <div class="app-layout">
+    <aside class="app-sidebar" id="appSidebar"></aside>
+    <div class="app-main">
+      <header class="app-topbar" id="appTopbar"></header>
+      <main class="page-content" id="conteudo">
+<div class="page-heading"><div><span class="eyebrow">Conta e preferências</span><h2>Meu perfil</h2><p>Atualize seus dados, gerencie notificações e acompanhe suas contribuições na plataforma.</p></div></div>
+<section class="profile-layout"><aside class="profile-card"><div class="profile-photo" id="profilePhoto">--</div><h2 id="profileName">Carregando</h2><p id="profileRole">Aluno</p><div class="profile-actions"><label class="button" for="profilePhotoInput">Trocar foto</label><input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button class="button danger" id="logoutButton" type="button"><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>Sair da conta</button></div></aside><div class="stack"><article class="panel"><div class="panel-header"><div class="panel-title"><h3>Dados pessoais</h3><p>Essas informações aparecem na conversa e em suas sugestões.</p></div></div><div class="panel-body"><form id="profileForm"><div class="form-grid"><div class="field"><label for="profileNameInput">Nome</label><input class="input" id="profileNameInput" maxlength="80" required></div><div class="field"><label for="profileEmailInput">E-mail</label><input class="input" id="profileEmailInput" disabled></div><div class="field full"><label for="profileBioInput">Descrição</label><textarea class="textarea" id="profileBioInput" maxlength="240" placeholder="Uma frase curta sobre você"></textarea></div></div><div class="form-actions"><button class="button primary" id="profileSave" type="submit">Salvar alterações</button></div></form></div></article><article class="panel"><div class="panel-header"><div class="panel-title"><h3>Preferências</h3><p>Controle o comportamento da plataforma neste dispositivo.</p></div></div><div class="panel-body"><div class="setting-row"><div><strong>Notificações de avisos e prazos</strong><p>A permissão só é solicitada quando você ativa esta opção.</p></div><label class="switch"><input id="notificationSwitch" type="checkbox"><span></span></label></div><div class="setting-row"><div><strong>Tema visual</strong><p>Escolha entre claro, escuro ou acompanhar o sistema.</p></div><select class="select" id="themeSelect" style="width:150px"><option value="dark">Escuro</option><option value="light">Claro</option><option value="system">Sistema</option></select></div></div></article><article class="panel"><div class="panel-header"><div class="panel-title"><h3>Minhas sugestões</h3><p>Histórico recente das ideias enviadas por você.</p></div><a class="button small ghost" href="sugestoes.html">Ver todas</a></div><div class="panel-body"><div class="list" id="mySuggestionList"></div></div></article></div></section></main>
     </div>
-
-    <main class="main">
-
-      <!-- CARD PERFIL -->
-      <div class="perfil-card" id="perfilCard">
-
-        <!-- botão lápis -->
-        <button class="btn-editar" id="btnEditar" aria-label="Editar perfil">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-        </button>
-
-        <!-- foto -->
-        <div class="foto-wrap">
-          <div class="foto-avatar">
-            <!-- trocar src e remover display:none quando tiver foto -->
-            <img id="fotoImg" src="" alt="Foto de perfil" style="display:none" />
-            <svg id="fotoIcone" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <!-- visível apenas em modo edição -->
-          <div class="foto-trocar" role="button" aria-label="Trocar foto">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </div>
-        </div>
-
-        <input type="file" id="inputFoto" accept="image/*" aria-hidden="true" />
-
-        <!-- nome -->
-        <div class="perfil-nome" id="perfilNome" contenteditable="false" role="textbox" aria-label="Nome completo">Nome
-          Completo</div>
-
-        <!-- descrição -->
-        <textarea class="perfil-desc" id="perfilDesc" readonly placeholder="Escreva algo sobre você..."
-          aria-label="Descrição" rows="4"></textarea>
-
-        <!-- ações salvar/cancelar (visíveis só em edição) -->
-        <div class="editar-acoes">
-          <button class="btn-cancelar" id="btnCancelar">Cancelar</button>
-          <button class="btn-salvar" id="btnSalvar">Salvar</button>
-        </div>
-
-      </div>
-
-      <!-- STATUS DAS SUGESTÕES -->
-      <section class="bloco" aria-label="Status das Sugestões">
-        <div class="bloco-header">
-          <div class="bloco-titulo">
-            <span class="bloco-dot" aria-hidden="true"></span>
-            Status das Sugestões
-          </div>
-          <button class="btn-expandir" id="btnSugestoes" aria-expanded="false" aria-controls="listaSugestoes">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="sugestoes-lista" id="listaSugestoes">
-          <div class="bloco-vazio">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            <span>Você ainda não fez nenhuma sugestão.</span>
-          </div>
-        </div>
-      </section>
-
-    </main>
   </div>
-
-  <script src="../js/background.js"></script>
-  <script src="../js/global.js"></script>
-  <script src="../js/perfil.js"></script>
-
-  <!-- vercel speed insights -->
-  <script>
-    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-  </script>
-  <script defer src="/_vercel/speed-insights/script.js"></script>
-
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegação móvel"></nav>
+  <script defer src="../js/app.js"></script>
+  <script defer src="../js/perfil.js"></script>
 </body>
-
 </html>

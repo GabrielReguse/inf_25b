@@ -1,0 +1,10 @@
+{
+  "name": "inf-25b-frontend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Interface responsiva da plataforma oficial da turma INF 25B",
+  "scripts": {
+    "check": "node scripts/check.js",
+    "serve": "python -m http.server 5500"
+  }
+}

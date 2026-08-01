@@ -1,178 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Inf 25B — Conversa</title>
-  <link rel="stylesheet" href="../css/backGround.css" />
-  <link rel="stylesheet" href="../css/conversa.css" />
-  <link rel="manifest" href="../manifest.json" />
-  <meta name="theme-color" content="#7c3aed" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Inf 25B" />
-  <link rel="apple-touch-icon" href="../assets/logo.png" />
-  <link rel="icon" type="image/png" href="../assets/icon.png" />
-  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
-  <script defer src="/_vercel/insights/script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Plataforma oficial da turma INF 25B.">
+  <title>INF 25B — Conversa</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <link rel="stylesheet" href="../css/chat.css">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../assets/icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/app.png">
 </head>
-
-<body>
-
-  <div class="page" id="page">
-    <div class="conversa-container" id="conversaContainer">
-
-      <!-- SIDEBAR -->
-      <div class="sidebar" id="sidebar">
-
-        <div class="sidebar-header">
-          <span class="sidebar-titulo">Mensagens</span>
-          <div class="sidebar-header-acoes">
-            <!-- Botão nova conversa -->
-            <button class="btn-nova-conversa" id="btnNovaConversa" type="button" aria-label="Nova conversa">
-              <svg viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-            <!-- Só visível no mobile (fecha a sidebar) -->
-            <button class="sidebar-fechar-btn" id="sidebarFecharBtn" type="button" aria-label="Fechar conversas">
-              <svg viewBox="0 0 24 24">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="sidebar-busca-wrap">
-          <svg viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input class="sidebar-busca" id="sidebarBusca" type="text" placeholder="Buscar conversa..."
-            autocomplete="off" />
-        </div>
-
-        <div class="sidebar-lista" id="sidebarLista">
-          <!-- populada pelo JS -->
-          <div class="sidebar-loading" id="sidebarLoading">
-            <div class="sidebar-loading-dot"></div>
-            <div class="sidebar-loading-dot"></div>
-            <div class="sidebar-loading-dot"></div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Overlay escuro para fechar sidebar no mobile -->
-      <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-      <!-- CHAT PRINCIPAL -->
-      <div class="chat-main" id="chatMain">
-
-        <header class="header" id="header">
-          <div class="header-esquerda">
-            <!-- Botão menu (mobile) -->
-            <button class="btn-abrir-sidebar" id="btnAbrirSidebar" type="button" aria-label="Ver conversas">
-              <svg viewBox="0 0 24 24">
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
-            <!-- Avatar da conversa ativa -->
-            <div class="header-avatar" id="headerAvatar">
-              <img src="../assets/logo.png" alt="Logo da Inf 25B" id="headerAvatarImg" />
-            </div>
-            <div class="header-info">
-              <span class="header-titulo" id="headerTitulo">Turma INF 25B</span>
-              <span class="header-subtitulo" id="headerSubtitulo">conversa em grupo</span>
-            </div>
-          </div>
-          <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </a>
-        </header>
-
-        <div class="header-linha" aria-hidden="true"></div>
-
-        <!-- Área de mensagens -->
-        <div class="chat-area" id="chatArea"></div>
-
-        <!-- Preview de imagem antes de enviar -->
-        <div class="preview-img-wrap" id="previewImgWrap">
-          <img class="preview-img-thumb" id="previewImgThumb" src="" alt="preview" />
-          <span class="preview-img-nome" id="previewImgNome"></span>
-          <div class="preview-img-remove" id="previewImgRemove">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </div>
-        </div>
-
-        <!-- Barra de resposta -->
-        <div class="reply-bar" id="replyBar">
-          <svg viewBox="0 0 24 24">
-            <polyline points="9 17 4 12 9 7" />
-            <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-          </svg>
-          <span class="reply-bar-texto" id="replyBarTexto"></span>
-          <button class="reply-bar-fechar" id="replyBarFechar" type="button">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Barra de input -->
-        <div class="input-bar">
-          <button class="btn-midia" id="btnFoto" type="button" aria-label="Enviar foto">
-            <svg viewBox="0 0 24 24">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </button>
-          <input type="file" id="inputFoto" accept="image/*" style="display:none" />
-
-          <div class="input-texto-wrap">
-            <textarea class="input-texto" id="inputTexto" placeholder="Escreva aqui..." rows="1"></textarea>
-          </div>
-
-          <button class="btn-audio" id="btnAudio" type="button" aria-label="Gravar áudio">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="23" />
-              <line x1="8" y1="23" x2="16" y2="23" />
-            </svg>
-          </button>
-
-          <button class="btn-enviar" id="btnEnviar" type="button" aria-label="Enviar mensagem">
-            <svg viewBox="0 0 24 24">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
-        </div>
-
-      </div><!-- /chat-main -->
-    </div><!-- /conversa-container -->
-  </div><!-- /page -->
-
-  <script src="../js/global.js"></script>
-  <script src="../js/background.js"></script>
-  <script src="../js/conversa.js"></script>
-
-  <script>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
-  <script defer src="/_vercel/speed-insights/script.js"></script>
-
+<body data-page="conversa" data-title="Conversa" data-subtitle="Chat geral e mensagens diretas">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <div class="app-layout">
+    <aside class="app-sidebar" id="appSidebar"></aside>
+    <div class="app-main">
+      <header class="app-topbar" id="appTopbar"></header>
+      <main class="page-content chat-page-content" id="conteudo"><section class="chat-layout" id="chatLayout"><aside class="chat-sidebar"><div class="chat-sidebar-head"><div class="chat-sidebar-title"><h2>Conversas</h2><button class="icon-button" id="newConversationButton" type="button" aria-label="Nova conversa"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div><label class="chat-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="conversationSearch" type="search" placeholder="Buscar conversa"></label></div><div class="conversation-list" id="conversationList"></div></aside><section class="chat-main"><header class="chat-header"><div class="chat-header-info"><button class="icon-button chat-back" id="chatBack" type="button"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><span class="conversation-avatar" id="chatAvatar">25</span><div><strong id="chatTitle">Turma INF 25B</strong><span id="chatStatus">Conversa geral da turma</span></div></div><button class="icon-button" id="refreshMessages" type="button" aria-label="Atualizar mensagens"><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg></button></header><div class="message-list" id="messageList"></div><footer class="typing-area"><div class="composer-reply" id="composerReply"><span id="composerReplyText"></span><button class="icon-button" id="cancelReply" type="button"><svg viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></svg></button></div><div class="composer"><button class="composer-button" id="attachButton" type="button" aria-label="Anexar imagem"><svg viewBox="0 0 24 24"><path d="m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.6-9.6a4 4 0 0 1 5.7 5.7l-9.7 9.6a2 2 0 1 1-2.8-2.8l8.9-8.9"/></svg></button><button class="composer-button record" id="recordButton" type="button" aria-label="Gravar áudio"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="4000" placeholder="Escreva uma mensagem"></textarea><button class="composer-button send" id="sendButton" type="button" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></svg></button><input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden></div></footer></section></section></main>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegação móvel"></nav>
+  <script defer src="../js/app.js"></script>
+  <script defer src="../js/chat.js"></script>
 </body>
-
 </html>

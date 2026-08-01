@@ -1,282 +1,113 @@
-const API = "https://inf-25b-backend.onrender.com";
+(() => {
+  const { api, ready, escapeHTML, relativeDate, emptyState, skeleton, showToast, setLoading, setSession, readSession, initials, enableNotifications, applyTheme, logout, icons } = window.INF25B;
+  let user = null;
 
-let usuario = (() => {
-  try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
-})();
-
-// ─── TOAST FEEDBACK ───────────────────────────────────────────
-function showToast(msg, tipo = 'sucesso') {
-  const existing = document.querySelector('.perfil-toast');
-  if (existing) existing.remove();
-
-  const toast = document.createElement('div');
-  toast.className = `perfil-toast perfil-toast--${tipo}`;
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-
-  requestAnimationFrame(() => toast.classList.add('perfil-toast--visivel'));
-  setTimeout(() => {
-    toast.classList.remove('perfil-toast--visivel');
-    setTimeout(() => toast.remove(), 400);
-  }, 3000);
-}
-
-// ─── FETCH COM TIMEOUT ────────────────────────────────────────
-async function fetchComTimeout(url, opcoes = {}, timeout = 15000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-  try {
-    const res = await fetch(url, { ...opcoes, signal: controller.signal });
-    clearTimeout(timer);
-    return res;
-  } catch (err) {
-    clearTimeout(timer);
-    if (err.name === 'AbortError') throw new Error('Tempo de resposta esgotado. Tente novamente.');
-    throw err;
+  function paintProfile() {
+    document.getElementById('profileName').textContent = user.nome;
+    document.getElementById('profileRole').textContent = user.role === 'admin' ? 'Administrador da turma' : 'Aluno da INF 25B';
+    document.getElementById('profileNameInput').value = user.nome || '';
+    document.getElementById('profileEmailInput').value = user.email || '';
+    document.getElementById('profileBioInput').value = user.descricao || '';
+    const photo = document.getElementById('profilePhoto');
+    photo.innerHTML = user.fotoPerfil ? `<img src="${escapeHTML(user.fotoPerfil)}" alt="Foto de ${escapeHTML(user.nome)}">` : escapeHTML(initials(user.nome));
+    document.getElementById('notificationSwitch').checked = Boolean(user.preferencias?.notificacoes && 'Notification' in window && Notification.permission === 'granted');
+    document.getElementById('themeSelect').value = localStorage.getItem('inf25b_theme') || 'dark';
   }
-}
 
-// ─── CARREGA DADOS DO USUÁRIO DO BACKEND ─────────────────────
-async function carregarPerfil() {
-  if (!usuario.id) return;
-
-  try {
-    const res = await fetchComTimeout(`${API}/usuarios/${usuario.id}`);
-    if (!res.ok) return;
-    const dados = await res.json();
-
-    // atualiza sessionStorage com dados frescos
-    usuario = { ...usuario, ...dados };
-    sessionStorage.setItem('usuario', JSON.stringify(usuario));
-
-    // preenche nome
-    const elNome = document.getElementById('perfilNome');
-    if (elNome) elNome.textContent = dados.nome || usuario.nome || '';
-
-    // preenche foto se existir
-    if (dados.fotoPerfil) {
-      mostrarFoto(dados.fotoPerfil);
+  async function loadSuggestions() {
+    const list = document.getElementById('mySuggestionList');
+    list.innerHTML = skeleton(3);
+    try {
+      const items = await api('/sugestoes?minhas=1');
+      list.innerHTML = items.length ? items.slice(0, 5).map(item => `<a class="list-item" href="sugestoes.html"><span class="item-dot" style="--item-color:${item.status === 'recusada' ? 'var(--danger)' : item.status === 'finalizado' ? 'var(--success)' : 'var(--primary-2)'}"></span><div class="item-copy"><strong>${escapeHTML(item.titulo)}</strong><p>${escapeHTML(item.status.replace('_', ' '))} • ${relativeDate(item.criadaEm)}</p></div><div class="item-meta">${icons.chevron}</div></a>`).join('') : emptyState('Nenhuma sugestão enviada', 'Suas propostas aparecerão aqui.', 'bulb');
+    } catch (error) {
+      list.innerHTML = emptyState('Histórico indisponível', error.message, 'alert');
     }
-  } catch {
-    // fallback para sessionStorage
-    const elNome = document.getElementById('perfilNome');
-    if (elNome && usuario.nome) elNome.textContent = usuario.nome;
-    if (usuario.fotoPerfil) mostrarFoto(usuario.fotoPerfil);
   }
-}
 
-function mostrarFoto(url) {
-  const img = document.getElementById('fotoImg');
-  const icone = document.getElementById('fotoIcone');
-  if (!img) return;
-  img.src = url;
-  img.style.display = 'block';
-  img.style.opacity = '1';
-  if (icone) icone.style.display = 'none';
-}
+  document.getElementById('profileForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = document.getElementById('profileSave');
+    setLoading(button, true, 'Salvando…');
+    try {
+      const result = await api(`/usuarios/${user.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ nome: document.getElementById('profileNameInput').value.trim(), descricao: document.getElementById('profileBioInput').value.trim(), preferencias: user.preferencias })
+      });
+      user = result.usuario;
+      setSession({ token: readSession().token, usuario: user });
+      paintProfile();
+      showToast('Perfil atualizado.');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      setLoading(button, false);
+    }
+  });
 
-// ─── SUGESTÕES DO USUÁRIO ─────────────────────────────────────
-async function carregarSugestoes() {
-  const lista = document.getElementById('listaSugestoes');
-  if (!lista || !usuario.id) return;
-
-  try {
-    const todas = await (await fetchComTimeout(`${API}/sugestoes?t=${Date.now()}`, { cache: 'no-store' })).json();
-    const minhas = todas.filter(s => String(s.autor?._id || s.autor) === String(usuario.id));
-
-    if (!minhas.length) return;
-
-    lista.innerHTML = minhas.map(s => {
-      const texto = s.texto || '';
-      const data = new Date(s.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-      const status = s.status || (s.respondida ? 'aceita' : 'aguardando');
-      const labelStatus = status === 'aceita' ? 'Aceita ✓' : status === 'recusada' ? 'Recusada ✗' : 'Aguardando';
-      const cssStatus = status === 'aceita' ? 'status-aprovado' : status === 'recusada' ? 'status-recusado' : 'status-aguardo';
-      return `
-        <div class="sugestao-item">
-          <div class="sugestao-texto">
-            <div class="sugestao-titulo">${texto.slice(0, 60)}${texto.length > 60 ? '...' : ''}</div>
-            <div class="sugestao-desc">${data}</div>
-          </div>
-          <span class="status-badge ${cssStatus}">${labelStatus}</span>
-        </div>`;
-    }).join('');
-  } catch (err) {
-    console.error('Erro ao carregar sugestoes:', err);
-  }
-}
-
-// ─── UPLOAD DE FOTO ───────────────────────────────────────────
-async function uploadFoto(file) {
-  if (!file || !usuario.id) return;
-
-  const img = document.getElementById('fotoImg');
-  const icone = document.getElementById('fotoIcone');
-
-  // preview imediato
-  const urlPreview = URL.createObjectURL(file);
-  img.src = urlPreview;
-  img.style.display = 'block';
-  img.style.opacity = '0.45';
-  if (icone) icone.style.display = 'none';
-
-  const btnSalvarEl = document.getElementById('btnSalvar');
-  if (btnSalvarEl) btnSalvarEl.disabled = true;
-
-  try {
+  document.getElementById('profilePhotoInput').addEventListener('change', async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) return showToast('A imagem deve ter no máximo 8 MB.', 'error');
     const formData = new FormData();
     formData.append('foto', file);
-
-    const res = await fetchComTimeout(`${API}/usuarios/${usuario.id}/foto`, {
-      method: 'POST',
-      body: formData
-    }, 30000);
-
-    const dados = await res.json();
-
-    if (!res.ok) throw new Error(dados.erro || 'Erro no upload.');
-
-    // confirma URL definitiva do Cloudinary
-    img.src = dados.url;
-    img.style.opacity = '1';
-    usuario.fotoPerfil = dados.url;
-    sessionStorage.setItem('usuario', JSON.stringify(usuario));
-    showToast('Foto atualizada com sucesso!');
-
-  } catch (err) {
-    console.error('Erro upload foto:', err);
-    // mantém preview local mesmo sem salvar no servidor
-    img.style.opacity = '1';
-    showToast(err.message || 'Erro ao enviar foto. Tente novamente.', 'erro');
-  } finally {
-    if (btnSalvarEl) btnSalvarEl.disabled = false;
-  }
-}
-
-// ─── SALVAR NOME NO BACKEND ───────────────────────────────────
-async function salvarNome(novoNome) {
-  if (!usuario.id || !novoNome.trim()) return false;
-  try {
-    const res = await fetchComTimeout(`${API}/usuarios/${usuario.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome: novoNome.trim() })
-    });
-
-    const dados = await res.json();
-
-    if (!res.ok) throw new Error(dados.erro || 'Erro ao salvar.');
-
-    if (dados.usuario) {
-      usuario = { ...usuario, ...dados.usuario };
-      sessionStorage.setItem('usuario', JSON.stringify(usuario));
+    try {
+      showToast('Enviando a foto…');
+      const result = await api(`/usuarios/${user.id}/foto`, { method: 'POST', body: formData });
+      user.fotoPerfil = result.url;
+      setSession({ token: readSession().token, usuario: user });
+      paintProfile();
+      showToast('Foto atualizada.');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      event.target.value = '';
     }
-    return true;
+  });
 
-  } catch (err) {
-    console.error('Erro ao salvar nome:', err);
-    throw err; // propaga para sairEdicao tratar
-  }
-}
-
-// ─── EDIÇÃO DE PERFIL ─────────────────────────────────────────
-const card = document.querySelector('.perfil-card');
-const btnEditar = document.getElementById('btnEditar');
-const btnSalvar = document.getElementById('btnSalvar');
-const btnCancel = document.getElementById('btnCancelar');
-const nome = document.getElementById('perfilNome');
-const desc = document.getElementById('perfilDesc');
-const fotoWrap = document.querySelector('.foto-trocar');
-const inputFoto = document.getElementById('inputFoto');
-
-let nomeOriginal, descOriginal;
-
-function entrarEdicao() {
-  nomeOriginal = nome.textContent;
-  descOriginal = desc.value;
-  card.classList.add('editando');
-  nome.setAttribute('contenteditable', 'true');
-  desc.removeAttribute('readonly');
-  nome.focus();
-
-  // coloca cursor no fim do texto
-  const range = document.createRange();
-  const sel = window.getSelection();
-  range.selectNodeContents(nome);
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
-async function sairEdicao(salvar) {
-  if (salvar) {
-    const novoNome = nome.textContent.trim();
-
-    if (!novoNome) {
-      showToast('O nome não pode ser vazio.', 'erro');
-      nome.focus();
+  document.getElementById('notificationSwitch').addEventListener('change', async event => {
+    if (event.target.checked) {
+      await enableNotifications();
+      event.target.checked = Boolean('Notification' in window && Notification.permission === 'granted');
+      user.preferencias = { ...(user.preferencias || {}), notificacoes: event.target.checked };
+      try { await api(`/usuarios/${user.id}`, { method: 'PATCH', body: JSON.stringify({ preferencias: user.preferencias }) }); } catch (error) { showToast(error.message, 'error'); }
       return;
     }
-
-    if (novoNome !== nomeOriginal) {
-      // estado de carregando
-      btnSalvar.textContent = 'Salvando...';
-      btnSalvar.disabled = true;
-      btnCancel.disabled = true;
-
-      try {
-        await salvarNome(novoNome);
-        showToast('Nome salvo com sucesso!');
-      } catch (err) {
-        // rollback visual
-        nome.textContent = nomeOriginal;
-        showToast(err.message || 'Erro ao salvar nome. Tente novamente.', 'erro');
-        // mantém em modo edição para o usuário tentar de novo
-        btnSalvar.textContent = 'Salvar';
-        btnSalvar.disabled = false;
-        btnCancel.disabled = false;
-        return;
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await api('/push/inscrever', { method: 'DELETE', body: JSON.stringify({ endpoint: subscription.endpoint }) });
+          await subscription.unsubscribe();
+        } else await api('/push/inscrever', { method: 'DELETE', body: JSON.stringify({}) });
       }
-
-      btnSalvar.textContent = 'Salvar';
-      btnSalvar.disabled = false;
-      btnCancel.disabled = false;
+      user.preferencias = { ...(user.preferencias || {}), notificacoes: false };
+      await api(`/usuarios/${user.id}`, { method: 'PATCH', body: JSON.stringify({ preferencias: user.preferencias }) });
+      showToast('Notificações desativadas.');
+    } catch (error) {
+      event.target.checked = true;
+      showToast(error.message, 'error');
     }
-  } else {
-    nome.textContent = nomeOriginal;
-    desc.value = descOriginal;
-  }
+  });
 
-  card.classList.remove('editando');
-  nome.setAttribute('contenteditable', 'false');
-  desc.setAttribute('readonly', '');
-}
+  document.getElementById('themeSelect').addEventListener('change', async event => {
+    applyTheme(event.target.value);
+    user.preferencias = { ...(user.preferencias || {}), tema: event.target.value === 'dark' ? 'escuro' : event.target.value === 'light' ? 'claro' : 'sistema' };
+    try { await api(`/usuarios/${user.id}`, { method: 'PATCH', body: JSON.stringify({ preferencias: user.preferencias }) }); } catch {}
+  });
 
-btnEditar.addEventListener('click', entrarEdicao);
-btnSalvar.addEventListener('click', () => sairEdicao(true));
-btnCancel.addEventListener('click', () => sairEdicao(false));
+  document.getElementById('logoutButton').addEventListener('click', () => {
+    if (confirm('Sair da sua conta neste dispositivo?')) logout();
+  });
 
-// troca de foto
-fotoWrap.addEventListener('click', () => {
-  if (card.classList.contains('editando')) inputFoto.click();
-});
-inputFoto.addEventListener('change', () => {
-  const file = inputFoto.files[0];
-  if (file) uploadFoto(file);
-  inputFoto.value = ''; // permite reenviar o mesmo arquivo
-});
-
-// ─── TOGGLE SUGESTÕES ─────────────────────────────────────────
-const btnSugestoes = document.getElementById('btnSugestoes');
-const listaSugestoes = document.getElementById('listaSugestoes');
-
-btnSugestoes.addEventListener('click', () => {
-  const aberto = listaSugestoes.classList.contains('aberto');
-  listaSugestoes.classList.toggle('aberto', !aberto);
-  btnSugestoes.classList.toggle('aberto', !aberto);
-  btnSugestoes.setAttribute('aria-expanded', String(!aberto));
-});
-
-// ─── INIT ─────────────────────────────────────────────────────
-carregarPerfil();
-carregarSugestoes();
+  ready(async current => {
+    try {
+      user = await api(`/usuarios/${current.id}`);
+      paintProfile();
+      loadSuggestions();
+    } catch (error) {
+      showToast(error.message, 'error');
+    }
+  });
+})();

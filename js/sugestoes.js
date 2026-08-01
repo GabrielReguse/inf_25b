@@ -1,228 +1,97 @@
-const API = "https://inf-25b-backend.onrender.com";
+(() => {
+  const { api, ready, escapeHTML, formatDate, relativeDate, emptyState, skeleton, showToast, setLoading, icons } = window.INF25B;
+  const state = { items: [], user: null, view: 'all', query: '', type: 'all' };
+  const grid = document.getElementById('suggestionGrid');
 
-const TIPOS = [
-  {
-    id: 'encontro',
-    label: 'Encontro',
-    destino: 'lazer',
-    icone: `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  },
-  {
-    id: 'instagram',
-    label: 'Instagram',
-    destino: 'lazer',
-    icone: `<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`,
-  },
-  {
-    id: 'melhoria',
-    label: 'Melhoria',
-    destino: 'adm',
-    icone: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-  },
-  {
-    id: 'outro',
-    label: 'Outro',
-    destino: 'adm',
-    icone: `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  },
-];
+  const statusMap = {
+    aguardando: { label: 'Em análise', className: 'important' },
+    aceita: { label: 'Aceita', className: 'success' },
+    recusada: { label: 'Recusada', className: 'urgent' },
+    em_andamento: { label: 'Em andamento', className: 'info' },
+    finalizado: { label: 'Finalizada', className: 'success' }
+  };
 
-let tipoSelecionado = null;
-let etapa = 1;
-
-const elBarra = document.getElementById('etapaBarraFill');
-const elCorpo = document.getElementById('cardCorpo');
-const elContador = document.getElementById('etapaContador');
-
-function atualizarBarra() {
-  if (elBarra) elBarra.style.width = etapa === 1 ? '50%' : '100%';
-  if (elContador) elContador.textContent = `Etapa ${etapa}/2`;
-}
-
-function renderEtapa1() {
-  elCorpo.innerHTML = `
-    <span class="card-subtitulo">Escolha o tipo de Sugestão</span>
-    <div class="tipos-grid">
-      ${TIPOS.map(t => `
-        <button class="tipo-btn${tipoSelecionado === t.id ? ' selecionado' : ''}" data-id="${t.id}" type="button">
-          <div class="tipo-icone">${t.icone}</div>
-          <span class="tipo-label">${t.label}</span>
-        </button>
-      `).join('')}
-    </div>
-    <button class="btn-avancar" id="btnAvancar" ${!tipoSelecionado ? 'disabled' : ''} type="button">
-      Continuar
-      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-  `;
-
-  elCorpo.querySelectorAll('.tipo-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      tipoSelecionado = btn.dataset.id;
-      elCorpo.querySelectorAll('.tipo-btn').forEach(b =>
-        b.classList.toggle('selecionado', b.dataset.id === tipoSelecionado)
-      );
-      document.getElementById('btnAvancar').disabled = false;
+  function filteredItems() {
+    return state.items.filter(item => {
+      const mine = String(item.autor?._id || item.autor) === String(state.user.id);
+      if (state.view === 'mine' && !mine) return false;
+      if (state.view === 'open' && !['aguardando', 'em_andamento', 'aceita'].includes(item.status)) return false;
+      if (state.type !== 'all' && item.tipo !== state.type) return false;
+      return `${item.titulo} ${item.descricao} ${item.autor?.nome || ''}`.toLowerCase().includes(state.query);
     });
-  });
-
-  document.getElementById('btnAvancar').addEventListener('click', () => {
-    if (tipoSelecionado) trocarEtapa(2);
-  });
-}
-
-function renderEtapa2() {
-  const tipo = TIPOS.find(t => t.id === tipoSelecionado);
-  const ehEncontro = tipoSelecionado === 'encontro';
-  const hoje = new Date().toISOString().split('T')[0];
-
-  elCorpo.innerHTML = `
-    <button class="btn-voltar" id="btnVoltar" type="button">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Voltar
-    </button>
-    <span class="card-subtitulo">Título e Descreva a Sugestão</span>
-    <div class="destino-badge">
-      <svg viewBox="0 0 24 24">
-        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-      </svg>
-      Detalhe sua sugestão de ${tipo?.label}
-    </div>
-
-    <div class="campo-grupo">
-      <label class="campo-label" for="inputTitulo">Título</label>
-      <input class="campo-input" type="text" id="inputTitulo" placeholder="Título da sugestão" autocomplete="off"/>
-      <span class="campo-erro" id="erroTitulo"></span>
-    </div>
-
-    ${ehEncontro ? `
-    <div class="campo-grupo">
-      <label class="campo-label" for="inputData">Data do encontro</label>
-      <input class="campo-input campo-input-data" type="date" id="inputData" min="${hoje}"/>
-      <span class="campo-erro" id="erroData"></span>
-    </div>
-    ` : ''}
-
-    <div class="campo-grupo">
-      <label class="campo-label" for="inputDesc">Descrição</label>
-      <textarea class="campo-textarea" id="inputDesc"
-        placeholder="Descreva sua sugestão...&#10;&#10;Dica: links serão clicáveis automaticamente!"></textarea>
-      <span class="campo-erro" id="erroDesc"></span>
-    </div>
-
-    <div class="alerta" id="alerta"></div>
-
-    <button class="btn-avancar" id="btnPublicar" type="button">
-      Publicar
-      <svg viewBox="0 0 24 24">
-        <line x1="22" y1="2" x2="11" y2="13"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-      </svg>
-    </button>
-  `;
-
-  document.getElementById('btnVoltar').addEventListener('click', () => trocarEtapa(1));
-  document.getElementById('btnPublicar').addEventListener('click', publicar);
-}
-
-function trocarEtapa(nova) {
-  elCorpo.classList.add('saindo');
-  setTimeout(() => {
-    etapa = nova;
-    atualizarBarra();
-    elCorpo.classList.remove('saindo');
-    elCorpo.classList.add('entrando');
-    nova === 1 ? renderEtapa1() : renderEtapa2();
-    setTimeout(() => elCorpo.classList.remove('entrando'), 260);
-  }, 200);
-}
-
-async function publicar() {
-  const titulo = document.getElementById('inputTitulo').value.trim();
-  const desc = document.getElementById('inputDesc').value.trim();
-  const dataInput = document.getElementById('inputData');
-  const dataEncontro = dataInput ? dataInput.value : null;
-  const elAlerta = document.getElementById('alerta');
-  const btnPublicar = document.getElementById('btnPublicar');
-
-  // Limpa erros anteriores
-  document.getElementById('erroTitulo').textContent = '';
-  document.getElementById('erroDesc').textContent = '';
-  const erroData = document.getElementById('erroData');
-  if (erroData) erroData.textContent = '';
-  elAlerta.className = 'alerta';
-
-  let valido = true;
-  if (!titulo) {
-    document.getElementById('erroTitulo').textContent = 'Informe um título.';
-    valido = false;
-  }
-  if (!desc) {
-    document.getElementById('erroDesc').textContent = 'Escreva uma descrição.';
-    valido = false;
-  }
-  if (tipoSelecionado === 'encontro' && !dataEncontro) {
-    if (erroData) erroData.textContent = 'Informe a data do encontro.';
-    valido = false;
-  }
-  if (!valido) return;
-
-  const usuario = (() => {
-    try { return JSON.parse(sessionStorage.getItem('usuario') || '{}'); } catch { return {}; }
-  })();
-
-  if (!usuario.id) {
-    elAlerta.textContent = 'Você precisa estar logado para enviar sugestões.';
-    elAlerta.className = 'alerta erro';
-    return;
   }
 
-  btnPublicar.disabled = true;
-  btnPublicar.innerHTML = 'Enviando...';
+  function render() {
+    const items = filteredItems();
+    if (!items.length) return grid.innerHTML = emptyState('Nenhuma sugestão encontrada', 'Envie uma nova ideia ou ajuste os filtros.', 'bulb');
+    grid.innerHTML = items.map(item => {
+      const status = statusMap[item.status] || statusMap.aguardando;
+      const mine = String(item.autor?._id || item.autor) === String(state.user.id);
+      const legal = item.votos?.legal?.length || 0;
+      const nao = item.votos?.nao?.length || 0;
+      const myLegal = (item.votos?.legal || []).some(id => String(id._id || id) === String(state.user.id));
+      const myNo = (item.votos?.nao || []).some(id => String(id._id || id) === String(state.user.id));
+      const canDelete = mine || state.user.role === 'admin';
+      return `<article class="content-card"><div class="content-card-header"><div><span class="badge ${status.className}">${status.label}</span><h3 style="margin-top:10px">${escapeHTML(item.titulo || 'Sugestão sem título')}</h3></div><span class="badge muted">${escapeHTML(item.tipo || 'outro')}</span></div><p>${escapeHTML(item.descricao || item.texto || '')}</p>${item.dataEncontro ? `<div class="meta-line"><span>${icons.calendar}${formatDate(item.dataEncontro, { dateStyle: 'medium', timeStyle: 'short' })}</span></div>` : ''}${item.respostaAdmin ? `<div class="reply-preview" style="margin-top:12px"><strong>Resposta da liderança:</strong><br>${escapeHTML(item.respostaAdmin)}</div>` : ''}<div class="meta-line"><span>Por ${escapeHTML(item.autor?.nome || 'Aluno')}</span><span>${relativeDate(item.criadaEm)}</span></div><div class="content-card-footer"><div class="card-actions"><button class="button small ${myLegal ? 'success' : ''}" data-vote="legal" data-id="${item._id}" type="button">👍 ${legal}</button><button class="button small ${myNo ? 'danger' : ''}" data-vote="nao" data-id="${item._id}" type="button">👎 ${nao}</button></div>${canDelete ? `<button class="button small danger" data-delete="${item._id}" type="button">Remover</button>` : `<span class="badge muted">${item.respondida ? 'Respondida' : 'Aguardando'}</span>`}</div></article>`;
+    }).join('');
 
-  try {
-    const body = {
-      autor: usuario.id,
-      tipo: tipoSelecionado,
-      titulo,
-      descricao: desc,
-      // backward compat — mantém o campo texto no formato antigo
-      texto: `[${tipoSelecionado}] ${titulo} — ${desc}`
+    grid.querySelectorAll('[data-vote]').forEach(button => button.addEventListener('click', async () => {
+      try {
+        await api(`/sugestoes/${button.dataset.id}/votar`, { method: 'POST', body: JSON.stringify({ voto: button.dataset.vote }) });
+        await load();
+        showToast('Voto registrado.');
+      } catch (error) { showToast(error.message, 'error'); }
+    }));
+
+    grid.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', async () => {
+      if (!confirm('Remover esta sugestão? Esta ação não pode ser desfeita.')) return;
+      try {
+        await api(`/sugestoes/${button.dataset.delete}`, { method: 'DELETE' });
+        await load();
+        showToast('Sugestão removida.');
+      } catch (error) { showToast(error.message, 'error'); }
+    }));
+  }
+
+  async function load() {
+    state.items = await api('/sugestoes');
+    render();
+  }
+
+  document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => {
+    state.view = button.dataset.tab;
+    document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active', item === button));
+    render();
+  }));
+  document.getElementById('suggestionSearch').addEventListener('input', event => { state.query = event.target.value.trim().toLowerCase(); render(); });
+  document.getElementById('suggestionTypeFilter').addEventListener('change', event => { state.type = event.target.value; render(); });
+
+  document.getElementById('suggestionForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const submit = document.getElementById('suggestionSubmit');
+    const payload = {
+      tipo: document.getElementById('suggestionType').value,
+      titulo: document.getElementById('suggestionTitle').value.trim(),
+      descricao: document.getElementById('suggestionDescription').value.trim(),
+      dataEncontro: document.getElementById('suggestionDate').value || null
     };
-    if (tipoSelecionado === 'encontro' && dataEncontro) {
-      body.dataEncontro = dataEncontro;
+    if (!payload.titulo || !payload.descricao) return showToast('Preencha o título e a descrição.', 'error');
+    setLoading(submit, true, 'Enviando…');
+    try {
+      await api('/sugestoes', { method: 'POST', body: JSON.stringify(payload) });
+      event.target.reset();
+      await load();
+      showToast('Sugestão enviada para análise.');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      setLoading(submit, false);
     }
+  });
 
-    const resposta = await fetch(`${API}/sugestoes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-
-    const dados = await resposta.json();
-
-    if (!resposta.ok) {
-      elAlerta.textContent = dados.erro || 'Erro ao enviar sugestão.';
-      elAlerta.className = 'alerta erro';
-      btnPublicar.disabled = false;
-      btnPublicar.innerHTML = 'Publicar <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
-      return;
-    }
-
-    elAlerta.textContent = '✓ Sugestão enviada com sucesso!';
-    elAlerta.className = 'alerta sucesso';
-    setTimeout(() => { window.location.href = 'telaInicial.html'; }, 1400);
-
-  } catch (err) {
-    console.error(err);
-    elAlerta.textContent = 'Erro de conexão. Tente novamente.';
-    elAlerta.className = 'alerta erro';
-    btnPublicar.disabled = false;
-    btnPublicar.innerHTML = 'Publicar';
-  }
-}
-
-// init
-atualizarBarra();
-renderEtapa1();
+  ready(async user => {
+    state.user = user;
+    grid.innerHTML = skeleton(6);
+    try { await load(); } catch (error) { grid.innerHTML = emptyState('Não foi possível carregar as sugestões', error.message, 'alert'); }
+  });
+})();

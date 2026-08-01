@@ -1,133 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inf 25B — Tarefas / Provas</title>
-  <link rel="stylesheet" href="../css/backGround.css" />
-  <link rel="stylesheet" href="../css/tarefasProvas.css" />
-  <link rel="manifest" href="../manifest.json" />
-  <meta name="theme-color" content="#7c3aed" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Inf 25B" />
-  <link rel="apple-touch-icon" href="../assets/logo.png" />
-  <link rel="icon" type="image/png" href="../assets/icon.png" />
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-  </script>
-  <script defer src="/_vercel/insights/script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Plataforma oficial da turma INF 25B.">
+  <title>INF 25B — Provas e tarefas</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../assets/icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/app.png">
 </head>
-
-<body>
-
-  <div class="page" id="page">
-
-    <!-- HEADER -->
-    <header class="header" id="header">
-      <div class="header-esquerda">
-        <div class="logo"><img src="../assets/logo.png" alt="Logo da Inf 25B"></div>
-        <span class="header-titulo">Calendário Anual</span>
-      </div>
-      <a class="btn-fechar" href="telaInicial.html" aria-label="Voltar ao início">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </a>
-    </header>
-
-    <div class="header-linha-wrap" aria-hidden="true">
-      <div class="header-linha" id="headerLinha"></div>
+<body data-page="academico" data-title="Provas e tarefas" data-subtitle="Calendário, conteúdos e materiais por matéria">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <div class="app-layout">
+    <aside class="app-sidebar" id="appSidebar"></aside>
+    <div class="app-main">
+      <header class="app-topbar" id="appTopbar"></header>
+      <main class="page-content" id="conteudo">
+<div class="page-heading"><div><span class="eyebrow">Organização acadêmica</span><h2>Provas, tarefas e materiais</h2><p>Um calendário completo com filtros por matéria e tipo, além de uma biblioteca de recursos por disciplina.</p></div><div class="heading-actions"><button class="button" id="todayButton">Ir para hoje</button><a class="button primary" href="adm.html" id="academicAdminButton" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Novo item</a></div></div>
+<div class="tabs" role="tablist"><button class="tab-button active" data-tab="calendar">Calendário geral</button><button class="tab-button" data-tab="provas">Provas</button><button class="tab-button" data-tab="tarefas">Tarefas</button><button class="tab-button" data-tab="materiais">Materiais</button></div>
+<section class="tab-panel" data-panel="calendar"><div class="filter-bar"><div class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input" id="calendarSearch" type="search" placeholder="Buscar por matéria ou conteúdo"></div><select class="select" id="calendarTypeFilter"><option value="all">Todos os tipos</option><option value="prova">Provas</option><option value="tarefa">Tarefas</option><option value="evento">Eventos</option><option value="feriado">Datas importantes</option></select></div><div class="calendar-shell"><div class="calendar-card" id="academicCalendar"></div><aside class="day-agenda"><h3 id="selectedDayTitle">Agenda do dia</h3><div class="day-agenda-list" id="selectedDayList"></div></aside></div></section>
+<section class="tab-panel" data-panel="provas" hidden><div class="filter-bar"><div class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input" id="examSearch" type="search" placeholder="Buscar prova"></div><div class="chips" id="examSubjectChips"></div></div><div class="cards-grid" id="examGrid"></div></section>
+<section class="tab-panel" data-panel="tarefas" hidden><div class="filter-bar"><div class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input" id="taskSearch" type="search" placeholder="Buscar tarefa"></div><div class="chips" id="taskSubjectChips"></div></div><div class="cards-grid" id="taskGrid"></div></section>
+<section class="tab-panel" data-panel="materiais" hidden><div class="filter-bar"><div class="search-field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input" id="materialSearch" type="search" placeholder="Buscar material"></div><select class="select" id="materialTypeFilter"><option value="all">Todos os formatos</option><option value="pdf">PDF</option><option value="resumo">Resumo</option><option value="slide">Slides</option><option value="video">Vídeo</option><option value="link">Link</option></select></div><div class="cards-grid" id="materialGrid"></div></section></main>
     </div>
-
-    <main class="main">
-
-      <!-- CALENDÁRIO -->
-      <div class="calendario">
-
-        <!-- navegação mês -->
-        <div class="cal-nav">
-          <button class="cal-nav-btn" id="btnMesAnterior" aria-label="Mês anterior">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-
-          <span class="cal-mes-titulo" id="calMesTitulo"></span>
-
-          <button class="cal-nav-btn" id="btnMesProximo" aria-label="Próximo mês">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- dias da semana -->
-        <div class="cal-semana" aria-hidden="true">
-          <div class="cal-semana-dia">Dom</div>
-          <div class="cal-semana-dia">Seg</div>
-          <div class="cal-semana-dia">Ter</div>
-          <div class="cal-semana-dia">Qua</div>
-          <div class="cal-semana-dia">Qui</div>
-          <div class="cal-semana-dia">Sex</div>
-          <div class="cal-semana-dia">Sáb</div>
-        </div>
-
-        <!-- grade de dias (preenchida pelo JS) -->
-        <div class="cal-grade" id="calGrade" role="grid"></div>
-
-        <!-- FIX 3: legenda à esquerda + texto de dica à direita -->
-        <div class="cal-legenda" aria-hidden="true">
-          <div class="legenda-itens">
-            <div class="legenda-item">
-              <div class="legenda-dot" style="background:var(--cor-prova)"></div>
-              <span>Prova</span>
-            </div>
-            <div class="legenda-item">
-              <div class="legenda-dot" style="background:var(--cor-tarefa)"></div>
-              <span>Tarefa</span>
-            </div>
-            <div class="legenda-item">
-              <div class="legenda-dot" style="background:var(--cor-feriado)"></div>
-              <span>Feriado</span>
-            </div>
-          </div>
-          <span class="legenda-hint">Selecione um dia para mais informações</span>
-        </div>
-
-      </div>
-
-      <!-- PAINEL DO DIA (oculto por padrão) -->
-      <div class="painel-dia" id="painelDia" hidden>
-
-        <div class="painel-dia-header">
-          <span class="painel-dia-titulo" id="painelDiaTitulo"></span>
-          <button class="btn-fechar-painel" id="btnFecharPainel" aria-label="Fechar">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="eventos-lista" id="eventosList"></div>
-
-      </div>
-
-    </main>
   </div>
-
-  <script src="../js/background.js"></script>
-  <script src="../js/global.js"></script>
-  <script src="../js/tarefasProvas.js"></script>
-
-  <script>
-    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-  </script>
-  <script defer src="/_vercel/speed-insights/script.js"></script>
-
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegação móvel"></nav>
+  <script defer src="../js/app.js"></script>
+  <script defer src="../js/academico.js"></script>
 </body>
-
 </html>

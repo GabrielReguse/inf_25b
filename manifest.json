@@ -1,21 +1,79 @@
 {
-  "name": "Inf 25B",
-  "short_name": "Inf 25B",
-  "start_url": "index.html",
+  "id": "/",
+  "name": "INF 25B — Plataforma da Turma",
+  "short_name": "INF 25B",
+  "description": "Avisos, agenda, materiais, eventos e comunicação da turma INF 25B.",
+  "start_url": "/html/telaInicial.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "orientation": "any",
+  "background_color": "#070a12",
+  "theme_color": "#8b5cf6",
+  "lang": "pt-BR",
+  "categories": [
+    "education",
+    "productivity",
+    "social"
+  ],
   "icons": [
     {
-      "src": "/assets/app.png",
+      "src": "/assets/app-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/assets/app.png",
+      "src": "/assets/app-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/app-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Agenda",
+      "url": "/html/tarefasProvas.html",
+      "icons": [
+        {
+          "src": "/assets/app-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Conversa",
+      "url": "/html/conversa.html",
+      "icons": [
+        {
+          "src": "/assets/app-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Sugestões",
+      "url": "/html/sugestoes.html",
+      "icons": [
+        {
+          "src": "/assets/app-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

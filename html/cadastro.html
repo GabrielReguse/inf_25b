@@ -1,74 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inf 25B — Acesso</title>
-    <link rel="stylesheet" href="../css/backGround.css" />
-    <link rel="stylesheet" href="../css/cadastro.css" />
-    <link rel="manifest" href="../manifest.json" />
-    <meta name="theme-color" content="#7c3aed" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Inf 25B" />
-    <link rel="apple-touch-icon" href="../assets/logo.png" />
-    <link rel="icon" type="image/png" href="../assets/icon.png" />
-    <!-- vercel analytics -->
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Plataforma oficial da turma INF 25B.">
+  <title>INF 25B — Acesso</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../assets/icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/app.png">
 </head>
-
-<body>
-
-    <div class="page" id="page">
-
-        <!-- header sem fundo -->
-        <header class="header">
-            <div class="header-esquerda">
-                <div class="logo"><img src="../assets/logo.png" alt="Logo da Inf 25B"></div>
-                <span class="header-titulo">Inf 25B</span>
-            </div>
-        </header>
-
-        <div class="centro">
-            <div class="form-card">
-
-                <h1 class="form-titulo" id="formTitulo"></h1>
-
-                <form id="formPrincipal" novalidate>
-                    <div class="campos" id="campos"></div>
-
-                    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 14px;">
-                        <div class="alerta" id="alerta"></div>
-
-                        <button class="btn-principal" type="submit">
-                            <span id="btnLabel"></span>
-                        </button>
-
-                        <p class="link-troca">
-                            <span id="linkTexto"></span><a id="linkAcao" role="button" tabindex="0"></a>
-                        </p>
-                    </div>
-                </form>
-
-            </div>
+<body data-page="auth" data-public="true">
+  <main class="auth-page">
+    <section class="auth-visual" aria-label="Apresentação da plataforma">
+      <a class="auth-brand" href="../index.html"><img src="../assets/logo.png" alt=""><span><strong>INF 25B</strong><span>Plataforma oficial da turma</span></span></a>
+      <div class="auth-hero">
+        <span class="eyebrow">Feita para a turma</span>
+        <h1>Menos caos.<br><span>Mais turma.</span></h1>
+        <p>Avisos, prazos, materiais, eventos, decisões e conversa em um espaço único — confortável no computador e no celular.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><strong>Agenda central</strong><span>Provas, tarefas e eventos sem caça ao tesouro.</span></div>
+          <div class="auth-feature"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><strong>Comunicação</strong><span>Avisos oficiais e conversa da turma.</span></div>
+          <div class="auth-feature"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><strong>Participação</strong><span>Enquetes e sugestões com acompanhamento real.</span></div>
         </div>
-
-    </div>
-
-    <script src="../js/global.js"></script>
-    <script src="../js/background.js"></script>
-    <script src="../js/cadastro.js"></script>
-
-    <!-- vercel speed insights -->
-    <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
-
-</body>
-
-</html>
+      </div>
+      <span class="auth-footnote">Uso interno da turma • 2º ano • 2026</span>
+    </section>
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-card-header"><h2 id="authTitle">Bem-vindo de volta</h2><p id="authSubtitle">Entre para acessar o painel da turma.</p></div>
+        <div class="auth-tabs" role="tablist"><button class="auth-tab active" id="loginTab" type="button">Entrar</button><button class="auth-tab" id="registerTab" type="button">Criar conta</button></div>
+        <form class="auth-form" id="authForm" novalidate>
+          <div class="field" id="nameField" hidden><label for="nameInput">Nome completo</label><input class="input" id="nameInput" name="nome" autocomplete="name" maxlength="80" placeholder="Como você quer aparecer"></div>
+          <div class="field"><label for="emailInput">E-mail</label><input class="input" id="emailInput" name="email" type="email" autocomplete="email" required placeholder="seuemail@exemplo.com"></div>
+          <div class="field"><label for="passwordInput">Senha</label><div class="password-field"><input class="input" id="passwordInput" name="senha" type="password" autocomplete="current-password" minlength="8" maxlength="72" required placeholder="No mínimo 8 caracteres"><button class="password-toggle" id="passwordToggle" type="button" aria-label="Mostrar senha"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field" id="confirmField" hidden><label for="confirmInput">Confirme a senha</label><input class="input" id="confirmInput" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Repita a senha"></div>
+          <div class="auth-error" id="authError" role="alert"></div>
+          <button class="button primary auth-submit" id="authSubmit" type="submit">Entrar</button>
+        </form>
+        <p class="auth-terms">O acesso é individual. Permissões administrativas são definidas no servidor, não pelo navegador.</p>
+        <details class="api-config"><summary>Configuração para desenvolvimento local</summary><div class="field"><label for="apiInput">URL da API</label><input class="input" id="apiInput" type="url" placeholder="http://localhost:2025"><button class="button small" id="saveApi" type="button">Salvar endereço</button></div></details>
+      </div>
+    </section>
+  </main>
+  <script defer src="../js/app.js"></script>
+  <script defer src="../js/auth.js"></script>
+</body></html>
