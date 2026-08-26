@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">INF 25B</title><desc id="desc">Editorial cover for the INF 25B platform repository.</desc>
+  <style>.bg{fill:#070a12}.ink{fill:#f6f5fb}.muted{fill:#9699ad}.line{stroke:#25293a}.accent{fill:#8b5cf6}text{font-family:Arial,Helvetica,sans-serif}</style>
+  <rect class="bg" width="1200" height="440" rx="20"/>
+  <path class="line" d="M42 70H1158M42 363H1158M824 70V363"/>
+  <text class="muted" x="42" y="47" font-size="12" font-weight="700" letter-spacing="2.5">INF 25B / CLASS PLATFORM / PWA</text>
+  <circle class="accent" cx="1137" cy="44" r="8"/>
+  <rect class="accent" x="42" y="105" width="92" height="92" rx="20"/>
+  <text x="88" y="165" fill="#fff" font-size="34" text-anchor="middle" font-weight="800">25B</text>
+  <text class="ink" x="42" y="278" font-size="78" font-weight="800" letter-spacing="-4">INF 25B</text>
+  <text class="muted" x="42" y="320" font-size="19">A digital layer for the real routine of a class.</text>
+  <text class="ink" x="862" y="128" font-size="16" font-weight="700" letter-spacing="1.4">ORGANIZE</text>
+  <text class="muted" x="862" y="156" font-size="15">tasks · exams · calendar</text>
+  <text class="ink" x="862" y="216" font-size="16" font-weight="700" letter-spacing="1.4">COMMUNICATE</text>
+  <text class="muted" x="862" y="244" font-size="15">notices · chat · events</text>
+  <text class="ink" x="862" y="304" font-size="16" font-weight="700" letter-spacing="1.4">MANAGE</text>
+  <text class="muted" x="862" y="332" font-size="15">content · users · logs</text>
+  <text class="muted" x="42" y="402" font-size="11" font-weight="700" letter-spacing="1.4">JAVASCRIPT · HTML · CSS · REST API · SERVICE WORKER · VERCEL</text>
+</svg>
