@@ -1,57 +1,55 @@
 <p align="center">
-  <img src="./.github/readme-cover.svg" width="100%" alt="INF 25B — plataforma da turma" />
+  <img src="./.github/readme-cover.svg" width="100%" alt="INF 25B — class platform" />
 </p>
 
 <p align="center">
-  <a href="#o-que-tem-aqui">Features</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="#rodando-localmente">Local setup</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="#pwa">PWA</a>
+  <a href="#what-it-does"><b>Features</b></a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  <a href="#running-locally"><b>Local setup</b></a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  <a href="#pwa"><b>PWA</b></a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  <a href="#quality"><b>Quality</b></a>
 </p>
 
 <br>
 
-## Por que isso existe
+## What it is
 
-O **INF 25B** começou como um lugar simples para centralizar tarefas e avisos da turma. Conforme novos problemas apareceram, o projeto cresceu junto.
+**INF 25B** is a responsive class platform built around the actual routine of my school group. It started as a small place for tasks and announcements and grew as new problems appeared.
 
-Hoje ele funciona como uma camada digital para a rotina da classe: organiza informação, reduz a quantidade de coisa espalhada em grupos e mensagens e concentra funções que antes não conversavam entre si.
+Instead of spreading information across messages, screenshots and isolated tools, the platform gives the class one shared place for school routine, communication and participation.
 
-<br>
-
-## O que tem aqui
+## What it does
 
 <table>
 <tr>
-<td width="50%" valign="top">
+<td width="25%" valign="top">
 
-### Rotina
+### Routine
 
-Dashboard, avisos, agenda, calendário, provas, tarefas, feriados e materiais por matéria.
-
-</td>
-<td width="50%" valign="top">
-
-### Comunicação
-
-Conversa geral, mensagens diretas, eventos, sugestões e respostas da liderança.
+Assignments, exams, holidays, subject materials and upcoming deadlines.
 
 </td>
-</tr>
-<tr>
-<td width="50%" valign="top">
+<td width="25%" valign="top">
 
-### Pessoas
+### Information
 
-Perfil, presença, participação, contatos e preferências individuais de tema e notificações.
+Announcements, timetable, documents, important contacts and calendar views.
 
 </td>
-<td width="50%" valign="top">
+<td width="25%" valign="top">
 
-### Administração
+### Community
 
-Gestão de conteúdo, usuários e logs sem precisar editar diretamente os arquivos da interface.
+Events, attendance, polls, suggestions, class projects and social sections.
+
+</td>
+<td width="25%" valign="top">
+
+### Communication
+
+General chat, direct messages, notifications and leadership/admin responses.
 
 </td>
 </tr>
@@ -59,56 +57,92 @@ Gestão de conteúdo, usuários e logs sem precisar editar diretamente os arquiv
 
 <br>
 
-## Como foi montado
+## Product areas
 
-A interface é estática e responsiva, mas não funciona como um conjunto de páginas isoladas. A versão atual centraliza sessão, chamadas de API e padrões visuais para manter o comportamento consistente entre as telas.
+- authenticated access and account flow;
+- dashboard with announcements, schedule, calendar and participation;
+- assignments, exams, holidays and materials by subject;
+- documents, timetable and important contacts;
+- events, attendance, Instagram, class shirt and polls;
+- suggestions with voting, status and leadership response;
+- profile, theme and opt-in notifications;
+- general chat and direct messages;
+- admin tools for content, users and logs.
 
-`HTML` · `CSS` · `JavaScript` · `REST API` · `Service Worker` · `Vercel`
+## Stack
 
-<br>
+| Layer | Current approach |
+|---|---|
+| **Interface** | HTML, CSS and modular JavaScript |
+| **Application layer** | Shared session/API utilities and page-specific modules |
+| **Back-end connection** | REST API, configurable in local development |
+| **Offline / installable** | Web App Manifest + Service Worker |
+| **Deployment** | Static deployment on Vercel |
+| **Quality** | Local validation script + GitHub Actions |
 
-## Rodando localmente
+## Running locally
 
 ```bash
+npm ci
 npm run check
 npm run serve
 ```
 
-Depois, abra:
+Open `http://localhost:5500`.
 
-```text
-http://localhost:5500
-```
+In local development the front-end expects the API at `http://localhost:2025`. The access screen also exposes a development URL setting so the API endpoint can be changed without rebuilding the entire interface.
 
-Em desenvolvimento, o front usa `http://localhost:2025` como API por padrão. A própria tela de acesso também permite configurar outra URL para testes.
+## Deployment
 
-<br>
+The project can be deployed as a static Vercel site. `vercel.json` already contains security headers and CSP configuration.
 
-## Publicação
+If the public back-end URL changes, keep these values synchronized:
 
-O frontend pode ser hospedado como site estático na **Vercel**. O `vercel.json` já mantém cabeçalhos de segurança e a política de conteúdo usada pelo projeto.
-
-Se a URL pública da API mudar, os pontos de integração precisam continuar alinhados entre o fallback do frontend, a CSP e a configuração permitida pelo backend.
-
-<br>
+1. the `API_URL` fallback in `js/app.js`;
+2. `connect-src` in `vercel.json`;
+3. `FRONTEND_URLS` in the back-end.
 
 ## PWA
 
-O projeto inclui manifest e service worker. O shell principal pode permanecer disponível offline e as notificações só são solicitadas depois de uma ação explícita do usuário.
+The Service Worker keeps the application shell available offline, while notifications are only requested after explicit user action.
 
-Os ícones comuns e maskable ficam em [`assets/`](./assets).
+The repository includes standard and maskable app icons in `assets/` and shortcuts for high-frequency areas such as agenda, chat and suggestions.
 
-<br>
+## Quality
 
-## Contexto
+Every push to `main` and every pull request runs the repository validation script in **GitHub Actions**.
 
-Este não é um produto genérico de demonstração: ele foi construído em volta de uma turma real e foi crescendo conforme surgiam necessidades reais de organização e comunicação.
+```text
+push / pull request
+        │
+        ▼
+GitHub Actions
+        │
+        ├─ npm ci
+        └─ npm run check
+             ├─ JavaScript validation
+             └─ HTML checks
+```
 
-É justamente essa parte que mais me interessa no projeto — usar design e desenvolvimento para resolver atrito cotidiano, em vez de inventar funcionalidades só para preencher uma tela.
+Workflow: [`.github/workflows/quality.yml`](./.github/workflows/quality.yml)
+
+## Repository structure
+
+```text
+inf_25b/
+├── assets/          icons and visual assets
+├── css/             shared and page styles
+├── html/            application screens
+├── js/              components, session/API and page logic
+├── scripts/         repository validation tools
+├── manifest.json    installable PWA metadata
+├── sw.js            service worker
+└── vercel.json      deployment and security configuration
+```
 
 ---
 
 <p align="center">
-  <b>Built for the class that actually uses it.</b><br>
+  <b>Built for a real class, changed by real use.</b><br>
   <sub>Gabriel Reguse · INF 25B</sub>
 </p>
